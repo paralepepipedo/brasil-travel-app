@@ -2686,12 +2686,15 @@
 
       function guardarYRenderizar() {
         try {
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(gastos));
+          // Guardar SOLO los gastos del usuario (sin los fijos)
+          const gastosUsuario = gastos.filter(g => !g.fijo);
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(gastosUsuario));
         } catch (e) {
-          console.error('No se pudo guardar en localStorage:', e);
+          console.error('No se pudo guardar en localStorage', e);
         }
         render();
       }
+
 
       form.addEventListener('submit', function (e) {
         e.preventDefault();
@@ -2704,6 +2707,7 @@
         }
 
         const nuevoGasto = {
+          id: Date.now() + Math.floor(Math.random() * 1000), // ⬅️ AGREGAR ESTA LÍNEA
           descripcion: form.descripcion.value.trim(),
           monto_brl: montoEnBRL,
           fecha: form.fecha.value,
@@ -2738,8 +2742,16 @@
           e.preventDefault();
           const index = parseInt(btnEditar.dataset.index, 10);
           const gasto = gastos[index];
+
+          // ⬅️ AGREGAR ESTO
+          if (gasto && gasto.fijo) {
+            alert('❌ No puedes editar gastos de ejemplo. Solo puedes editar tus propios gastos.');
+            return;
+          }
+
           if (gasto) {
             form.descripcion.value = gasto.descripcion;
+
             form.monto.value = gasto.monto_brl;
             form.fecha.value = gasto.fecha;
             form.personas.value = gasto.personas;
@@ -2756,8 +2768,16 @@
         if (btnEliminar) {
           e.preventDefault();
           const index = parseInt(btnEliminar.dataset.index, 10);
+
+          // ⬅️ AGREGAR ESTO
+          if (gastos[index].fijo) {
+            alert('❌ No puedes eliminar gastos de ejemplo. Solo puedes eliminar tus propios gastos.');
+            return;
+          }
+
           if (confirm(`¿Estás seguro de que quieres eliminar el gasto "${gastos[index].descripcion}"?`)) {
             gastos.splice(index, 1);
+
             // Si estábamos editando este gasto, cancelamos la edición
             if (idEdicion === index) idEdicion = null;
             guardarYRenderizar();
@@ -2872,25 +2892,56 @@
       }
 
       // --- Carga inicial de datos y primer renderizado ---
-      try {
-        const datosGuardados = localStorage.getItem(STORAGE_KEY);
-        if (datosGuardados) {
-          gastos = JSON.parse(datosGuardados);
-          // Migración: asegura que cada gasto tiene .pagos
+      async function cargarDatosIniciales() {
+        try {
+          // 1. Cargar datos fijos desde GitHub
+          let datosFijos = [];
+          try {
+            const response = await fetch('datos-fijos.json');
+            if (response.ok) {
+              const json = await response.json();
+              datosFijos = json.gastos || [];
+            }
+          } catch (e) {
+            console.log('No se pudieron cargar datos fijos:', e);
+          }
+
+          // 2. Cargar datos del usuario desde localStorage
+          let datosUsuario = [];
+          const datosGuardados = localStorage.getItem(STORAGE_KEY);
+          if (datosGuardados) {
+            datosUsuario = JSON.parse(datosGuardados);
+            // Filtrar para eliminar cualquier dato "fijo" que el usuario haya guardado por error
+            datosUsuario = datosUsuario.filter(g => !g.fijo);
+          }
+
+          // 3. Combinar: datos fijos + datos del usuario
+          gastos = [...datosFijos, ...datosUsuario];
+
+          // 4. Migración: asegura que cada gasto tiene .pagos e ID
           gastos.forEach(gasto => {
             if (!gasto.pagos) {
               gasto.pagos = { Patricia: false, Daniela: false, Gonzalo: false };
             }
+            if (!gasto.id) {
+              gasto.id = Date.now() + Math.floor(Math.random() * 1000);
+            }
           });
+
+        } catch (e) {
+          console.error('Error al cargar datos iniciales:', e);
+          gastos = [];
         }
-      } catch (e) {
-        console.error('Error al cargar datos desde localStorage:', e);
-        gastos = [];
+
+        if (form.fecha) {
+          form.fecha.valueAsDate = new Date();
+        }
+        render();
       }
 
+      // Inicializar
+      cargarDatosIniciales();
 
-      if (form.fecha) form.fecha.valueAsDate = new Date();
-      render();
     }
 
     if (document.readyState === 'loading') {
