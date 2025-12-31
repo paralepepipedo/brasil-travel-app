@@ -1178,6 +1178,398 @@
         flex-wrap: wrap;
       }
     }
+
+    /* ========================================
+       ESTILOS PARA VUELOS Y DOCUMENTOS
+       ======================================== */
+
+    /* Cards de Vuelo en Dashboard */
+    .vuelo-card {
+      background: white;
+      border-radius: 12px;
+      padding: 1.5rem;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      margin-bottom: 1.5rem;
+      border-left: 4px solid var(--azul-brasil);
+    }
+
+    .vuelo-card.vuelo-ida {
+      border-left-color: var(--verde-brasil);
+    }
+
+    .vuelo-card.vuelo-regreso {
+      border-left-color: var(--amarillo-brasil);
+    }
+
+    .vuelo-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+
+    .vuelo-badge {
+      background: var(--verde-brasil);
+      color: white;
+      padding: 0.25rem 0.75rem;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    .vuelo-regreso .vuelo-badge {
+      background: var(--amarillo-brasil);
+      color: var(--texto-oscuro);
+    }
+
+    .vuelo-alerta {
+      padding: 0.25rem 0.75rem;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    .alerta-verde {
+      background: #c8e6c9;
+      color: #2e7d32;
+    }
+
+    .alerta-amarilla {
+      background: #fff9c4;
+      color: #f57f17;
+    }
+
+    .alerta-naranja {
+      background: #ffe0b2;
+      color: #e65100;
+    }
+
+    .alerta-roja {
+      background: #ffcdd2;
+      color: #c62828;
+    }
+
+    .vuelo-ruta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin: 1rem 0;
+      padding: 1rem;
+      background: var(--gris-claro);
+      border-radius: 8px;
+    }
+
+    .vuelo-ciudad {
+      text-align: center;
+    }
+
+    .vuelo-codigo {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--azul-brasil);
+    }
+
+    .vuelo-nombre {
+      font-size: 0.85rem;
+      color: var(--gris-oscuro);
+      margin-top: 0.25rem;
+    }
+
+    .vuelo-flecha {
+      font-size: 2rem;
+      color: var(--verde-brasil);
+      margin: 0 1rem;
+    }
+
+    .vuelo-horarios {
+      display: grid;
+      gap: 0.5rem;
+      margin: 1rem 0;
+      font-size: 0.95rem;
+    }
+
+    .vuelo-info {
+      padding: 0.75rem;
+      background: #e3f2fd;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      color: var(--azul-brasil);
+      margin: 0.5rem 0;
+    }
+
+    .vuelo-archivos {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-top: 1rem;
+    }
+
+    .archivo-badge {
+      background: var(--verde-claro);
+      color: white;
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .archivo-badge.pendiente {
+      background: var(--gris-medio);
+      color: var(--gris-oscuro);
+    }
+
+    /* Grid de Documentos */
+    .documentos-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 1.5rem;
+      margin-top: 1.5rem;
+    }
+
+    .documento-card {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+      cursor: pointer;
+      transition: 0.3s ease;
+    }
+
+    .documento-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+    }
+
+    .documento-preview {
+      width: 100%;
+      height: 150px;
+      background: var(--gris-claro);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 3rem;
+      position: relative;
+    }
+
+    .documento-preview img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .documento-categoria-badge {
+      position: absolute;
+      top: 0.5rem;
+      right: 0.5rem;
+      background: rgba(0, 0, 0, 0.7);
+      color: white;
+      padding: 0.25rem 0.5rem;
+      border-radius: 6px;
+      font-size: 0.75rem;
+    }
+
+    .documento-body {
+      padding: 1rem;
+    }
+
+    .documento-titulo {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--texto-oscuro);
+      margin-bottom: 0.5rem;
+    }
+
+    .documento-fecha {
+      font-size: 0.85rem;
+      color: var(--gris-oscuro);
+      margin-bottom: 0.5rem;
+    }
+
+    .documento-recordatorio {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.25rem 0.75rem;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+
+    .documento-recordatorio.proximo {
+      background: #fff9c4;
+      color: #f57f17;
+    }
+
+    .documento-recordatorio.urgente {
+      background: #ffcdd2;
+      color: #c62828;
+    }
+
+    /* Zona de Drop */
+    .drop-zone {
+      border: 3px dashed var(--gris-medio);
+      border-radius: 12px;
+      padding: 3rem;
+      text-align: center;
+      cursor: pointer;
+      transition: 0.3s ease;
+      background: var(--gris-claro);
+    }
+
+    .drop-zone:hover,
+    .drop-zone.drag-over {
+      border-color: var(--verde-brasil);
+      background: #e8f5e9;
+    }
+
+    .drop-zone-icon {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+    }
+
+    .drop-zone-text {
+      font-size: 1.1rem;
+      color: var(--gris-oscuro);
+      margin-bottom: 0.5rem;
+    }
+
+    .drop-zone-hint {
+      font-size: 0.9rem;
+      color: var(--gris-oscuro);
+    }
+
+    /* Filtros de documentos */
+    .filtros-documentos {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+    }
+
+    .filtros-documentos button {
+      padding: 0.5rem 1rem;
+      background: white;
+      border: 2px solid var(--gris-medio);
+      border-radius: 8px;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: 0.3s ease;
+    }
+
+    .filtros-documentos button.active {
+      background: var(--verde-brasil);
+      color: white;
+      border-color: var(--verde-brasil);
+    }
+
+    .filtros-documentos button:hover {
+      border-color: var(--verde-brasil);
+    }
+
+    /* Buscador */
+    .search-box {
+      position: relative;
+      margin-bottom: 1.5rem;
+    }
+
+    .search-box input {
+      width: 100%;
+      padding: 0.75rem 1rem 0.75rem 2.5rem;
+      border: 2px solid var(--gris-medio);
+      border-radius: 8px;
+      font-size: 1rem;
+    }
+
+    .search-box input:focus {
+      outline: none;
+      border-color: var(--verde-brasil);
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 0.75rem;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 1.2rem;
+      color: var(--gris-oscuro);
+    }
+
+    /* Modal de vista de documento */
+    .modal-documento-viewer {
+      padding: 0 !important;
+      max-width: 90vw;
+      max-height: 90vh;
+    }
+
+    .documento-viewer-header {
+      padding: 1rem;
+      background: var(--verde-brasil);
+      color: white;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .documento-viewer-body {
+      padding: 1rem;
+      max-height: 70vh;
+      overflow-y: auto;
+    }
+
+    .documento-viewer-body img {
+      width: 100%;
+      border-radius: 8px;
+    }
+
+    .documento-viewer-body iframe {
+      width: 100%;
+      height: 70vh;
+      border: none;
+      border-radius: 8px;
+    }
+
+    /* Badges de etiquetas */
+    .etiquetas-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-top: 0.5rem;
+    }
+
+    .etiqueta-badge {
+      background: var(--azul-claro);
+      color: white;
+      padding: 0.25rem 0.75rem;
+      border-radius: 20px;
+      font-size: 0.75rem;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .vuelo-ruta {
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+
+      .vuelo-flecha {
+        transform: rotate(90deg);
+        margin: 0.5rem 0;
+      }
+
+      .documentos-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .filtros-documentos {
+        flex-direction: column;
+      }
+
+      .filtros-documentos button {
+        width: 100%;
+      }
+    }
   </style>
 </head>
 
@@ -1196,6 +1588,8 @@
       <button class="nav-tab" data-section="compras">🛒 Compras</button>
       <button class="nav-tab" data-section="atracciones">📍 Atracciones</button>
       <button class="nav-tab" data-section="configuracion">⚙️ Configuración</button>
+      <button class="nav-tab" data-section="vuelos">✈️ Vuelos</button>
+      <button class="nav-tab" data-section="documentos">📄 Documentos</button>
     </nav>
 
     <button class="menu-toggle" id="menuToggle">☰</button>
@@ -1208,6 +1602,8 @@
     <button class="mobile-nav" data-section="compras">🛒 Compras</button>
     <button class="mobile-nav" data-section="atracciones">📍 Atracciones</button>
     <button class="mobile-nav" data-section="configuracion">⚙️ Configuración</button>
+    <button class="mobile-nav" data-section="vuelos">✈️ Vuelos</button>
+    <button class="mobile-nav" data-section="documentos">📄 Documentos</button>
   </div>
 
   <button class="btn-flotante" id="btnConversor" title="Conversor BRL ↔ CLP">💱</button>
@@ -1648,6 +2044,366 @@
 
       <div id="gridAtracciones"
         style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem;"></div>
+    </div>
+  </div>
+  <!-- SECCIÓN: DOCUMENTOS -->
+  <div class="app-section" id="section-documentos">
+    <div class="section-container" style="max-width: 1200px; margin: 0 auto;">
+      <div
+        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+        <h2 style="color: var(--verde-brasil); margin: 0;">📄 Mis Documentos</h2>
+        <button class="btn-primary" style="width: auto; padding: 0.75rem 1.5rem;" onclick="abrirModalNuevoDocumento()">
+          ➕ Nuevo Documento
+        </button>
+      </div>
+
+      <!-- Buscador -->
+      <div class="search-box">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="buscarDocumento" placeholder="Buscar por título o etiqueta...">
+      </div>
+
+      <!-- Filtros -->
+      <div class="filtros-documentos">
+        <button class="active" data-categoria="todos">📁 Todos</button>
+        <button data-categoria="entradas">🎫 Entradas</button>
+        <button data-categoria="reservas">🏨 Reservas</button>
+        <button data-categoria="identificacion">🆔 Identificación</button>
+        <button data-categoria="financieros">💳 Financieros</button>
+        <button data-categoria="transporte">🚗 Transporte</button>
+        <button data-categoria="otros">📋 Otros</button>
+      </div>
+
+      <!-- Contador -->
+      <div style="text-align: center; margin-bottom: 1.5rem; color: var(--gris-oscuro);">
+        <span id="contadorDocumentos">0 documentos</span>
+      </div>
+
+      <!-- Grid de documentos -->
+      <div class="documentos-grid" id="gridDocumentos"></div>
+    </div>
+  </div>
+
+  <!-- MODAL: NUEVO DOCUMENTO -->
+  <div class="modal" id="modalNuevoDocumento">
+    <div class="modal-content">
+      <button class="modal-close" onclick="cerrarModal('modalNuevoDocumento')">&times;</button>
+      <h2 style="color: var(--verde-brasil); margin-bottom: 1.5rem;" id="tituloModalDocumento">➕ Nuevo Documento</h2>
+
+      <form id="formNuevoDocumento">
+        <div class="form-group">
+          <label for="docCategoria">Categoría *</label>
+          <select id="docCategoria" required>
+            <option value="entradas">🎫 Entradas y Tickets</option>
+            <option value="reservas">🏨 Reservas</option>
+            <option value="identificacion">🆔 Identificación</option>
+            <option value="financieros">💳 Documentos Financieros</option>
+            <option value="transporte">🚗 Transporte</option>
+            <option value="otros">📋 Otros</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="docTitulo">Título *</label>
+          <input type="text" id="docTitulo" placeholder="Ej: Entrada Disney World" required>
+        </div>
+
+        <div class="form-group">
+          <label for="docDescripcion">Descripción</label>
+          <textarea id="docDescripcion" rows="2" placeholder="Descripción opcional..."></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="docFechaEvento">📅 Fecha y Hora del Evento (opcional)</label>
+          <input type="datetime-local" id="docFechaEvento">
+          <div style="font-size: 0.85rem; color: var(--gris-oscuro); margin-top: 0.25rem;">
+            Solo para eventos con fecha específica (entradas, reservas, etc.)
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>⏰ Recordatorio</label>
+          <div class="radio-group">
+            <label>
+              <input type="radio" name="docRecordatorio" value="0" checked>
+              <span>Sin recordatorio</span>
+            </label>
+            <label>
+              <input type="radio" name="docRecordatorio" value="1">
+              <span>1 día antes</span>
+            </label>
+            <label>
+              <input type="radio" name="docRecordatorio" value="3">
+              <span>3 días antes</span>
+            </label>
+            <label>
+              <input type="radio" name="docRecordatorio" value="7">
+              <span>7 días antes</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>📎 Subir Archivo *</label>
+          <div class="drop-zone" id="dropZone">
+            <div class="drop-zone-icon">📁</div>
+            <div class="drop-zone-text">Arrastra tu archivo aquí</div>
+            <div class="drop-zone-hint">o haz clic para seleccionar</div>
+            <div class="drop-zone-hint" style="margin-top: 0.5rem;">PDF, JPG, PNG (máx 5MB)</div>
+          </div>
+          <input type="file" id="docArchivo" accept=".pdf,image/*" style="display: none;" required>
+          <div id="archivoSeleccionado" style="margin-top: 1rem;"></div>
+        </div>
+
+        <div class="form-group">
+          <label for="docEtiquetas">🏷️ Etiquetas (separadas por coma)</label>
+          <input type="text" id="docEtiquetas" placeholder="Ej: Disney, Parque, Familia">
+        </div>
+
+        <div class="form-group">
+          <label for="docNotas">📝 Notas Adicionales</label>
+          <textarea id="docNotas" rows="3" placeholder="Cualquier información adicional..."></textarea>
+        </div>
+
+        <button type="submit" class="btn-primary">Guardar Documento</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: VER DOCUMENTO -->
+  <div class="modal" id="modalVerDocumento">
+    <div class="modal-content modal-documento-viewer">
+      <div class="documento-viewer-header">
+        <h3 id="visorDocTitulo" style="margin: 0; color: white;"></h3>
+        <button class="modal-close" onclick="cerrarModal('modalVerDocumento')" style="color: white;">&times;</button>
+      </div>
+      <div class="documento-viewer-body" id="visorDocBody">
+        <!-- Aquí se carga el documento -->
+      </div>
+      <div style="padding: 1rem; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem;">
+        <button class="btn-secondary" onclick="descargarDocumento()" style="width: 100%;">⬇️ Descargar</button>
+        <button class="btn-secondary" onclick="editarDocumento()" style="width: 100%;">✏️ Editar</button>
+        <button class="btn-danger" style="width: 100%; padding: 0.75rem; border-radius: 8px; font-weight: 600;"
+          onclick="eliminarDocumento()">🗑️ Eliminar</button>
+      </div>
+    </div>
+  </div>
+  <!-- SECCIÓN: VUELOS -->
+  <div class="app-section" id="section-vuelos">
+    <div class="section-container" style="max-width: 1000px; margin: 0 auto;">
+      <h2 style="text-align: center; color: var(--verde-brasil); margin-bottom: 2rem;">✈️ Mis Vuelos</h2>
+
+      <div style="display: grid; gap: 2rem;">
+
+        <!-- VUELO DE IDA -->
+        <div class="dashboard-card">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+            <h3 style="color: var(--verde-brasil); margin: 0;">🛫 Vuelo de Ida</h3>
+            <button class="btn-secondary" onclick="editarVuelo('ida')" id="btnEditarIda">✏️ Editar</button>
+          </div>
+
+          <div id="vistaVueloIda" style="display: none;">
+            <!-- Aquí se renderiza el vuelo de ida -->
+          </div>
+
+          <form id="formVueloIda" style="display: block;">
+            <div class="form-group">
+              <label>Aerolínea *</label>
+              <input type="text" id="idaAerolinea" placeholder="Ej: LATAM, Gol, Azul" required>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+              <div class="form-group">
+                <label>Número de Vuelo *</label>
+                <input type="text" id="idaNumeroVuelo" placeholder="Ej: LA450" required>
+              </div>
+
+              <div class="form-group">
+                <label>Código de Reserva</label>
+                <input type="text" id="idaCodigoReserva" placeholder="Ej: ABC123">
+              </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+              <div class="form-group">
+                <label>Origen * (Código IATA)</label>
+                <input type="text" id="idaOrigenCodigo" placeholder="SCL" maxlength="3" required
+                  style="text-transform: uppercase;">
+              </div>
+
+              <div class="form-group">
+                <label>Ciudad Origen</label>
+                <input type="text" id="idaOrigenNombre" placeholder="Santiago">
+              </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+              <div class="form-group">
+                <label>Destino * (Código IATA)</label>
+                <input type="text" id="idaDestinoCodigo" placeholder="GIG" maxlength="3" required
+                  style="text-transform: uppercase;">
+              </div>
+
+              <div class="form-group">
+                <label>Ciudad Destino</label>
+                <input type="text" id="idaDestinoNombre" placeholder="Río de Janeiro">
+              </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+              <div class="form-group">
+                <label>Fecha y Hora Salida *</label>
+                <input type="datetime-local" id="idaFechaSalida" required>
+              </div>
+
+              <div class="form-group">
+                <label>Fecha y Hora Llegada *</label>
+                <input type="datetime-local" id="idaFechaLlegada" required>
+              </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+              <div class="form-group">
+                <label>Terminal</label>
+                <input type="text" id="idaTerminal" placeholder="Ej: 2">
+              </div>
+
+              <div class="form-group">
+                <label>Puerta</label>
+                <input type="text" id="idaPuerta" placeholder="Ej: A12">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Asientos (separados por coma)</label>
+              <input type="text" id="idaAsientos" placeholder="Ej: 12A, 12B, 12C">
+            </div>
+
+            <div class="form-group">
+              <label>Equipaje</label>
+              <input type="text" id="idaEquipaje" placeholder="Ej: 1 equipaje de mano + 1 maleta (23kg)">
+            </div>
+
+            <div class="form-group">
+              <label>Notas</label>
+              <textarea id="idaNotas" rows="3" placeholder="Observaciones, recomendaciones..."></textarea>
+            </div>
+
+            <div class="form-group">
+              <label>📎 Boarding Pass (PDF o Imagen)</label>
+              <input type="file" id="idaBoardingPass" accept=".pdf,image/*">
+              <div id="idaArchivoActual" style="margin-top: 0.5rem;"></div>
+            </div>
+
+            <button type="submit" class="btn-primary">Guardar Vuelo de Ida</button>
+          </form>
+        </div>
+
+        <!-- VUELO DE REGRESO -->
+        <div class="dashboard-card">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+            <h3 style="color: var(--amarillo-brasil); margin: 0;">🛬 Vuelo de Regreso</h3>
+            <button class="btn-secondary" onclick="editarVuelo('regreso')" id="btnEditarRegreso">✏️ Editar</button>
+          </div>
+
+          <div id="vistaVueloRegreso" style="display: none;">
+            <!-- Aquí se renderiza el vuelo de regreso -->
+          </div>
+
+          <form id="formVueloRegreso" style="display: block;">
+            <div class="form-group">
+              <label>Aerolínea *</label>
+              <input type="text" id="regresoAerolinea" placeholder="Ej: LATAM, Gol, Azul" required>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+              <div class="form-group">
+                <label>Número de Vuelo *</label>
+                <input type="text" id="regresoNumeroVuelo" placeholder="Ej: LA451" required>
+              </div>
+
+              <div class="form-group">
+                <label>Código de Reserva</label>
+                <input type="text" id="regresoCodigoReserva" placeholder="Ej: ABC123">
+              </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+              <div class="form-group">
+                <label>Origen * (Código IATA)</label>
+                <input type="text" id="regresoOrigenCodigo" placeholder="GIG" maxlength="3" required
+                  style="text-transform: uppercase;">
+              </div>
+
+              <div class="form-group">
+                <label>Ciudad Origen</label>
+                <input type="text" id="regresoOrigenNombre" placeholder="Río de Janeiro">
+              </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+              <div class="form-group">
+                <label>Destino * (Código IATA)</label>
+                <input type="text" id="regresoDestinoCodigo" placeholder="SCL" maxlength="3" required
+                  style="text-transform: uppercase;">
+              </div>
+
+              <div class="form-group">
+                <label>Ciudad Destino</label>
+                <input type="text" id="regresoDestinoNombre" placeholder="Santiago">
+              </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+              <div class="form-group">
+                <label>Fecha y Hora Salida *</label>
+                <input type="datetime-local" id="regresoFechaSalida" required>
+              </div>
+
+              <div class="form-group">
+                <label>Fecha y Hora Llegada *</label>
+                <input type="datetime-local" id="regresoFechaLlegada" required>
+              </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+              <div class="form-group">
+                <label>Terminal</label>
+                <input type="text" id="regresoTerminal" placeholder="Ej: 2">
+              </div>
+
+              <div class="form-group">
+                <label>Puerta</label>
+                <input type="text" id="regresoPuerta" placeholder="Ej: B5">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Asientos (separados por coma)</label>
+              <input type="text" id="regresoAsientos" placeholder="Ej: 15A, 15B, 15C">
+            </div>
+
+            <div class="form-group">
+              <label>Equipaje</label>
+              <input type="text" id="regresoEquipaje" placeholder="Ej: 1 equipaje de mano + 1 maleta (23kg)">
+            </div>
+
+            <div class="form-group">
+              <label>Notas</label>
+              <textarea id="regresoNotas" rows="3" placeholder="Observaciones, recomendaciones..."></textarea>
+            </div>
+
+            <div class="form-group">
+              <label>📎 Boarding Pass (PDF o Imagen)</label>
+              <input type="file" id="regresoBoardingPass" accept=".pdf,image/*">
+              <div id="regresoArchivoActual" style="margin-top: 0.5rem;"></div>
+            </div>
+
+            <button type="submit" class="btn-primary">Guardar Vuelo de Regreso</button>
+          </form>
+        </div>
+
+      </div>
     </div>
   </div>
   <!-- SECCIÓN: CONFIGURACIÓN -->
@@ -2157,7 +2913,9 @@
         return {
           alojamiento: null,
           compras: [],
-          atracciones: [],  // ← LÍNEA 11: Array de atracciones inicializado
+          atracciones: [],
+          vuelos: { ida: null, regreso: null },
+          documentos: [],
           tasaCambio: 150
         };
       }
@@ -2185,7 +2943,15 @@
       if (seccion === 'dashboard') {
         actualizarDashboard();
       }
-
+      if (seccion === 'vuelos') {
+        inicializarVuelos();
+      }
+      if (seccion === 'documentos') {
+        inicializarDocumentos();
+      }
+      if (seccion === 'documentos') {
+        renderizarDocumentos();
+      }
       window.scrollTo(0, 0);
     }
 
@@ -2266,6 +3032,8 @@
       } else {
         document.getElementById('countdownCard').style.display = 'none';
       }
+      renderizarVuelosEnDashboard();
+      renderizarDocumentosEnDashboard();
     }
 
     // ========================================
@@ -3010,7 +3778,975 @@
         location.reload();
       }
     }
+    // ========================================
+    // VUELOS
+    // ========================================
 
+    function inicializarVuelos() {
+      const datos = cargarDatos();
+      if (!datos.vuelos) {
+        datos.vuelos = { ida: null, regreso: null };
+        guardarDatos(datos);
+      }
+      cargarVistaVuelos();
+    }
+
+    function cargarVistaVuelos() {
+      const datos = cargarDatos();
+
+      // VUELO IDA
+      if (datos.vuelos.ida) {
+        document.getElementById('vistaVueloIda').style.display = 'block';
+        document.getElementById('formVueloIda').style.display = 'none';
+        document.getElementById('btnEditarIda').style.display = 'block';
+        renderizarVueloVista('ida', datos.vuelos.ida);
+      } else {
+        document.getElementById('vistaVueloIda').style.display = 'none';
+        document.getElementById('formVueloIda').style.display = 'block';
+        document.getElementById('btnEditarIda').style.display = 'none';
+      }
+
+      // VUELO REGRESO
+      if (datos.vuelos.regreso) {
+        document.getElementById('vistaVueloRegreso').style.display = 'block';
+        document.getElementById('formVueloRegreso').style.display = 'none';
+        document.getElementById('btnEditarRegreso').style.display = 'block';
+        renderizarVueloVista('regreso', datos.vuelos.regreso);
+      } else {
+        document.getElementById('vistaVueloRegreso').style.display = 'none';
+        document.getElementById('formVueloRegreso').style.display = 'block';
+        document.getElementById('btnEditarRegreso').style.display = 'none';
+      }
+    }
+
+    function renderizarVueloVista(tipo, vuelo) {
+      const contenedor = document.getElementById(`vistaVuelo${tipo.charAt(0).toUpperCase() + tipo.slice(1)}`);
+
+      const salida = new Date(vuelo.fechaSalida);
+      const llegada = new Date(vuelo.fechaLlegada);
+      const duracion = calcularDuracionVuelo(salida, llegada);
+
+      const diferenciaDias = llegada.getDate() !== salida.getDate();
+      const sufijoDia = diferenciaDias ? ` (+${Math.abs(llegada.getDate() - salida.getDate())} día)` : '';
+
+      const tiempoRestante = calcularTiempoRestante(salida);
+      const colorAlerta = obtenerColorAlerta(tiempoRestante.total);
+
+      let archivoHtml = '';
+      if (vuelo.archivo) {
+        archivoHtml = `
+          <div class="archivo-badge">
+            📎 ${vuelo.archivo.nombre} ✅
+          </div>
+        `;
+      } else {
+        archivoHtml = `
+          <div class="archivo-badge pendiente">
+            📎 Boarding Pass: Pendiente ⏳
+          </div>
+        `;
+      }
+
+      contenedor.innerHTML = `
+        <div class="vuelo-ruta">
+          <div class="vuelo-ciudad">
+            <div class="vuelo-codigo">${vuelo.origen.codigo}</div>
+            <div class="vuelo-nombre">${vuelo.origen.nombre || ''}</div>
+          </div>
+          <div class="vuelo-flecha">→</div>
+          <div class="vuelo-ciudad">
+            <div class="vuelo-codigo">${vuelo.destino.codigo}</div>
+            <div class="vuelo-nombre">${vuelo.destino.nombre || ''}</div>
+          </div>
+        </div>
+
+        <div style="text-align: center; margin: 1rem 0;">
+          <span class="vuelo-alerta ${colorAlerta}">
+            🔔 ${tiempoRestante.texto}
+          </span>
+        </div>
+
+        <div class="vuelo-horarios">
+          <div>🛫 Salida: ${formatearFecha(salida)}</div>
+          <div>🛬 Llegada: ${formatearFecha(llegada)}${sufijoDia}</div>
+          <div>⏱️ Duración: ${duracion}</div>
+        </div>
+
+        <div class="vuelo-info">
+          📋 ${vuelo.aerolinea} ${vuelo.numeroVuelo}
+          ${vuelo.codigoReserva ? `| Reserva: ${vuelo.codigoReserva}` : ''}
+        </div>
+
+        ${vuelo.terminal || vuelo.puerta ? `
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin: 0.5rem 0; font-size: 0.9rem;">
+            ${vuelo.terminal ? `<div>🏢 Terminal: ${vuelo.terminal}</div>` : ''}
+            ${vuelo.puerta ? `<div>🚪 Puerta: ${vuelo.puerta}</div>` : ''}
+          </div>
+        ` : ''}
+
+        ${vuelo.asientos.length > 0 ? `
+          <div style="margin: 0.5rem 0; font-size: 0.9rem;">
+            💺 Asientos: ${vuelo.asientos.join(', ')}
+          </div>
+        ` : ''}
+
+        ${vuelo.equipaje ? `
+          <div style="margin: 0.5rem 0; font-size: 0.9rem;">
+            🎒 ${vuelo.equipaje}
+          </div>
+        ` : ''}
+
+        ${vuelo.notas ? `
+          <div style="margin: 1rem 0; padding: 1rem; background: var(--gris-claro); border-radius: 8px; font-size: 0.9rem;">
+            <strong>📝 Notas:</strong><br>${vuelo.notas}
+          </div>
+        ` : ''}
+
+        <div class="vuelo-archivos">
+          ${archivoHtml}
+        </div>
+      `;
+    }
+
+    function calcularDuracionVuelo(salida, llegada) {
+      const diff = llegada - salida;
+      const horas = Math.floor(diff / (1000 * 60 * 60));
+      const minutos = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      return `${horas}h ${minutos}min`;
+    }
+
+    function calcularTiempoRestante(fecha) {
+      const ahora = new Date();
+      const diff = fecha - ahora;
+
+      if (diff < 0) {
+        return { texto: 'Vuelo pasado', total: diff, color: 'gris' };
+      }
+
+      const dias = Math.floor(diff / (1000 * 60 * 60 * 24));
+      const horas = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutos = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+
+      if (dias > 0) {
+        return { texto: `Faltan ${dias} días, ${horas} horas`, total: diff };
+      } else if (horas > 0) {
+        return { texto: `Faltan ${horas} horas, ${minutos} minutos`, total: diff };
+      } else {
+        return { texto: `Faltan ${minutos} minutos`, total: diff };
+      }
+    }
+
+    function obtenerColorAlerta(tiempoMs) {
+      const horas = tiempoMs / (1000 * 60 * 60);
+
+      if (horas < 0) return 'alerta-gris';
+      if (horas < 3) return 'alerta-roja';
+      if (horas < 24) return 'alerta-naranja';
+      if (horas < 168) return 'alerta-amarilla'; // 7 días
+      return 'alerta-verde';
+    }
+
+    function formatearFecha(fecha) {
+      const dias = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+      const dia = dias[fecha.getDay()];
+      const dd = String(fecha.getDate()).padStart(2, '0');
+      const mm = String(fecha.getMonth() + 1).padStart(2, '0');
+      const hh = String(fecha.getHours()).padStart(2, '0');
+      const min = String(fecha.getMinutes()).padStart(2, '0');
+
+      return `${dia} ${dd}/${mm} - ${hh}:${min}`;
+    }
+    function editarVuelo(tipo) {
+      document.getElementById(`vistaVuelo${tipo.charAt(0).toUpperCase() + tipo.slice(1)}`).style.display = 'none';
+      document.getElementById(`formVuelo${tipo.charAt(0).toUpperCase() + tipo.slice(1)}`).style.display = 'block';
+
+      const datos = cargarDatos();
+      const vuelo = datos.vuelos[tipo];
+
+      if (vuelo) {
+        document.getElementById(`${tipo}Aerolinea`).value = vuelo.aerolinea;
+        document.getElementById(`${tipo}NumeroVuelo`).value = vuelo.numeroVuelo;
+        document.getElementById(`${tipo}CodigoReserva`).value = vuelo.codigoReserva || '';
+        document.getElementById(`${tipo}OrigenCodigo`).value = vuelo.origen.codigo;
+        document.getElementById(`${tipo}OrigenNombre`).value = vuelo.origen.nombre || '';
+        document.getElementById(`${tipo}DestinoCodigo`).value = vuelo.destino.codigo;
+        document.getElementById(`${tipo}DestinoNombre`).value = vuelo.destino.nombre || '';
+        document.getElementById(`${tipo}FechaSalida`).value = vuelo.fechaSalida.slice(0, 16);
+        document.getElementById(`${tipo}FechaLlegada`).value = vuelo.fechaLlegada.slice(0, 16);
+        document.getElementById(`${tipo}Terminal`).value = vuelo.terminal || '';
+        document.getElementById(`${tipo}Puerta`).value = vuelo.puerta || '';
+        document.getElementById(`${tipo}Asientos`).value = vuelo.asientos.join(', ');
+        document.getElementById(`${tipo}Equipaje`).value = vuelo.equipaje || '';
+        document.getElementById(`${tipo}Notas`).value = vuelo.notas || '';
+
+        if (vuelo.archivo) {
+          document.getElementById(`${tipo}ArchivoActual`).innerHTML = `
+            <div class="archivo-badge">
+              📎 ${vuelo.archivo.nombre} ✅
+              <button type="button" class="btn-small btn-danger" onclick="eliminarArchivoVuelo('${tipo}')" style="margin-left: 0.5rem;">✕</button>
+            </div>
+          `;
+        }
+      }
+    }
+
+    async function procesarArchivoVuelo(file) {
+      return new Promise((resolve, reject) => {
+        if (file.size > 5 * 1024 * 1024) {
+          reject('El archivo no puede ser mayor a 5MB');
+          return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          resolve({
+            nombre: file.name,
+            tipo: file.type,
+            size: file.size,
+            data: e.target.result
+          });
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    }
+
+    function eliminarArchivoVuelo(tipo) {
+      const datos = cargarDatos();
+      if (datos.vuelos[tipo]) {
+        datos.vuelos[tipo].archivo = null;
+        guardarDatos(datos);
+        document.getElementById(`${tipo}ArchivoActual`).innerHTML = '';
+      }
+    }
+
+    // Formulario Ida
+    document.getElementById('formVueloIda')?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const asientos = document.getElementById('idaAsientos').value
+        .split(',')
+        .map(a => a.trim())
+        .filter(a => a);
+
+      const vuelo = {
+        aerolinea: document.getElementById('idaAerolinea').value.trim(),
+        numeroVuelo: document.getElementById('idaNumeroVuelo').value.trim(),
+        codigoReserva: document.getElementById('idaCodigoReserva').value.trim(),
+        origen: {
+          codigo: document.getElementById('idaOrigenCodigo').value.trim().toUpperCase(),
+          nombre: document.getElementById('idaOrigenNombre').value.trim()
+        },
+        destino: {
+          codigo: document.getElementById('idaDestinoCodigo').value.trim().toUpperCase(),
+          nombre: document.getElementById('idaDestinoNombre').value.trim()
+        },
+        fechaSalida: document.getElementById('idaFechaSalida').value,
+        fechaLlegada: document.getElementById('idaFechaLlegada').value,
+        terminal: document.getElementById('idaTerminal').value.trim(),
+        puerta: document.getElementById('idaPuerta').value.trim(),
+        asientos: asientos,
+        equipaje: document.getElementById('idaEquipaje').value.trim(),
+        notas: document.getElementById('idaNotas').value.trim(),
+        archivo: null
+      };
+
+      const fileInput = document.getElementById('idaBoardingPass');
+      if (fileInput.files.length > 0) {
+        try {
+          vuelo.archivo = await procesarArchivoVuelo(fileInput.files[0]);
+        } catch (error) {
+          alert('❌ Error al procesar archivo: ' + error);
+          return;
+        }
+      } else {
+        const datos = cargarDatos();
+        if (datos.vuelos.ida && datos.vuelos.ida.archivo) {
+          vuelo.archivo = datos.vuelos.ida.archivo;
+        }
+      }
+
+      const datos = cargarDatos();
+      datos.vuelos.ida = vuelo;
+      guardarDatos(datos);
+
+      cargarVistaVuelos();
+      actualizarDashboard();
+      alert('✅ Vuelo de ida guardado correctamente');
+    });
+
+    // Formulario Regreso
+    document.getElementById('formVueloRegreso')?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const asientos = document.getElementById('regresoAsientos').value
+        .split(',')
+        .map(a => a.trim())
+        .filter(a => a);
+
+      const vuelo = {
+        aerolinea: document.getElementById('regresoAerolinea').value.trim(),
+        numeroVuelo: document.getElementById('regresoNumeroVuelo').value.trim(),
+        codigoReserva: document.getElementById('regresoCodigoReserva').value.trim(),
+        origen: {
+          codigo: document.getElementById('regresoOrigenCodigo').value.trim().toUpperCase(),
+          nombre: document.getElementById('regresoOrigenNombre').value.trim()
+        },
+        destino: {
+          codigo: document.getElementById('regresoDestinoCodigo').value.trim().toUpperCase(),
+          nombre: document.getElementById('regresoDestinoNombre').value.trim()
+        },
+        fechaSalida: document.getElementById('regresoFechaSalida').value,
+        fechaLlegada: document.getElementById('regresoFechaLlegada').value,
+        terminal: document.getElementById('regresoTerminal').value.trim(),
+        puerta: document.getElementById('regresoPuerta').value.trim(),
+        asientos: asientos,
+        equipaje: document.getElementById('regresoEquipaje').value.trim(),
+        notas: document.getElementById('regresoNotas').value.trim(),
+        archivo: null
+      };
+
+      const fileInput = document.getElementById('regresoBoardingPass');
+      if (fileInput.files.length > 0) {
+        try {
+          vuelo.archivo = await procesarArchivoVuelo(fileInput.files[0]);
+        } catch (error) {
+          alert('❌ Error al procesar archivo: ' + error);
+          return;
+        }
+      } else {
+        const datos = cargarDatos();
+        if (datos.vuelos.regreso && datos.vuelos.regreso.archivo) {
+          vuelo.archivo = datos.vuelos.regreso.archivo;
+        }
+      }
+
+      const datos = cargarDatos();
+      datos.vuelos.regreso = vuelo;
+      guardarDatos(datos);
+
+      cargarVistaVuelos();
+      actualizarDashboard();
+      alert('✅ Vuelo de regreso guardado correctamente');
+    });
+
+    // Renderizar cards de vuelos en Dashboard
+    function renderizarVuelosEnDashboard() {
+      const datos = cargarDatos();
+      const container = document.getElementById('countdownCard');
+
+      if (!container) return;
+
+      // Buscar dónde insertar los vuelos (después del card de countdown)
+      let insertAfter = container;
+
+      // Remover cards de vuelos anteriores si existen
+      document.querySelectorAll('.vuelo-card-dashboard').forEach(card => card.remove());
+
+      // Vuelo de Ida
+      if (datos.vuelos && datos.vuelos.ida) {
+        const cardIda = document.createElement('div');
+        cardIda.className = 'dashboard-card vuelo-card-dashboard vuelo-card vuelo-ida';
+        cardIda.innerHTML = renderizarCardVueloDashboard(datos.vuelos.ida, 'ida');
+        insertAfter.after(cardIda);
+        insertAfter = cardIda;
+      }
+
+      // Vuelo de Regreso
+      if (datos.vuelos && datos.vuelos.regreso) {
+        const cardRegreso = document.createElement('div');
+        cardRegreso.className = 'dashboard-card vuelo-card-dashboard vuelo-card vuelo-regreso';
+        cardRegreso.innerHTML = renderizarCardVueloDashboard(datos.vuelos.regreso, 'regreso');
+        insertAfter.after(cardRegreso);
+      }
+    }
+
+    function renderizarCardVueloDashboard(vuelo, tipo) {
+      const salida = new Date(vuelo.fechaSalida);
+      const tiempoRestante = calcularTiempoRestante(salida);
+      const colorAlerta = obtenerColorAlerta(tiempoRestante.total);
+
+      const icono = tipo === 'ida' ? '🛫' : '🛬';
+      const titulo = tipo === 'ida' ? 'VUELO DE IDA' : 'VUELO DE REGRESO';
+
+      const archivoStatus = vuelo.archivo
+        ? `📎 Boarding Pass ✅`
+        : `📎 Boarding Pass: Pendiente ⏳`;
+
+      return `
+        <div class="vuelo-header">
+          <span class="vuelo-badge">${icono} ${titulo}</span>
+          <span class="vuelo-alerta ${colorAlerta}">⏰ ${tiempoRestante.texto}</span>
+        </div>
+        <div class="vuelo-ruta">
+          <div class="vuelo-ciudad">
+            <div class="vuelo-codigo">${vuelo.origen.codigo}</div>
+            <div class="vuelo-nombre">${vuelo.origen.nombre || ''}</div>
+          </div>
+          <div class="vuelo-flecha">→</div>
+          <div class="vuelo-ciudad">
+            <div class="vuelo-codigo">${vuelo.destino.codigo}</div>
+            <div class="vuelo-nombre">${vuelo.destino.nombre || ''}</div>
+          </div>
+        </div>
+        <div style="margin: 1rem 0; font-size: 0.95rem;">
+          📅 ${formatearFecha(salida)}
+        </div>
+        <div class="vuelo-info">
+          📋 ${vuelo.aerolinea} ${vuelo.numeroVuelo}${vuelo.codigoReserva ? ` - ${vuelo.codigoReserva}` : ''}
+        </div>
+        <div class="vuelo-archivos">
+          <div class="archivo-badge${vuelo.archivo ? '' : ' pendiente'}">
+            ${archivoStatus}
+          </div>
+        </div>
+      `;
+    }
+
+    // ========================================
+    // DOCUMENTOS
+    // ========================================
+
+    let documentoActual = null;
+
+    function inicializarDocumentos() {
+      const datos = cargarDatos();
+      if (!datos.documentos) {
+        datos.documentos = [];
+        guardarDatos(datos);
+      }
+      renderizarDocumentos();
+      inicializarDropZone();
+      inicializarBuscadorDocumentos();
+      inicializarFiltrosDocumentos();
+    }
+
+    function renderizarDocumentos(filtro = 'todos', busqueda = '') {
+      const datos = cargarDatos();
+      const grid = document.getElementById('gridDocumentos');
+      grid.innerHTML = '';
+
+      let documentos = datos.documentos || [];
+
+      // Aplicar filtro de categoría
+      if (filtro !== 'todos') {
+        documentos = documentos.filter(d => d.categoria === filtro);
+      }
+
+      // Aplicar búsqueda
+      if (busqueda) {
+        const busquedaLower = busqueda.toLowerCase();
+        documentos = documentos.filter(d =>
+          d.titulo.toLowerCase().includes(busquedaLower) ||
+          (d.descripcion && d.descripcion.toLowerCase().includes(busquedaLower)) ||
+          (d.etiquetas && d.etiquetas.some(e => e.toLowerCase().includes(busquedaLower)))
+        );
+      }
+
+      // Ordenar por fecha de evento (próximos primero)
+      documentos.sort((a, b) => {
+        if (!a.fechaEvento) return 1;
+        if (!b.fechaEvento) return -1;
+        return new Date(a.fechaEvento) - new Date(b.fechaEvento);
+      });
+
+      if (documentos.length === 0) {
+        grid.innerHTML = '<p style="text-align: center; color: var(--gris-oscuro); padding: 3rem; grid-column: 1/-1;">No hay documentos</p>';
+        document.getElementById('contadorDocumentos').textContent = '0 documentos';
+        return;
+      }
+
+      const iconosCategoria = {
+        'entradas': '🎫',
+        'reservas': '🏨',
+        'identificacion': '🆔',
+        'financieros': '💳',
+        'transporte': '🚗',
+        'otros': '📋'
+      };
+
+      const nombresCategoria = {
+        'entradas': 'Entradas',
+        'reservas': 'Reservas',
+        'identificacion': 'Identificación',
+        'financieros': 'Financieros',
+        'transporte': 'Transporte',
+        'otros': 'Otros'
+      };
+
+      documentos.forEach(doc => {
+        const card = document.createElement('div');
+        card.className = 'documento-card';
+        card.onclick = () => mostrarDocumento(doc.id);
+
+        // Preview del archivo
+        let previewHtml = '';
+        if (doc.archivo.tipo.startsWith('image/')) {
+          previewHtml = `<img src="${doc.archivo.data}" alt="${doc.titulo}">`;
+        } else {
+          previewHtml = `<div style="font-size: 3rem;">📄</div>`;
+        }
+
+        // Fecha y recordatorio
+        let fechaHtml = '';
+        if (doc.fechaEvento) {
+          const fechaEvento = new Date(doc.fechaEvento);
+          const ahora = new Date();
+          const diasRestantes = Math.ceil((fechaEvento - ahora) / (1000 * 60 * 60 * 24));
+
+          fechaHtml = `
+            <div class="documento-fecha">
+              📅 ${formatearFechaEvento(fechaEvento)}
+            </div>
+          `;
+
+          if (diasRestantes >= 0 && doc.recordatorio.activo) {
+            const claseRecordatorio = diasRestantes <= doc.recordatorio.diasAntes ? 'urgente' : 'proximo';
+            fechaHtml += `
+              <div class="documento-recordatorio ${claseRecordatorio}">
+                ⏰ Faltan ${diasRestantes} día${diasRestantes !== 1 ? 's' : ''}
+              </div>
+            `;
+          }
+        }
+
+        // Etiquetas
+        let etiquetasHtml = '';
+        if (doc.etiquetas && doc.etiquetas.length > 0) {
+          etiquetasHtml = `
+            <div class="etiquetas-container">
+              ${doc.etiquetas.slice(0, 3).map(e => `<span class="etiqueta-badge">${e}</span>`).join('')}
+              ${doc.etiquetas.length > 3 ? `<span class="etiqueta-badge">+${doc.etiquetas.length - 3}</span>` : ''}
+            </div>
+          `;
+        }
+
+        card.innerHTML = `
+          <div class="documento-preview">
+            ${previewHtml}
+            <span class="documento-categoria-badge">
+              ${iconosCategoria[doc.categoria]} ${nombresCategoria[doc.categoria]}
+            </span>
+          </div>
+          <div class="documento-body">
+            <div class="documento-titulo">${doc.titulo}</div>
+            ${fechaHtml}
+            ${etiquetasHtml}
+          </div>
+        `;
+
+        grid.appendChild(card);
+      });
+
+      document.getElementById('contadorDocumentos').textContent =
+        `${documentos.length} documento${documentos.length !== 1 ? 's' : ''}`;
+    }
+
+    function formatearFechaEvento(fecha) {
+      const dias = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+      const meses = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+
+      const dia = dias[fecha.getDay()];
+      const dd = String(fecha.getDate()).padStart(2, '0');
+      const mes = meses[fecha.getMonth()];
+      const hh = String(fecha.getHours()).padStart(2, '0');
+      const min = String(fecha.getMinutes()).padStart(2, '0');
+
+      return `${dia} ${dd} ${mes} - ${hh}:${min}`;
+    }
+
+    function abrirModalNuevoDocumento() {
+      document.getElementById('modalNuevoDocumento').classList.add('active');
+      document.getElementById('formNuevoDocumento').reset();
+      document.getElementById('archivoSeleccionado').innerHTML = '';
+      document.getElementById('tituloModalDocumento').textContent = '➕ Nuevo Documento';
+      documentoActual = null;
+    }
+
+    // Drag & Drop
+    function inicializarDropZone() {
+      const dropZone = document.getElementById('dropZone');
+      const fileInput = document.getElementById('docArchivo');
+
+      if (!dropZone || !fileInput) return;
+
+      dropZone.addEventListener('click', () => {
+        fileInput.click();
+      });
+
+      dropZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dropZone.classList.add('drag-over');
+      });
+
+      dropZone.addEventListener('dragleave', () => {
+        dropZone.classList.remove('drag-over');
+      });
+
+      dropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropZone.classList.remove('drag-over');
+
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+          fileInput.files = files;
+          mostrarArchivoSeleccionado(files[0]);
+        }
+      });
+
+      fileInput.addEventListener('change', (e) => {
+        if (e.target.files.length > 0) {
+          mostrarArchivoSeleccionado(e.target.files[0]);
+        }
+      });
+    }
+
+    function mostrarArchivoSeleccionado(file) {
+      const container = document.getElementById('archivoSeleccionado');
+
+      const size = (file.size / 1024).toFixed(2);
+      const sizeText = size < 1024 ? `${size} KB` : `${(size / 1024).toFixed(2)} MB`;
+
+      let previewHtml = '';
+      if (file.type.startsWith('image/')) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          container.querySelector('.archivo-preview')?.remove();
+          const preview = document.createElement('img');
+          preview.src = e.target.result;
+          preview.className = 'archivo-preview';
+          preview.style.cssText = 'max-width: 200px; max-height: 150px; border-radius: 8px; margin-top: 0.5rem;';
+          container.appendChild(preview);
+        };
+        reader.readAsDataURL(file);
+      }
+
+      container.innerHTML = `
+        <div class="archivo-badge">
+          📎 ${file.name} (${sizeText})
+          <button type="button" class="btn-small btn-danger" onclick="limpiarArchivoSeleccionado()" style="margin-left: 0.5rem;">✕</button>
+        </div>
+      `;
+    }
+
+    function limpiarArchivoSeleccionado() {
+      document.getElementById('docArchivo').value = '';
+      document.getElementById('archivoSeleccionado').innerHTML = '';
+    }
+    // Procesar y guardar documento
+    async function procesarArchivoDocumento(file) {
+      return new Promise((resolve, reject) => {
+        if (file.size > 5 * 1024 * 1024) {
+          reject('El archivo no puede ser mayor a 5MB');
+          return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          resolve({
+            nombre: file.name,
+            tipo: file.type,
+            size: file.size,
+            data: e.target.result
+          });
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    }
+
+    // Formulario nuevo documento
+    document.getElementById('formNuevoDocumento')?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const fileInput = document.getElementById('docArchivo');
+
+      // Validar que haya archivo (solo si es nuevo documento)
+      if (!documentoActual && fileInput.files.length === 0) {
+        alert('❌ Debes seleccionar un archivo');
+        return;
+      }
+
+      const etiquetasTexto = document.getElementById('docEtiquetas').value.trim();
+      const etiquetas = etiquetasTexto
+        ? etiquetasTexto.split(',').map(e => e.trim()).filter(e => e)
+        : [];
+
+      const recordatorioDias = parseInt(document.querySelector('input[name="docRecordatorio"]:checked').value);
+
+      const documento = {
+        id: documentoActual?.id || Date.now(),
+        categoria: document.getElementById('docCategoria').value,
+        titulo: document.getElementById('docTitulo').value.trim(),
+        descripcion: document.getElementById('docDescripcion').value.trim(),
+        fechaEvento: document.getElementById('docFechaEvento').value || null,
+        recordatorio: {
+          activo: recordatorioDias > 0,
+          diasAntes: recordatorioDias,
+          mostrado: false
+        },
+        etiquetas: etiquetas,
+        notas: document.getElementById('docNotas').value.trim(),
+        archivo: documentoActual?.archivo || null,
+        fechaCreacion: documentoActual?.fechaCreacion || new Date().toISOString()
+      };
+
+      // Procesar archivo si hay uno nuevo
+      if (fileInput.files.length > 0) {
+        try {
+          documento.archivo = await procesarArchivoDocumento(fileInput.files[0]);
+        } catch (error) {
+          alert('❌ Error al procesar archivo: ' + error);
+          return;
+        }
+      }
+
+      const datos = cargarDatos();
+
+      if (documentoActual) {
+        const index = datos.documentos.findIndex(d => d.id === documentoActual.id);
+        datos.documentos[index] = documento;
+      } else {
+        datos.documentos.push(documento);
+      }
+
+      guardarDatos(datos);
+      cerrarModal('modalNuevoDocumento');
+      renderizarDocumentos();
+      actualizarDashboard();
+      alert('✅ Documento guardado correctamente');
+    });
+
+    // Mostrar documento en modal
+    function mostrarDocumento(id) {
+      const datos = cargarDatos();
+      const doc = datos.documentos.find(d => d.id === id);
+      if (!doc) return;
+
+      documentoActual = doc;
+
+      document.getElementById('visorDocTitulo').textContent = doc.titulo;
+
+      const visorBody = document.getElementById('visorDocBody');
+
+      // Mostrar archivo según tipo
+      if (doc.archivo.tipo.startsWith('image/')) {
+        visorBody.innerHTML = `<img src="${doc.archivo.data}" alt="${doc.titulo}" style="width: 100%; border-radius: 8px;">`;
+      } else if (doc.archivo.tipo === 'application/pdf') {
+        visorBody.innerHTML = `<iframe src="${doc.archivo.data}" style="width: 100%; height: 70vh; border: none; border-radius: 8px;"></iframe>`;
+      } else {
+        visorBody.innerHTML = `
+          <div style="text-align: center; padding: 3rem;">
+            <div style="font-size: 4rem; margin-bottom: 1rem;">📄</div>
+            <div style="font-size: 1.2rem; color: var(--gris-oscuro);">${doc.archivo.nombre}</div>
+            <div style="margin-top: 0.5rem; color: var(--gris-oscuro);">
+              ${(doc.archivo.size / 1024).toFixed(2)} KB
+            </div>
+          </div>
+        `;
+      }
+
+      // Agregar información adicional
+      const iconosCategoria = {
+        'entradas': '🎫',
+        'reservas': '🏨',
+        'identificacion': '🆔',
+        'financieros': '💳',
+        'transporte': '🚗',
+        'otros': '📋'
+      };
+
+      let infoAdicional = `
+        <div style="padding: 1rem; background: var(--gris-claro); border-radius: 8px; margin-top: 1rem;">
+          <div style="margin-bottom: 0.5rem;"><strong>Categoría:</strong> ${iconosCategoria[doc.categoria]} ${doc.categoria}</div>
+      `;
+
+      if (doc.descripcion) {
+        infoAdicional += `<div style="margin-bottom: 0.5rem;"><strong>Descripción:</strong> ${doc.descripcion}</div>`;
+      }
+
+      if (doc.fechaEvento) {
+        infoAdicional += `<div style="margin-bottom: 0.5rem;"><strong>📅 Fecha Evento:</strong> ${formatearFechaEvento(new Date(doc.fechaEvento))}</div>`;
+      }
+
+      if (doc.etiquetas && doc.etiquetas.length > 0) {
+        infoAdicional += `
+          <div style="margin-top: 0.75rem;">
+            <strong>Etiquetas:</strong>
+            <div class="etiquetas-container" style="margin-top: 0.5rem;">
+              ${doc.etiquetas.map(e => `<span class="etiqueta-badge">${e}</span>`).join('')}
+            </div>
+          </div>
+        `;
+      }
+
+      if (doc.notas) {
+        infoAdicional += `<div style="margin-top: 0.75rem;"><strong>📝 Notas:</strong><br>${doc.notas}</div>`;
+      }
+
+      infoAdicional += '</div>';
+
+      visorBody.innerHTML += infoAdicional;
+
+      document.getElementById('modalVerDocumento').classList.add('active');
+    }
+
+    function descargarDocumento() {
+      if (!documentoActual) return;
+
+      const link = document.createElement('a');
+      link.href = documentoActual.archivo.data;
+      link.download = documentoActual.archivo.nombre;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    function editarDocumento() {
+      if (!documentoActual) return;
+
+      cerrarModal('modalVerDocumento');
+
+      document.getElementById('tituloModalDocumento').textContent = '✏️ Editar Documento';
+
+      document.getElementById('docCategoria').value = documentoActual.categoria;
+      document.getElementById('docTitulo').value = documentoActual.titulo;
+      document.getElementById('docDescripcion').value = documentoActual.descripcion || '';
+      document.getElementById('docFechaEvento').value = documentoActual.fechaEvento ? documentoActual.fechaEvento.slice(0, 16) : '';
+
+      const recordatorioDias = documentoActual.recordatorio.activo ? documentoActual.recordatorio.diasAntes : 0;
+      document.querySelector(`input[name="docRecordatorio"][value="${recordatorioDias}"]`).checked = true;
+
+      document.getElementById('docEtiquetas').value = documentoActual.etiquetas ? documentoActual.etiquetas.join(', ') : '';
+      document.getElementById('docNotas').value = documentoActual.notas || '';
+
+      // Mostrar archivo actual
+      document.getElementById('archivoSeleccionado').innerHTML = `
+        <div class="archivo-badge">
+          📎 ${documentoActual.archivo.nombre}
+          <span style="margin-left: 0.5rem; color: var(--gris-oscuro);">(archivo actual)</span>
+        </div>
+        <div style="margin-top: 0.5rem; font-size: 0.85rem; color: var(--gris-oscuro);">
+          Puedes seleccionar uno nuevo para reemplazarlo
+        </div>
+      `;
+
+      // Hacer el archivo opcional en edición
+      document.getElementById('docArchivo').removeAttribute('required');
+
+      document.getElementById('modalNuevoDocumento').classList.add('active');
+    }
+
+    function eliminarDocumento() {
+      if (!documentoActual) return;
+
+      if (!confirm(`¿Eliminar "${documentoActual.titulo}"?`)) return;
+
+      const datos = cargarDatos();
+      datos.documentos = datos.documentos.filter(d => d.id !== documentoActual.id);
+      guardarDatos(datos);
+
+      cerrarModal('modalVerDocumento');
+      renderizarDocumentos();
+      actualizarDashboard();
+      alert('✅ Documento eliminado');
+    }
+
+    // Buscador
+    function inicializarBuscadorDocumentos() {
+      const buscador = document.getElementById('buscarDocumento');
+      if (!buscador) return;
+
+      buscador.addEventListener('input', (e) => {
+        const filtroActivo = document.querySelector('.filtros-documentos button.active')?.dataset.categoria || 'todos';
+        renderizarDocumentos(filtroActivo, e.target.value);
+      });
+    }
+
+    // Filtros
+    function inicializarFiltrosDocumentos() {
+      document.querySelectorAll('.filtros-documentos button').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.filtros-documentos button').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+
+          const busqueda = document.getElementById('buscarDocumento').value;
+          renderizarDocumentos(btn.dataset.categoria, busqueda);
+        });
+      });
+    }
+
+    // Renderizar próximos eventos en Dashboard
+    function renderizarDocumentosEnDashboard() {
+      const datos = cargarDatos();
+
+      if (!datos.documentos || datos.documentos.length === 0) return;
+
+      // Filtrar documentos con fecha de evento próxima
+      const ahora = new Date();
+      const documentosProximos = datos.documentos
+        .filter(d => d.fechaEvento && new Date(d.fechaEvento) >= ahora)
+        .sort((a, b) => new Date(a.fechaEvento) - new Date(b.fechaEvento))
+        .slice(0, 5); // Máximo 5
+
+      if (documentosProximos.length === 0) return;
+
+      // Buscar dónde insertar (después de vuelos)
+      const dashboardContent = document.getElementById('dashboardContent');
+      if (!dashboardContent) return;
+
+      // Remover card anterior si existe
+      document.getElementById('cardProximosEventos')?.remove();
+
+      const card = document.createElement('div');
+      card.id = 'cardProximosEventos';
+      card.className = 'dashboard-card';
+
+      const iconosCategoria = {
+        'entradas': '🎫',
+        'reservas': '🏨',
+        'identificacion': '🆔',
+        'financieros': '💳',
+        'transporte': '🚗',
+        'otros': '📋'
+      };
+
+      let eventosHtml = '';
+      documentosProximos.forEach(doc => {
+        const fechaEvento = new Date(doc.fechaEvento);
+        const diasRestantes = Math.ceil((fechaEvento - ahora) / (1000 * 60 * 60 * 24));
+
+        eventosHtml += `
+          <div style="padding: 1rem; background: var(--gris-claro); border-radius: 8px; margin-bottom: 1rem; cursor: pointer;" onclick="navegarA('documentos'); setTimeout(() => mostrarDocumento(${doc.id}), 100)">
+            <div style="font-weight: 600; font-size: 1.05rem; margin-bottom: 0.5rem;">
+              ${iconosCategoria[doc.categoria]} ${doc.titulo}
+            </div>
+            <div style="font-size: 0.9rem; color: var(--gris-oscuro); margin-bottom: 0.5rem;">
+              📅 ${formatearFechaEvento(fechaEvento)}
+            </div>
+            <div style="font-size: 0.9rem; color: var(--verde-brasil); font-weight: 600;">
+              ⏰ Faltan ${diasRestantes} día${diasRestantes !== 1 ? 's' : ''}
+            </div>
+            <div style="margin-top: 0.5rem;">
+              <span class="archivo-badge">📎 ${doc.archivo.nombre}</span>
+            </div>
+          </div>
+        `;
+      });
+
+      card.innerHTML = `
+        <h3 style="color: var(--azul-brasil); margin-bottom: 1rem;">📄 Próximos Eventos</h3>
+        ${eventosHtml}
+      `;
+
+      // Insertar después de los vuelos o después del countdown
+      const vuelosCards = document.querySelectorAll('.vuelo-card-dashboard');
+      if (vuelosCards.length > 0) {
+        vuelosCards[vuelosCards.length - 1].after(card);
+      } else {
+        document.getElementById('countdownCard')?.after(card);
+      }
+    }
     // ========================================
     // INICIALIZACIÓN
     // ========================================
@@ -3019,8 +4755,24 @@
       actualizarDashboard();
       cargarAlojamiento();
       renderizarCompras();
-      renderizarAtracciones();  // ← Aquí se inicializa la sección de atracciones
+      renderizarAtracciones();
+      inicializarVuelos();
+      inicializarDocumentos();
     });
+  </script>
+  <script>
+    // Registrar Service Worker
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/service-worker.js')
+          .then(registration => {
+            console.log('Service Worker registrado:', registration);
+          })
+          .catch(error => {
+            console.log('Error al registrar Service Worker:', error);
+          });
+      });
+    }
   </script>
 </body>
 
