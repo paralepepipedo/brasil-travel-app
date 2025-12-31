@@ -3689,15 +3689,63 @@
             return;
           }
 
-          const confirmar = confirm('⚠️ ¿Reemplazar todos los datos actuales?\n\nEsta acción sobrescribirá toda tu información actual con los datos importados.');
+          // Cargar datos actuales
+          const appActual = cargarDatos();
+          const gastosActuales = JSON.parse(localStorage.getItem('gastosViaje') || '[]');
 
-          if (confirmar) {
+          // Verificar si hay datos actuales
+          const hayDatosActuales =
+            gastosActuales.length > 0 ||
+            appActual.atracciones.length > 0 ||
+            (appActual.documentos && appActual.documentos.length > 0) ||
+            appActual.alojamiento !== null ||
+            (appActual.vuelos && (appActual.vuelos.ida || appActual.vuelos.regreso));
+
+          if (hayDatosActuales) {
+            // Preguntar al usuario
+            const opcion = confirm(
+              '¿Cómo deseas importar los datos?\n\n' +
+              '✅ OK = MEZCLAR con datos actuales\n' +
+              '   • Une gastos, documentos, atracciones\n' +
+              '   • Elimina duplicados automáticamente\n' +
+              '   • No pierdes nada\n\n' +
+              '❌ Cancelar = REEMPLAZAR todos los datos\n' +
+              '   • Se perderán los datos actuales\n' +
+              '   • Solo quedarán los datos importados'
+            );
+
+            if (opcion) {
+              // MEZCLAR DATOS
+              const appMezclado = mezclarDatosApp(appActual, importData.app);
+              const gastosMezclados = mezclarListaPorId([...gastosActuales, ...importData.gastos]);
+
+              localStorage.setItem(STORAGE_KEY_APP, JSON.stringify(appMezclado));
+              localStorage.setItem('gastosViaje', JSON.stringify(gastosMezclados));
+
+              alert(
+                '✅ Datos mezclados correctamente\n\n' +
+                `📊 Total gastos: ${gastosMezclados.length}\n` +
+                `📍 Total atracciones: ${appMezclado.atracciones.length}\n` +
+                `📄 Total documentos: ${(appMezclado.documentos || []).length}\n\n` +
+                'Recargando la página...'
+              );
+            } else {
+              // REEMPLAZAR TODO
+              localStorage.setItem(STORAGE_KEY_APP, JSON.stringify(importData.app));
+              localStorage.setItem('gastosViaje', JSON.stringify(importData.gastos));
+
+              alert('✅ Datos reemplazados correctamente\n\nRecargando la página...');
+            }
+          } else {
+            // No hay datos, simplemente importar
             localStorage.setItem(STORAGE_KEY_APP, JSON.stringify(importData.app));
             localStorage.setItem('gastosViaje', JSON.stringify(importData.gastos));
 
             alert('✅ Datos importados correctamente\n\nRecargando la página...');
-            location.reload();
           }
+
+          location.reload();
+
         } catch (error) {
           alert('❌ Error al importar: Archivo corrupto o formato inválido');
           console.error(error);
@@ -3707,7 +3755,6 @@
 
       event.target.value = '';
     }
-
     async function pegarDesdePortapapeles() {
       try {
         const texto = await navigator.clipboard.readText();
@@ -3725,20 +3772,55 @@
             return;
           }
 
-          const confirmar = confirm('⚠️ ¿Reemplazar todos los datos actuales?\n\nEsta acción sobrescribirá toda tu información actual con los datos pegados.');
+          // Cargar datos actuales
+          const appActual = cargarDatos();
+          const gastosActuales = JSON.parse(localStorage.getItem('gastosViaje') || '[]');
 
-          if (confirmar) {
+          const hayDatosActuales =
+            gastosActuales.length > 0 ||
+            appActual.atracciones.length > 0 ||
+            (appActual.documentos && appActual.documentos.length > 0) ||
+            appActual.alojamiento !== null ||
+            (appActual.vuelos && (appActual.vuelos.ida || appActual.vuelos.regreso));
+
+          if (hayDatosActuales) {
+            const opcion = confirm(
+              '¿Cómo deseas importar los datos?\n\n' +
+              '✅ OK = MEZCLAR con datos actuales\n' +
+              '❌ Cancelar = REEMPLAZAR todos los datos'
+            );
+
+            if (opcion) {
+              // MEZCLAR
+              const appMezclado = mezclarDatosApp(appActual, importData.app);
+              const gastosMezclados = mezclarListaPorId([...gastosActuales, ...importData.gastos]);
+
+              localStorage.setItem(STORAGE_KEY_APP, JSON.stringify(appMezclado));
+              localStorage.setItem('gastosViaje', JSON.stringify(gastosMezclados));
+
+              alert('✅ Datos mezclados correctamente\n\nRecargando la página...');
+            } else {
+              // REEMPLAZAR
+              localStorage.setItem(STORAGE_KEY_APP, JSON.stringify(importData.app));
+              localStorage.setItem('gastosViaje', JSON.stringify(importData.gastos));
+
+              alert('✅ Datos reemplazados correctamente\n\nRecargando la página...');
+            }
+          } else {
             localStorage.setItem(STORAGE_KEY_APP, JSON.stringify(importData.app));
             localStorage.setItem('gastosViaje', JSON.stringify(importData.gastos));
 
             alert('✅ Datos importados correctamente\n\nRecargando la página...');
-            location.reload();
           }
+
+          location.reload();
+
         } catch (parseError) {
           alert('❌ Error: Los datos en el portapapeles no son válidos');
           console.error(parseError);
         }
       } catch (err) {
+        // Fallback para navegadores sin clipboard API
         const texto = prompt('Pega aquí los datos copiados:');
         if (!texto) return;
 
@@ -3750,18 +3832,91 @@
             return;
           }
 
-          const confirmar = confirm('⚠️ ¿Reemplazar todos los datos actuales?');
+          const appActual = cargarDatos();
+          const gastosActuales = JSON.parse(localStorage.getItem('gastosViaje') || '[]');
 
-          if (confirmar) {
+          const hayDatosActuales =
+            gastosActuales.length > 0 ||
+            appActual.atracciones.length > 0 ||
+            (appActual.documentos && appActual.documentos.length > 0) ||
+            appActual.alojamiento !== null ||
+            (appActual.vuelos && (appActual.vuelos.ida || appActual.vuelos.regreso));
+
+          if (hayDatosActuales) {
+            const opcion = confirm('¿MEZCLAR (OK) o REEMPLAZAR (Cancelar)?');
+
+            if (opcion) {
+              const appMezclado = mezclarDatosApp(appActual, importData.app);
+              const gastosMezclados = mezclarListaPorId([...gastosActuales, ...importData.gastos]);
+
+              localStorage.setItem(STORAGE_KEY_APP, JSON.stringify(appMezclado));
+              localStorage.setItem('gastosViaje', JSON.stringify(gastosMezclados));
+
+              alert('✅ Datos mezclados correctamente');
+            } else {
+              localStorage.setItem(STORAGE_KEY_APP, JSON.stringify(importData.app));
+              localStorage.setItem('gastosViaje', JSON.stringify(importData.gastos));
+
+              alert('✅ Datos reemplazados correctamente');
+            }
+          } else {
             localStorage.setItem(STORAGE_KEY_APP, JSON.stringify(importData.app));
             localStorage.setItem('gastosViaje', JSON.stringify(importData.gastos));
+
             alert('✅ Datos importados correctamente');
-            location.reload();
           }
+
+          location.reload();
+
         } catch (error) {
           alert('❌ Error: Datos inválidos');
         }
       }
+    }
+    function mezclarDatosApp(actuales, nuevos) {
+      return {
+        // COMPRAS: Mezclar listas
+        compras: mezclarListaPorId(
+          [...(actuales.compras || []), ...(nuevos.compras || [])]
+        ),
+
+        // ATRACCIONES: Mezclar listas
+        atracciones: mezclarListaPorId(
+          [...(actuales.atracciones || []), ...(nuevos.atracciones || [])]
+        ),
+
+        // DOCUMENTOS: Mezclar listas
+        documentos: mezclarListaPorId(
+          [...(actuales.documentos || []), ...(nuevos.documentos || [])]
+        ),
+
+        // ALOJAMIENTO: Priorizar el importado
+        alojamiento: nuevos.alojamiento || actuales.alojamiento,
+
+        // VUELOS: Combinar inteligentemente
+        vuelos: {
+          ida: nuevos.vuelos?.ida || actuales.vuelos?.ida || null,
+          regreso: nuevos.vuelos?.regreso || actuales.vuelos?.regreso || null
+        },
+
+        // TASA DE CAMBIO: Mantener la actual (configuración personal)
+        tasaCambio: actuales.tasaCambio || nuevos.tasaCambio || 150
+      };
+    }
+
+    // Función auxiliar: eliminar duplicados por ID
+    function mezclarListaPorId(lista) {
+      const vistos = new Set();
+      const resultado = [];
+
+      lista.forEach(item => {
+        if (item && item.id && !vistos.has(item.id)) {
+          vistos.add(item.id);
+          resultado.push(item);
+        }
+      });
+
+      return resultado;
     }
 
     function borrarTodosDatos() {
