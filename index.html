@@ -1,0 +1,3027 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#009b3a">
+  <title>Brasil Travel App - Completa</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#009b3a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Brasil Travel">
+  <style>
+    :root {
+      --verde-brasil: #009b3a;
+      --amarillo-brasil: #fedf00;
+      --azul-brasil: #002776;
+      --verde-claro: #00b060;
+      --azul-claro: #0055a5;
+      --gris-claro: #f7f7f7;
+      --gris-medio: #ddd;
+      --texto-oscuro: #222;
+
+      --ficha-verde-claro: #d9f0d9;
+      --ficha-verde-seleccionado: var(--verde-brasil);
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: var(--gris-claro);
+      color: var(--texto-oscuro);
+      margin: 1rem;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    h1 {
+      text-align: center;
+      color: var(--verde-brasil);
+      margin-bottom: 1rem;
+      font-weight: 700;
+      text-shadow: 1px 1px 0 var(--amarillo-brasil);
+    }
+
+    form {
+      background: #fff;
+      padding: 1.5rem 2rem;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, .1);
+      width: 100%;
+      max-width: 480px;
+      margin-bottom: 1.5rem;
+    }
+
+    label {
+      display: block;
+      margin-top: 1rem;
+      font-weight: 600;
+      color: var(--azul-brasil);
+    }
+
+    .monto-container {
+      display: flex;
+      gap: 0.5rem;
+      align-items: flex-end;
+    }
+
+    .monto-container input {
+      flex-grow: 1;
+      margin-top: 0;
+    }
+
+    .monto-container select {
+      width: auto;
+    }
+
+    input[type=text],
+    input[type=number],
+    input[type=date],
+    select {
+      width: 100%;
+      padding: .6rem .75rem;
+      margin-top: .3rem;
+      border: 2px solid var(--azul-claro);
+      border-radius: 6px;
+      font-size: 1rem;
+      transition: border-color .3s ease;
+    }
+
+    input[type=text]:focus,
+    input[type=number]:focus,
+    input[type=date]:focus,
+    select:focus {
+      border-color: var(--verde-brasil);
+      outline: none;
+    }
+
+    input[type=checkbox] {
+      margin-left: .5rem;
+      transform: scale(1.2);
+    }
+
+    button[type=submit] {
+      margin-top: 1.2rem;
+      width: 100%;
+      padding: .8rem 0;
+      background: var(--verde-brasil);
+      color: #fff;
+      font-weight: 700;
+      font-size: 1.05rem;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      box-shadow: 0 4px 8px var(--verde-claro);
+      transition: background-color .3s ease;
+    }
+
+    button[type=submit]:hover {
+      background: var(--azul-brasil);
+    }
+
+    #btnLimpiarFiltro {
+      background: var(--amarillo-brasil);
+      color: var(--azul-brasil);
+      font-weight: 700;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-left: .5rem;
+      padding: .4rem 1rem;
+      transition: background-color .3s ease;
+    }
+
+    #btnLimpiarFiltro:hover {
+      background: #d9bf00;
+    }
+
+    label[for=filtroFecha] {
+      font-weight: 600;
+      color: var(--azul-brasil);
+    }
+
+    table {
+      width: 100%;
+      max-width: 900px;
+      border-collapse: separate;
+      border-spacing: 0 0.7rem;
+      background: transparent;
+      position: relative;
+    }
+
+    th,
+    td {
+      text-align: center;
+      padding: 0.7rem 1rem;
+      font-size: 0.95rem;
+      vertical-align: middle;
+    }
+
+    #tablaGastos thead {
+      display: none;
+    }
+
+    tbody tr {
+      position: relative;
+    }
+
+    .card {
+      position: relative;
+      background: var(--ficha-verde-claro);
+      border-radius: 16px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+      display: flex;
+      flex-direction: column;
+      padding: 1rem 1.2rem;
+      gap: 1rem;
+      transition: background-color 0.25s ease, color .2s ease;
+    }
+
+    .card.selected {
+      background: var(--ficha-verde-seleccionado);
+      color: #fff;
+    }
+
+    .card:hover:not(.selected) {
+      background: #c7e8c7;
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      justify-content: flex-start;
+    }
+
+    .descripcion {
+      font-weight: 900;
+      font-size: 1.15rem;
+      color: var(--azul-brasil);
+    }
+
+    .card.selected .descripcion {
+      color: #fff;
+    }
+
+    .fecha {
+      background: var(--azul-brasil);
+      color: white;
+      font-weight: 600;
+      border-radius: 9999px;
+      padding: 0.18rem 0.65rem;
+      font-size: 0.85rem;
+      white-space: nowrap;
+    }
+
+    .badge-dividir {
+      position: absolute;
+      top: 12px;
+      right: 16px;
+      background: var(--amarillo-brasil);
+      color: var(--azul-brasil);
+      padding: 0.15rem 0.45rem;
+      border-radius: 10px;
+      font-weight: 800;
+      font-size: 1rem;
+      line-height: 1;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+      user-select: none;
+    }
+
+    .card.selected .badge-dividir {
+      background: #e6ffcc;
+      color: #034d0f;
+    }
+
+    .montos {
+      display: flex;
+      justify-content: center;
+    }
+
+    .tabla {
+      display: grid;
+      grid-template-columns: auto auto;
+      gap: .4rem 1.2rem;
+      align-items: center;
+      background: linear-gradient(180deg, #ffffff, #f2f6f2);
+      border: 1px solid rgba(0, 0, 0, 0.08);
+      border-radius: 14px;
+      padding: .6rem 1rem;
+      min-width: 280px;
+      max-width: 380px;
+      width: 100%;
+      box-shadow: 0 1px 6px rgba(0, 0, 0, 0.06);
+    }
+
+    .celda-titulo {
+      font-weight: 700;
+      color: var(--verde-brasil);
+      text-transform: uppercase;
+      letter-spacing: .02em;
+      font-size: .82rem;
+      text-align: right;
+      opacity: .9;
+    }
+
+    .celda-valor {
+      font-weight: 800;
+      color: var(--texto-oscuro);
+      text-align: left;
+      white-space: nowrap;
+      font-feature-settings: "tnum" on, "lnum" on;
+    }
+
+    .card.selected .tabla {
+      background: rgba(255, 255, 255, 0.12);
+      border-color: rgba(255, 255, 255, 0.35);
+      box-shadow: none;
+    }
+
+    .card.selected .celda-valor,
+    .card.selected .celda-titulo {
+      color: #fff;
+      opacity: 1;
+    }
+
+    .asignacion {
+      display: flex;
+      flex-direction: row;
+      gap: 1rem;
+      align-items: center;
+      justify-content: flex-start;
+      flex-wrap: wrap;
+    }
+
+    .linea {
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .moneda {
+      white-space: nowrap;
+    }
+
+    .acciones {
+      margin-top: 0;
+      display: flex;
+      align-items: center;
+    }
+
+    .btn-modificar {
+      cursor: pointer;
+      background: transparent;
+      border: none;
+      font-weight: 800;
+      color: var(--amarillo-brasil);
+      font-size: 1.3rem;
+      margin-left: 1rem;
+      padding: 0;
+      line-height: 1;
+      transition: color .2s ease;
+    }
+
+    .btn-modificar:hover {
+      color: var(--azul-claro);
+    }
+
+    .card.selected .btn-modificar {
+      color: #fffbcc;
+    }
+
+    .btn-eliminar {
+      cursor: pointer;
+      background: transparent;
+      border: none;
+      font-weight: 800;
+      color: #e53935;
+      font-size: 1.3rem;
+      margin-left: 0.5rem;
+      padding: 0;
+      line-height: 1;
+      transition: color .2s ease;
+    }
+
+    .btn-eliminar:hover {
+      color: #c62828;
+    }
+
+    .card.selected .btn-eliminar {
+      color: #ffcdd2;
+    }
+
+    .totales {
+      margin-top: 1.5rem;
+      width: 100%;
+      max-width: 900px;
+    }
+
+    .resumen-grid {
+      display: grid;
+      gap: 1rem;
+      grid-template-columns: auto auto 1fr;
+      /* Nueva distribución de columnas */
+    }
+
+    .res-card {
+      background: #fff;
+      border-radius: 14px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, .1);
+      padding: 1rem 1.2rem;
+    }
+
+    @media (max-width: 768px) {
+      .resumen-grid {
+        /* En pantallas pequeñas, volvemos a una sola columna */
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .res-card-line {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .res-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+      font-size: 1.1rem;
+      color: #fff;
+      flex-shrink: 0;
+    }
+
+    .res-icon.brl {
+      background: var(--azul-brasil);
+    }
+
+    .res-icon.clp {
+      background: var(--verde-brasil);
+    }
+
+    .res-text {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .res-label {
+      font-weight: 700;
+      color: #374151;
+      font-size: 1rem;
+    }
+
+    .res-value {
+      font-weight: 800;
+      color: #111827;
+      font-size: 1.2rem;
+    }
+
+    .desglose-titulo {
+      font-weight: 700;
+      color: #374151;
+      font-size: 1.1rem;
+      margin-bottom: 0.5rem;
+      text-align: left;
+    }
+
+    .desglose-persona {
+      display: flex;
+      justify-content: space-between;
+      font-weight: 600;
+      padding: 0.4rem 0;
+      border-bottom: 1px solid #eee;
+    }
+
+    .desglose-persona:last-child {
+      border-bottom: none;
+    }
+
+    .res-export {
+      grid-column: 1 / -1;
+      display: flex;
+      justify-content: flex-end;
+      gap: 0.5rem;
+      margin-top: 1rem;
+    }
+
+    .btn-export {
+      background: var(--azul-brasil);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      padding: .7rem 1.2rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .btn-pago {
+      cursor: pointer;
+      background: transparent;
+      border: none;
+      font-size: 1rem;
+      margin-left: 0.5rem;
+      padding: 0;
+      line-height: 1;
+      color: var(--verde-claro);
+      vertical-align: middle;
+      transition: color .2s;
+    }
+
+    .btn-pago.paid {
+      color: var(--azul-brasil);
+    }
+
+    .btn-pago:hover {
+      color: var(--azul-brasil);
+    }
+
+    /* Estilos para la nueva tabla de deudas */
+    .tabla-deudas {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 0.5rem;
+      font-size: 0.9em;
+    }
+
+    .tabla-deudas th,
+    .tabla-deudas td {
+      border: 1px solid #ddd;
+      padding: 6px 8px;
+      text-align: center;
+      font-weight: 600;
+      white-space: nowrap;
+      /* Evita que el contenido se parta en dos líneas */
+    }
+
+    .tabla-deudas th {
+      background-color: #f2f2f2;
+      font-weight: 700;
+    }
+
+    .tabla-deudas .header-deudor {
+      text-align: left;
+      background-color: transparent;
+      border: none;
+    }
+
+    .tabla-deudas .celda-deudor {
+      text-align: left;
+    }
+
+    /* Estilos para el desglose de deuda al hacer clic */
+    .tabla-deudas .celda-deudor strong {
+      cursor: pointer;
+      text-decoration: underline;
+      text-decoration-color: var(--azul-claro);
+      text-decoration-thickness: 2px;
+      text-underline-offset: 3px;
+      transition: color .2s, text-decoration-color .2s;
+    }
+
+    .tabla-deudas .celda-deudor strong:hover {
+      color: var(--azul-brasil);
+      text-decoration-color: var(--azul-brasil);
+    }
+
+    #detalleDeudaContainer {
+      margin-top: 1.5rem;
+      width: 100%;
+      max-width: 900px;
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, .1);
+      padding: 1.5rem 2rem;
+    }
+
+    #detalleDeudaContainer h3 {
+      color: var(--azul-brasil);
+      margin-bottom: 1rem;
+    }
+
+    #detalleDeudaLista {
+      list-style: none;
+      padding: 0;
+    }
+
+    #detalleDeudaLista li {
+      padding: 0.75rem 0;
+      border-bottom: 1px solid #eee;
+    }
+  </style>
+
+  <!-- CSS ADICIONAL PARA TODAS LAS SECCIONES -->
+  <style>
+    .app-header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 60px;
+      background: linear-gradient(135deg, var(--verde-brasil) 0%, var(--verde-claro) 100%);
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 1rem;
+      z-index: 1000;
+    }
+
+    .app-title {
+      color: white;
+      font-size: 1.5rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .nav-tabs {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .nav-tab {
+      background: rgba(255, 255, 255, 0.1);
+      border: none;
+      color: white;
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.95rem;
+      transition: 0.3s ease;
+    }
+
+    .nav-tab:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .nav-tab.active {
+      background: white;
+      color: var(--verde-brasil);
+      font-weight: 600;
+    }
+
+    .menu-toggle {
+      display: none;
+      background: none;
+      border: none;
+      color: white;
+      font-size: 2rem;
+      cursor: pointer;
+      padding: 0;
+      width: 40px;
+      height: 40px;
+    }
+
+    .mobile-menu {
+      display: none;
+      position: fixed;
+      top: 60px;
+      left: 0;
+      right: 0;
+      background: white;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+      z-index: 999;
+      padding: 1rem;
+    }
+
+    .mobile-menu.active {
+      display: block;
+    }
+
+    .mobile-menu button {
+      display: block;
+      width: 100%;
+      background: var(--verde-brasil);
+      color: white;
+      border: none;
+      padding: 1rem;
+      margin-bottom: 0.5rem;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      text-align: left;
+    }
+
+    .mobile-menu button.active {
+      background: var(--azul-brasil);
+    }
+
+    body {
+      padding-top: 70px;
+    }
+
+    .app-section {
+      display: none;
+    }
+
+    .app-section.active {
+      display: block;
+    }
+
+    .dashboard-card {
+      background: white;
+      padding: 1.5rem;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      margin-bottom: 1.5rem;
+    }
+
+    .dashboard-card h3 {
+      color: var(--azul-brasil);
+      margin-bottom: 1rem;
+    }
+
+    #dashboardContent {
+      padding: 0 2rem;
+      max-width: 100%;
+    }
+
+    .dashboard-stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.5rem;
+      margin-top: 1.5rem;
+    }
+
+    .dashboard-buttons {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-top: 2rem;
+    }
+
+    .dashboard-buttons button {
+      background: var(--verde-brasil);
+      color: white;
+      border: none;
+      padding: 1rem;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 1rem;
+      transition: 0.3s ease;
+    }
+
+    .dashboard-buttons button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    .btn-flotante {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--amarillo-brasil), #ffd700);
+      border: none;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+      cursor: pointer;
+      font-size: 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: 0.3s ease;
+      z-index: 998;
+    }
+
+    .btn-flotante:hover {
+      transform: scale(1.1);
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 2000;
+      align-items: center;
+      justify-content: center;
+      overflow-y: auto;
+    }
+
+    .modal.active {
+      display: flex;
+    }
+
+    .modal-content {
+      background: white;
+      border-radius: 12px;
+      padding: 2rem;
+      max-width: 600px;
+      width: 90%;
+      max-height: 90vh;
+      overflow-y: auto;
+      position: relative;
+      margin: 1rem;
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      background: transparent;
+      border: none;
+      font-size: 2rem;
+      cursor: pointer;
+      color: var(--gris-oscuro);
+      z-index: 1;
+    }
+
+    .form-group {
+      margin-bottom: 1rem;
+    }
+
+    .form-group label {
+      display: block;
+      font-weight: 600;
+      color: var(--azul-brasil);
+      margin-bottom: 0.5rem;
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      width: 100%;
+      padding: 0.75rem;
+      border: 2px solid var(--gris-medio);
+      border-radius: 8px;
+      font-size: 1rem;
+      box-sizing: border-box;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      outline: none;
+      border-color: var(--verde-brasil);
+    }
+
+    .btn-primary {
+      background: var(--verde-brasil);
+      color: white;
+      border: none;
+      padding: 1rem 2rem;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.3s ease;
+      width: 100%;
+    }
+
+    .btn-primary:hover {
+      background: var(--verde-claro);
+    }
+
+    .btn-secondary {
+      background: var(--azul-brasil);
+      color: white;
+      border: none;
+      padding: 0.75rem 1.5rem;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.3s ease;
+    }
+
+    .btn-secondary:hover {
+      background: var(--azul-claro);
+    }
+
+    .btn-small {
+      padding: 0.5rem 1rem;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.9rem;
+    }
+
+    .btn-danger {
+      background: #dc3545;
+      color: white;
+    }
+
+    .radio-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      margin-top: 0.5rem;
+    }
+
+    .radio-group label {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      cursor: pointer;
+      padding: 0.5rem;
+      background: var(--gris-claro);
+      border-radius: 8px;
+      font-weight: normal;
+      color: var(--texto-oscuro);
+    }
+
+    .radio-group input[type="radio"] {
+      width: auto;
+      margin: 0;
+      flex-shrink: 0;
+    }
+
+    .compra-item {
+      background: white;
+      padding: 1rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .compra-item.comprado {
+      opacity: 0.6;
+      background: var(--gris-claro);
+    }
+
+    .compra-item input[type="checkbox"] {
+      width: 24px;
+      height: 24px;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    .compra-info {
+      flex-grow: 1;
+    }
+
+    .compra-nombre {
+      font-weight: 600;
+      font-size: 1.1rem;
+      color: var(--texto-oscuro);
+    }
+
+    .compra-item.comprado .compra-nombre {
+      text-decoration: line-through;
+    }
+
+    .compra-detalles {
+      font-size: 0.9rem;
+      color: var(--gris-oscuro);
+      margin-top: 0.25rem;
+    }
+
+    .compra-actions {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .filtros-compras {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+    }
+
+    .filtros-compras button {
+      flex: 1;
+      min-width: 100px;
+    }
+
+    /* ATRACCIONES */
+    .atraccion-card {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+      margin-bottom: 1.5rem;
+      cursor: pointer;
+      transition: 0.3s ease;
+    }
+
+    .atraccion-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+    }
+
+    .atraccion-card-image {
+      width: 100%;
+      height: 200px;
+      object-fit: cover;
+      background: var(--gris-claro);
+    }
+
+    .atraccion-card-body {
+      padding: 1.25rem;
+    }
+
+    .atraccion-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: start;
+      margin-bottom: 0.75rem;
+      gap: 1rem;
+    }
+
+    .atraccion-card-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--texto-oscuro);
+      flex: 1;
+    }
+
+    .atraccion-badge {
+      padding: 0.25rem 0.75rem;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .badge-playa {
+      background: #b3e5fc;
+      color: #01579b;
+    }
+
+    .badge-restaurant {
+      background: #ffccbc;
+      color: #bf360c;
+    }
+
+    .badge-museo {
+      background: #d1c4e9;
+      color: #4527a0;
+    }
+
+    .badge-compras {
+      background: #fff9c4;
+      color: #f57f17;
+    }
+
+    .badge-nocturna {
+      background: #ce93d8;
+      color: #6a1b9a;
+    }
+
+    .badge-parque {
+      background: #c8e6c9;
+      color: #2e7d32;
+    }
+
+    .badge-otro {
+      background: #e0e0e0;
+      color: #424242;
+    }
+
+    .atraccion-estado {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      margin-top: 0.75rem;
+    }
+
+    .estado-pendiente {
+      background: var(--gris-claro);
+      color: var(--gris-oscuro);
+    }
+
+    .estado-visitado {
+      background: #c8e6c9;
+      color: #2e7d32;
+    }
+
+    .atraccion-info {
+      color: var(--gris-oscuro);
+      font-size: 0.9rem;
+      line-height: 1.6;
+    }
+
+    .atraccion-rating {
+      margin-top: 0.5rem;
+      color: #ffa726;
+      font-size: 1.1rem;
+    }
+
+    .filtros-atracciones {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+    }
+
+    .filtros-atracciones button {
+      padding: 0.75rem 1.5rem;
+      background: white;
+      border: 2px solid var(--gris-medio);
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.3s ease;
+    }
+
+    .filtros-atracciones button.active {
+      background: var(--verde-brasil);
+      color: white;
+      border-color: var(--verde-brasil);
+    }
+
+    .filtros-atracciones button:hover {
+      border-color: var(--verde-brasil);
+    }
+
+    .section-container {
+      padding: 0 1rem;
+    }
+
+    @media (max-width: 768px) {
+      .nav-tabs {
+        display: none;
+      }
+
+      .menu-toggle {
+        display: block;
+      }
+
+      .app-title {
+        font-size: 1.2rem;
+      }
+
+      #dashboardContent {
+        padding: 0 1rem;
+      }
+
+      .dashboard-stats {
+        grid-template-columns: 1fr;
+      }
+
+      .dashboard-buttons {
+        grid-template-columns: 1fr;
+      }
+
+      .btn-flotante {
+        width: 50px;
+        height: 50px;
+        font-size: 1.5rem;
+        bottom: 15px;
+        right: 15px;
+      }
+
+      #section-gastos {
+        padding: 0 1rem;
+      }
+
+      .form-grid-2 {
+        grid-template-columns: 1fr !important;
+      }
+
+      .radio-group {
+        flex-direction: column;
+      }
+
+      .filtros-compras {
+        flex-direction: column;
+      }
+
+      .filtros-compras button {
+        width: 100%;
+        min-width: auto;
+      }
+
+      .modal-content {
+        padding: 1.5rem;
+        width: 95%;
+        margin: 0.5rem;
+      }
+
+      .filtros-atracciones {
+        flex-direction: column;
+      }
+
+      .filtros-atracciones button {
+        width: 100%;
+      }
+    }
+
+    @media (min-width: 769px) {
+      #dashboardContent {
+        max-width: 1400px;
+        margin: 0 auto;
+      }
+
+      .dashboard-stats {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .dashboard-buttons {
+        grid-template-columns: repeat(3, 1fr);
+      }
+
+      .radio-group {
+        flex-direction: row;
+        flex-wrap: wrap;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- HEADER CON NAVEGACIÓN -->
+  <header class="app-header">
+    <h1 class="app-title">
+      <span>🇧🇷</span> Brasil Travel
+    </h1>
+
+    <nav class="nav-tabs">
+      <button class="nav-tab active" data-section="dashboard">📊 Resumen</button>
+      <button class="nav-tab" data-section="gastos">💰 Gastos</button>
+      <button class="nav-tab" data-section="alojamiento">🏠 Alojamiento</button>
+      <button class="nav-tab" data-section="compras">🛒 Compras</button>
+      <button class="nav-tab" data-section="atracciones">📍 Atracciones</button>
+      <button class="nav-tab" data-section="configuracion">⚙️ Configuración</button>
+    </nav>
+
+    <button class="menu-toggle" id="menuToggle">☰</button>
+  </header>
+
+  <div class="mobile-menu" id="mobileMenu">
+    <button class="mobile-nav active" data-section="dashboard">📊 Resumen</button>
+    <button class="mobile-nav" data-section="gastos">💰 Gastos</button>
+    <button class="mobile-nav" data-section="alojamiento">🏠 Alojamiento</button>
+    <button class="mobile-nav" data-section="compras">🛒 Compras</button>
+    <button class="mobile-nav" data-section="atracciones">📍 Atracciones</button>
+    <button class="mobile-nav" data-section="configuracion">⚙️ Configuración</button>
+  </div>
+
+  <button class="btn-flotante" id="btnConversor" title="Conversor BRL ↔ CLP">💱</button>
+
+  <!-- MODAL: CONVERSOR -->
+  <div class="modal" id="modalConversor">
+    <div class="modal-content">
+      <button class="modal-close" onclick="cerrarModal('modalConversor')">&times;</button>
+      <h2 style="color: var(--verde-brasil); margin-bottom: 1.5rem;">Conversor BRL ↔ CLP</h2>
+
+      <div class="form-group">
+        <label for="inputBRL">Reales Brasileños (R$)</label>
+        <input type="number" id="inputBRL" placeholder="0.00" step="0.01" min="0">
+      </div>
+
+      <div style="text-align: center; font-size: 2rem; color: var(--gris-oscuro); margin: 1rem 0;">⇅</div>
+
+      <div class="form-group">
+        <label for="inputCLP">Pesos Chilenos ($)</label>
+        <input type="number" id="inputCLP" placeholder="0" step="1" min="0">
+      </div>
+
+      <div
+        style="background: var(--gris-claro); padding: 1rem; border-radius: 8px; text-align: center; margin-top: 1rem;">
+        <p style="margin-bottom: 0.5rem;">Tasa: <strong>1 BRL = <span id="tasaActual">150</span> CLP</strong></p>
+        <button class="btn-secondary" onclick="editarTasa()" style="margin-top: 0.5rem;">Editar Tasa</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: NUEVA ATRACCIÓN -->
+  <div class="modal" id="modalNuevaAtraccion">
+    <div class="modal-content">
+      <button class="modal-close" onclick="cerrarModal('modalNuevaAtraccion')">&times;</button>
+      <h2 style="color: var(--verde-brasil); margin-bottom: 1.5rem;" id="tituloModalAtraccion">➕ Nueva Atracción</h2>
+
+      <form id="formNuevaAtraccion">
+        <div class="form-group">
+          <label for="atracNombre">Nombre del Lugar *</label>
+          <input type="text" id="atracNombre" required placeholder="Ej: Copacabana Beach">
+        </div>
+
+        <div class="form-group">
+          <label for="atracCategoria">Categoría *</label>
+          <select id="atracCategoria" required>
+            <option value="playa">🏖️ Playa</option>
+            <option value="restaurant">🍽️ Restaurant</option>
+            <option value="museo">🎨 Museo</option>
+            <option value="compras">🛍️ Compras</option>
+            <option value="nocturna">🌃 Vida Nocturna</option>
+            <option value="parque">🌳 Parque</option>
+            <option value="otro">📍 Otro</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="atracDireccion">Dirección</label>
+          <input type="text" id="atracDireccion" placeholder="Dirección completa">
+        </div>
+
+        <div class="form-group">
+          <label for="atracMaps">Link de Google Maps</label>
+          <input type="url" id="atracMaps" placeholder="https://maps.google.com/...">
+        </div>
+
+        <div class="form-group">
+          <label>Precio de Entrada (opcional)</label>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+            <div>
+              <input type="number" id="atracPrecioBRL" placeholder="BRL" step="0.01" min="0">
+            </div>
+            <div>
+              <input type="number" id="atracPrecioCLP" placeholder="CLP" step="1" min="0">
+            </div>
+          </div>
+          <div style="text-align: center; font-size: 0.85rem; color: var(--gris-oscuro); margin-top: 0.25rem;">
+            Conversión automática BRL ↔ CLP
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="atracImagenes">URLs de Imágenes (una por línea)</label>
+          <textarea id="atracImagenes" rows="3" placeholder="https://imagen1.jpg&#10;https://imagen2.jpg"></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="atracNotas">Notas / Comentarios</label>
+          <textarea id="atracNotas" rows="4" placeholder="Qué hacer, mejores horarios, recomendaciones..."></textarea>
+        </div>
+
+        <button type="submit" class="btn-primary">Guardar Atracción</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: DETALLE ATRACCIÓN -->
+  <div class="modal" id="modalDetalleAtraccion">
+    <div class="modal-content">
+      <button class="modal-close" onclick="cerrarModal('modalDetalleAtraccion')">&times;</button>
+
+      <div id="detalleAtraccionContent"></div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 2rem;">
+        <button class="btn-secondary" onclick="editarAtraccion()">✏️ Editar</button>
+        <button class="btn-danger" style="padding: 0.75rem 1.5rem; border-radius: 8px; font-weight: 600;"
+          onclick="eliminarAtraccion()">🗑️ Eliminar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECCIÓN: DASHBOARD -->
+  <div class="app-section active" id="section-dashboard">
+    <div id="dashboardContent">
+      <h2 style="text-align: center; color: var(--verde-brasil); margin-bottom: 2rem;">Resumen del Viaje</h2>
+
+      <div class="dashboard-card" id="countdownCard" style="display: none;">
+        <h3>🗓️ <span id="alojamientoNombre">Viaje a Brasil</span></h3>
+        <div id="countdown" style="text-align: center; font-size: 1.5rem; color: var(--verde-brasil); margin: 1rem 0;">
+        </div>
+        <div style="display: grid; gap: 0.5rem; margin-top: 1rem;">
+          <div
+            style="display: flex; justify-content: space-between; padding: 0.5rem; background: var(--gris-claro); border-radius: 8px;">
+            <span>Check-in:</span>
+            <strong id="checkinDate"></strong>
+          </div>
+          <div
+            style="display: flex; justify-content: space-between; padding: 0.5rem; background: var(--gris-claro); border-radius: 8px;">
+            <span>Check-out:</span>
+            <strong id="checkoutDate"></strong>
+          </div>
+          <div
+            style="display: flex; justify-content: space-between; padding: 0.5rem; background: var(--gris-claro); border-radius: 8px;">
+            <span>Duración:</span>
+            <strong id="duracionViaje"></strong>
+          </div>
+        </div>
+      </div>
+
+      <div class="dashboard-card">
+        <h3>💰 Resumen de Gastos</h3>
+        <div
+          style="background: linear-gradient(135deg, var(--verde-brasil), var(--verde-claro)); color: white; padding: 1.5rem; border-radius: 8px; text-align: center; margin: 1rem 0;">
+          <div style="font-size: 0.9rem; opacity: 0.9;">Total Gastado</div>
+          <div id="totalBRL" style="font-size: 2rem; font-weight: 700; margin: 0.5rem 0;">R$ 0,00</div>
+          <div id="totalCLP" style="font-size: 1.2rem;">CLP$ 0</div>
+        </div>
+
+        <h4 style="margin-top: 1.5rem; margin-bottom: 0.5rem; color: var(--azul-brasil);">Pagado por persona:</h4>
+        <div style="display: grid; gap: 0.5rem;">
+          <div
+            style="display: flex; justify-content: space-between; padding: 0.75rem; background: var(--gris-claro); border-radius: 8px;">
+            <span style="font-weight: 600;">Patricia:</span>
+            <strong id="pagadoPatricia" style="color: var(--verde-brasil);">R$ 0,00</strong>
+          </div>
+          <div
+            style="display: flex; justify-content: space-between; padding: 0.75rem; background: var(--gris-claro); border-radius: 8px;">
+            <span style="font-weight: 600;">Daniela:</span>
+            <strong id="pagadoDaniela" style="color: var(--verde-brasil);">R$ 0,00</strong>
+          </div>
+          <div
+            style="display: flex; justify-content: space-between; padding: 0.75rem; background: var(--gris-claro); border-radius: 8px;">
+            <span style="font-weight: 600;">Gonzalo:</span>
+            <strong id="pagadoGonzalo" style="color: var(--verde-brasil);">R$ 0,00</strong>
+          </div>
+        </div>
+
+        <p style="text-align: center; color: var(--gris-oscuro); margin-top: 1rem; font-size: 0.9rem;">
+          Total de <span id="numGastos">0</span> gastos registrados
+        </p>
+      </div>
+
+      <div class="dashboard-stats">
+        <div class="dashboard-card" style="text-align: center;">
+          <div style="font-size: 2.5rem;">📍</div>
+          <div style="font-size: 1.5rem; font-weight: 700; color: var(--verde-brasil);" id="statsAtracciones">0 / 0
+          </div>
+          <div style="font-size: 0.9rem; color: var(--gris-oscuro);">Atracciones visitadas</div>
+        </div>
+
+        <div class="dashboard-card" style="text-align: center;">
+          <div style="font-size: 2.5rem;">🛒</div>
+          <div style="font-size: 1.5rem; font-weight: 700; color: var(--verde-brasil);" id="statsCompras">0</div>
+          <div style="font-size: 0.9rem; color: var(--gris-oscuro);">Compras pendientes</div>
+        </div>
+      </div>
+
+      <div class="dashboard-buttons">
+        <button onclick="navegarA('gastos')">💰 Ver Gastos</button>
+        <button onclick="navegarA('alojamiento')" style="background: var(--azul-brasil);">🏠 Alojamiento</button>
+        <button onclick="navegarA('atracciones')"
+          style="background: var(--amarillo-brasil); color: var(--texto-oscuro);">📍 Atracciones</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECCIÓN: GASTOS -->
+  <div class="app-section" id="section-gastos">
+    <div style="padding: 0 1rem;">
+
+
+
+      <form id="formGasto">
+        <label for="descripcion">Descripción del gasto:</label>
+        <input type="text" id="descripcion" required />
+        <label for="monto">Monto:</label>
+        <div class="monto-container">
+          <input type="number" id="monto" step="0.01" min="0" required />
+          <select id="moneda">
+            <option value="BRL" selected>BRL</option>
+            <option value="CLP">CLP</option>
+          </select>
+        </div>
+        <label for="fecha">Fecha:</label>
+        <input type="date" id="fecha" required />
+        <label for="pagadoPor">Pagado por:</label>
+        <select id="pagadoPor">
+          <option value="Patricia">Patricia</option>
+          <option value="Daniela">Daniela</option>
+          <option value="Gonzalo">Gonzalo</option>
+        </select>
+        <select id="personas">
+          <option value="3">3 personas</option>
+          <option value="4">4 personas (Gonzalo 2 partes)</option>
+        </select>
+        <label for="mostrarCLP">Mostrar monto en Pesos Chilenos (CLP):
+          <input type="checkbox" id="mostrarCLP" checked />
+        </label>
+        <button type="submit">Agregar gasto</button>
+      </form>
+
+      <label for="filtroFecha"
+        style="font-weight: 600; color: var(--azul-brasil); margin-bottom: 0.5rem; display: flex; align-items: center;">
+        Filtrar gastos por fecha:
+        <input type="date" id="filtroFecha" style="margin-left: 0.5rem; padding: 0.3rem;" />
+        <button id="btnLimpiarFiltro" type="button">Limpiar filtro</button>
+      </label>
+
+      <table id="tablaGastos" aria-label="Lista de gastos">
+        <thead></thead>
+        <tbody></tbody>
+      </table>
+
+      <div class="totales" id="totales"></div>
+
+      <div id="detalleDeudaContainer" style="display: none;"></div>
+
+
+    </div>
+  </div>
+
+  <!-- SECCIÓN: ALOJAMIENTO -->
+  <div class="app-section" id="section-alojamiento">
+    <div class="section-container" style="max-width: 800px; margin: 0 auto;">
+      <h2 style="text-align: center; color: var(--verde-brasil); margin-bottom: 2rem;">🏠 Alojamiento</h2>
+
+      <div id="alojamientoVista" style="display: none;">
+        <div class="dashboard-card">
+          <div
+            style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem; gap: 1rem; flex-wrap: wrap;">
+            <h3 id="verNombre" style="color: var(--verde-brasil); margin: 0; flex: 1;"></h3>
+            <button class="btn-secondary" onclick="editarAlojamiento()">✏️ Editar</button>
+          </div>
+
+          <div id="verImagenes" style="margin: 1rem 0;"></div>
+
+          <div style="display: grid; gap: 0.75rem; margin-top: 1.5rem;">
+            <div><strong>📍 Dirección:</strong> <span id="verDireccion"></span></div>
+            <div><strong>📅 Check-in:</strong> <span id="verCheckin"></span></div>
+            <div><strong>📅 Check-out:</strong> <span id="verCheckout"></span></div>
+            <div><strong>💰 Precio Total:</strong> <span id="verPrecioTotal"></span></div>
+            <div><strong>💰 Precio por Noche:</strong> <span id="verPrecioNoche"></span></div>
+            <div><strong>🌙 Noches:</strong> <span id="verNoches"></span></div>
+            <div><strong>🤝 División:</strong> <span id="verDivision"></span></div>
+            <div><strong>⭐ Rating:</strong> <span id="verRating"></span></div>
+          </div>
+
+          <div id="verMaps" style="margin-top: 1.5rem;"></div>
+          <div id="verNotas"
+            style="margin-top: 1.5rem; padding: 1rem; background: var(--gris-claro); border-radius: 8px;"></div>
+        </div>
+      </div>
+
+      <div id="alojamientoForm">
+        <form id="formAlojamiento" class="dashboard-card">
+          <div class="form-group">
+            <label for="alojNombre">Nombre del Alojamiento *</label>
+            <input type="text" id="alojNombre" required>
+          </div>
+
+          <div class="form-group">
+            <label for="alojDireccion">Dirección Completa *</label>
+            <input type="text" id="alojDireccion" required>
+          </div>
+
+          <div class="form-group">
+            <label for="alojMaps">Link de Google Maps</label>
+            <input type="url" id="alojMaps" placeholder="https://maps.google.com/...">
+          </div>
+
+          <div style="display: grid; gap: 1rem;" class="form-grid-2">
+            <div class="form-group">
+              <label for="alojCheckin">Check-in (Fecha y Hora) *</label>
+              <input type="datetime-local" id="alojCheckin" required>
+            </div>
+
+            <div class="form-group">
+              <label for="alojCheckout">Check-out (Fecha y Hora) *</label>
+              <input type="datetime-local" id="alojCheckout" required>
+            </div>
+          </div>
+
+          <div style="display: grid; gap: 1rem;" class="form-grid-2">
+            <div class="form-group">
+              <label for="alojPrecioTotal">Precio Total (BRL)</label>
+              <input type="number" id="alojPrecioTotal" step="0.01" min="0" placeholder="Ej: 1500.00">
+            </div>
+
+            <div class="form-group">
+              <label for="alojPrecioNoche">Precio por Noche (BRL)</label>
+              <input type="number" id="alojPrecioNoche" step="0.01" min="0" placeholder="Calculado automático">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>División del Costo</label>
+            <div class="radio-group">
+              <label>
+                <input type="radio" name="alojDivision" value="3" checked>
+                <span>En 3 (33% cada uno)</span>
+              </label>
+              <label>
+                <input type="radio" name="alojDivision" value="4">
+                <span>En 4 (Patricia 25%, Daniela 25%, Gonzalo 50%)</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="alojRating">Rating</label>
+            <select id="alojRating">
+              <option value="0">Sin calificar</option>
+              <option value="1">⭐ 1 estrella</option>
+              <option value="2">⭐⭐ 2 estrellas</option>
+              <option value="3">⭐⭐⭐ 3 estrellas</option>
+              <option value="4">⭐⭐⭐⭐ 4 estrellas</option>
+              <option value="5">⭐⭐⭐⭐⭐ 5 estrellas</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="alojNotas">Comentarios / Notas</label>
+            <textarea id="alojNotas" rows="4" placeholder="Observaciones, indicaciones, etc."></textarea>
+          </div>
+
+          <button type="submit" class="btn-primary">Guardar Alojamiento</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECCIÓN: COMPRAS -->
+  <div class="app-section" id="section-compras">
+    <div class="section-container" style="max-width: 800px; margin: 0 auto;">
+      <h2 style="text-align: center; color: var(--verde-brasil); margin-bottom: 2rem;">🛒 Lista de Compras</h2>
+
+      <form id="formCompra" class="dashboard-card" style="margin-bottom: 2rem;">
+        <div style="display: grid; gap: 1rem;" class="form-grid-2">
+          <div class="form-group" style="grid-column: span 2;">
+            <label for="compraArticulo">Artículo *</label>
+            <input type="text" id="compraArticulo" placeholder="Ej: Jugo, Quitasol, Protector solar" required>
+          </div>
+
+          <div class="form-group">
+            <label for="compraCantidad">Cantidad</label>
+            <input type="number" id="compraCantidad" min="1" value="1">
+          </div>
+
+          <div class="form-group">
+            <label for="compraCategoria">Categoría</label>
+            <select id="compraCategoria">
+              <option>Bebidas</option>
+              <option>Comida/Snacks</option>
+              <option>Playa</option>
+              <option>Higiene</option>
+              <option>Medicamentos</option>
+              <option>Otros</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="compraNotas">Notas (opcional)</label>
+          <input type="text" id="compraNotas" placeholder="Observaciones...">
+        </div>
+
+        <button type="submit" class="btn-primary">+ Agregar a la Lista</button>
+      </form>
+
+      <div class="filtros-compras">
+        <button class="btn-secondary" onclick="filtrarCompras('todos')">Todos</button>
+        <button class="btn-secondary" onclick="filtrarCompras('pendientes')">Pendientes</button>
+        <button class="btn-secondary" onclick="filtrarCompras('comprados')">Comprados</button>
+      </div>
+
+      <div style="text-align: center; margin-bottom: 1rem; color: var(--gris-oscuro);">
+        <span id="contadorCompras">0 pendientes, 0 comprados</span>
+      </div>
+
+      <div id="listaCompras"></div>
+    </div>
+  </div>
+
+  <!-- SECCIÓN: ATRACCIONES -->
+  <div class="app-section" id="section-atracciones">
+    <div class="section-container" style="max-width: 1200px; margin: 0 auto;">
+      <div
+        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+        <h2 style="color: var(--verde-brasil); margin: 0;">📍 Atracciones y Lugares</h2>
+        <button class="btn-primary" style="width: auto; padding: 0.75rem 1.5rem;" onclick="abrirModalNuevaAtraccion()">➕
+          Nueva Atracción</button>
+      </div>
+
+      <div class="filtros-atracciones">
+        <button class="active" data-filtro="todas">Todas</button>
+        <button data-filtro="pendientes">Pendientes</button>
+        <button data-filtro="visitadas">Visitadas</button>
+        <button data-filtro="playa">🏖️ Playas</button>
+        <button data-filtro="restaurant">🍽️ Restaurants</button>
+        <button data-filtro="museo">🎨 Museos</button>
+        <button data-filtro="compras">🛍️ Compras</button>
+        <button data-filtro="nocturna">🌃 Nocturna</button>
+        <button data-filtro="parque">🌳 Parques</button>
+      </div>
+
+      <div style="text-align: center; margin-bottom: 1.5rem; color: var(--gris-oscuro);">
+        <span id="contadorAtracciones">0 atracciones</span>
+      </div>
+
+      <div id="gridAtracciones"
+        style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem;"></div>
+    </div>
+  </div>
+  <!-- SECCIÓN: CONFIGURACIÓN -->
+  <div class="app-section" id="section-configuracion">
+    <div class="section-container" style="max-width: 800px; margin: 0 auto;">
+      <h2 style="text-align: center; color: var(--verde-brasil); margin-bottom: 2rem;">⚙️ Configuración</h2>
+
+      <!-- Estadísticas -->
+      <div class="dashboard-card">
+        <h3>📊 Estadísticas de Datos</h3>
+        <div style="display: grid; gap: 0.75rem;">
+          <div
+            style="display: flex; justify-content: space-between; padding: 0.75rem; background: var(--gris-claro); border-radius: 8px;">
+            <span>💰 Gastos registrados:</span>
+            <strong id="statGastos">0</strong>
+          </div>
+          <div
+            style="display: flex; justify-content: space-between; padding: 0.75rem; background: var(--gris-claro); border-radius: 8px;">
+            <span>🛒 Compras:</span>
+            <strong id="statCompras">0</strong>
+          </div>
+          <div
+            style="display: flex; justify-content: space-between; padding: 0.75rem; background: var(--gris-claro); border-radius: 8px;">
+            <span>📍 Atracciones:</span>
+            <strong id="statAtracciones">0</strong>
+          </div>
+          <div
+            style="display: flex; justify-content: space-between; padding: 0.75rem; background: var(--gris-claro); border-radius: 8px;">
+            <span>💾 Tamaño total:</span>
+            <strong id="statTamano">0 KB</strong>
+          </div>
+        </div>
+      </div>
+
+      <!-- Exportar / Importar -->
+      <div class="dashboard-card">
+        <h3>💾 Respaldo de Datos</h3>
+        <p style="color: var(--gris-oscuro); margin-bottom: 1rem; font-size: 0.95rem;">
+          Exporta tus datos para crear un respaldo o compartir con otros viajeros.
+        </p>
+
+        <div style="display: grid; gap: 1rem;">
+          <!-- Exportar como archivo -->
+          <button class="btn-primary" onclick="exportarJSON()">
+            📥 Descargar Backup (JSON)
+          </button>
+
+          <!-- Copiar al portapapeles -->
+          <button class="btn-secondary" onclick="copiarAlPortapapeles()" style="width: 100%;">
+            📋 Copiar Datos (para compartir)
+          </button>
+
+          <div style="border-top: 2px solid var(--gris-medio); margin: 0.5rem 0;"></div>
+
+          <!-- Importar desde archivo -->
+          <div>
+            <input type="file" id="inputImportarJSON" accept=".json" style="display: none;"
+              onchange="importarJSON(event)">
+            <button class="btn-secondary" style="width: 100%; background: var(--verde-claro);"
+              onclick="document.getElementById('inputImportarJSON').click()">
+              📤 Importar desde Archivo
+            </button>
+          </div>
+
+          <!-- Pegar desde portapapeles -->
+          <button class="btn-secondary" onclick="pegarDesdePortapapeles()"
+            style="width: 100%; background: var(--verde-claro);">
+            📋 Pegar Datos Copiados
+          </button>
+        </div>
+
+        <div style="margin-top: 1rem; padding: 1rem; background: #e3f2fd; border-radius: 8px; font-size: 0.9rem;">
+          <strong>💡 Tip:</strong> Para compartir con otra persona, usa "Copiar Datos" y envíalo por WhatsApp, Telegram
+          o email. La otra persona debe usar "Pegar Datos Copiados".
+        </div>
+      </div>
+
+      <!-- Tasa de cambio -->
+      <div class="dashboard-card">
+        <h3>💱 Tasa de Cambio</h3>
+        <p style="color: var(--gris-oscuro); margin-bottom: 1rem; font-size: 0.95rem;">
+          Tasa actual: <strong>1 BRL = <span id="tasaCambioConfig">150</span> CLP</strong>
+        </p>
+        <button class="btn-secondary" onclick="editarTasa()" style="width: 100%;">
+          ✏️ Cambiar Tasa
+        </button>
+      </div>
+
+      <!-- Zona de peligro -->
+      <div class="dashboard-card" style="border: 2px solid #ffebee;">
+        <h3 style="color: #d32f2f;">⚠️ Zona de Peligro</h3>
+        <p style="color: var(--gris-oscuro); margin-bottom: 1rem; font-size: 0.95rem;">
+          Esta acción eliminará TODOS tus datos de forma permanente.
+        </p>
+        <button class="btn-danger"
+          style="width: 100%; padding: 1rem; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer;"
+          onclick="borrarTodosDatos()">
+          🗑️ Borrar Todos los Datos
+        </button>
+      </div>
+    </div>
+  </div>
+  <script>
+    // --- Variables globales ---
+    const STORAGE_KEY = 'gastosViaje';
+    const TASA_CAMBIO = 179;
+    let gastos = [];
+    let idEdicion = null;
+    function inicializarApp() {
+
+
+      // --- Referencias a elementos ---
+      const pagadoPorSelect = document.getElementById('pagadoPor');
+      const form = document.getElementById('formGasto');
+      const tablaCuerpo = document.querySelector('#tablaGastos tbody');
+      const filtroFecha = document.getElementById('filtroFecha');
+      const btnLimpiarFiltro = document.getElementById('btnLimpiarFiltro');
+      const mostrarCLPCheckbox = document.getElementById('mostrarCLP');
+      const totalesDiv = document.getElementById('totales');
+      const monedaSelect = document.getElementById('moneda');
+
+      // --- Funciones de ayuda ---
+      const fmtBRL = v => 'R$ ' + Number(v).toLocaleString('es-CL', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      const fmtCLP = v => 'CLP$ ' + Math.round(v).toLocaleString('es-CL');
+
+      function asignarPartes(gasto) {
+        if (gasto.personas == 3) {
+          const parte = gasto.monto_brl / 3;
+          return { Patricia: parte, Daniela: parte, Gonzalo: parte };
+        } else {
+          const parte = gasto.monto_brl / 4;
+          return { Patricia: parte, Daniela: parte, Gonzalo: parte * 2 };
+        }
+      }
+
+      function crearFicha(gasto, index) {
+        const tr = document.createElement('tr');
+        const td = document.createElement('td');
+        td.colSpan = 7;
+        const montoCLP = gasto.monto_brl * TASA_CAMBIO;
+        // Asegura pagos existe
+        if (!gasto.pagos) {
+          gasto.pagos = { Patricia: false, Daniela: false, Gonzalo: false };
+        }
+        td.innerHTML = `
+      <div class="card" tabindex="0" data-index="${index}">
+        <div class="card-header">
+          <span class="descripcion">${gasto.descripcion} (Pagó: ${gasto.pagadoPor})</span>
+          <span class="fecha">${gasto.fecha}</span>
+        </div>
+        <div class="montos">
+          <div class="tabla" role="group" aria-label="Montos">
+            <div class="celda-titulo">BRL</div>
+            <div class="celda-valor">${fmtBRL(gasto.monto_brl)}</div>
+            ${mostrarCLPCheckbox.checked ? `<div class="celda-titulo">CLP</div><div class="celda-valor">${fmtCLP(montoCLP)}</div>` : ''}
+          </div>
+        </div>
+        <div class="asignacion">
+          ${Object.entries(asignarPartes(gasto))
+            .map(([persona, monto]) => `
+              <div class="linea">
+                ${persona}: <span class="moneda">${fmtBRL(monto)}</span>
+                <button class="btn-pago${gasto.pagos[persona] ? ' paid' : ''}" type="button" data-persona="${persona}" data-index="${index}" aria-label="Marcar como pagado">
+                  ${gasto.pagos[persona] ? '✅' : '⬜'}
+                </button>
+              </div>
+            `).join('')}
+          <button class="btn-modificar" data-index="${index}" aria-label="Editar gasto">&#9998;</button>
+          <button class="btn-eliminar" data-index="${index}" aria-label="Eliminar gasto">&#128465;</button>
+        </div>
+        <div class="badge-dividir">${gasto.personas}x</div>
+      </div>`;
+        tr.appendChild(td);
+        return tr;
+      }
+
+
+      function render() {
+        try {
+          tablaCuerpo.innerHTML = '';
+
+          const listaFiltrada = filtroFecha.value ? gastos.filter(g => g.fecha === filtroFecha.value) : gastos;
+
+          listaFiltrada.forEach((gasto) => {
+            const indiceOriginal = gastos.indexOf(gasto);
+            tablaCuerpo.appendChild(crearFicha(gasto, indiceOriginal));
+          });
+
+          const totalBRL = listaFiltrada.reduce((acc, g) => acc + g.monto_brl, 0);
+          const totalCLP = totalBRL * TASA_CAMBIO;
+
+          // Objeto para almacenar las deudas detalladas. Ej: deudas.Daniela.aPatricia = 100 (Daniela le debe 100 a Patricia)
+          const personas = ['Patricia', 'Daniela', 'Gonzalo'];
+          const deudas = {};
+          personas.forEach(p1 => {
+            deudas[p1] = {};
+            personas.forEach(p2 => {
+              if (p1 !== p2) deudas[p1][`a${p2}`] = 0;
+            });
+          });
+
+          listaFiltrada.forEach(g => {
+            if (!g.pagadoPor) return; // Si por alguna razón un gasto viejo no tiene pagador, se omite.
+
+            const partes = asignarPartes(g);
+            const pagador = g.pagadoPor;
+
+            for (const deudor in partes) {
+              // 'deudor' le debe a 'pagador' si no es la misma persona y no ha pagado su parte.
+              if (deudor !== pagador && !g.pagos[deudor]) {
+                deudas[deudor][`a${pagador}`] += partes[deudor] * TASA_CAMBIO;
+              }
+            }
+          });
+
+
+          let resumenHTML;
+          if (gastos.length === 0) {
+            resumenHTML = `
+                    <div class="resumen-grid">
+                        <div class="res-card" style="grid-column: 1 / -1; text-align: center;">
+                            <div class="res-text">
+                                <div class="res-label">Agrega tu primer gasto para comenzar.</div>
+                            </div>
+                        </div>
+                    </div>`;
+          } else {
+            resumenHTML = `
+                    <div class="resumen-grid">
+                        <div class="res-card">
+                            <div class="res-card-line">
+                                <div class="res-icon brl">R$</div>
+                                <div class="res-text">
+                                    <div class="res-label">Total (BRL)</div>
+                                    <div class="res-value">${fmtBRL(totalBRL)}</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="res-card">
+                            <div class="res-card-line">
+                                <div class="res-icon clp">$</div>
+                                <div class="res-text">
+                                    <div class="res-label">Total (CLP)</div>
+                                    <div class="res-value">${fmtCLP(totalCLP)}</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="res-card">
+                            <div class="desglose-titulo">Matriz de Deudas Pendientes</div>
+                            <table class="tabla-deudas">
+                                <thead>
+                                    <tr>
+                                        <th class="header-deudor"></th> <!-- Celda vacía para alinear -->
+                                        ${personas.map(p => `<th>A ${p}</th>`).join('')}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${personas.map(deudor => `
+                                        <tr>
+                                            <td class="celda-deudor"><strong data-deudor="${deudor}">${deudor} debe:</strong></td>
+                                            ${personas.map(acreedor => `<td>${deudor === acreedor ? '-' : fmtCLP(deudas[deudor][`a${acreedor}`] || 0)}</td>`).join('')}
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="res-export">
+                                <button id="btnDescargarCSV" class="btn-export" type="button">Descargar CSV</button>
+                            <button id="btnDescargarJSON" class="btn-export" type="button">Descargar JSON</button>
+                        </div>
+                    </div>`;
+          }
+          totalesDiv.innerHTML = resumenHTML;
+
+        } catch (e) {
+          console.error('Error fatal al renderizar la página:', e);
+          alert('Ha ocurrido un error crítico. La página puede no funcionar correctamente. Revisa la consola.');
+        }
+      }
+
+      function guardarYRenderizar() {
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(gastos));
+        } catch (e) {
+          console.error('No se pudo guardar en localStorage:', e);
+        }
+        render();
+      }
+
+      form.addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        let montoIngresado = parseFloat(form.monto.value);
+        let montoEnBRL = montoIngresado;
+
+        if (monedaSelect.value === 'CLP') {
+          montoEnBRL = montoIngresado / TASA_CAMBIO;
+        }
+
+        const nuevoGasto = {
+          descripcion: form.descripcion.value.trim(),
+          monto_brl: montoEnBRL,
+          fecha: form.fecha.value,
+          personas: parseInt(form.personas.value),
+          pagadoPor: pagadoPorSelect.value
+        };
+
+        if (!nuevoGasto.descripcion || !nuevoGasto.fecha || isNaN(nuevoGasto.monto_brl) || nuevoGasto.monto_brl <= 0) {
+          alert('Por favor, completa todos los campos correctamente.');
+          return;
+        }
+
+        if (idEdicion !== null) {
+          // Preserva pagos existentes si existe
+          const pagosPrevios = gastos[idEdicion].pagos ? { ...gastos[idEdicion].pagos } : { Patricia: false, Daniela: false, Gonzalo: false };
+          gastos[idEdicion] = { ...nuevoGasto, pagos: pagosPrevios };
+          idEdicion = null;
+        } else {
+          gastos.push({ ...nuevoGasto, pagos: { Patricia: false, Daniela: false, Gonzalo: false } });
+        }
+
+
+        guardarYRenderizar();
+        form.reset();
+        monedaSelect.value = 'BRL'; // Resetear moneda a BRL
+        form.fecha.valueAsDate = new Date();
+      });
+
+      tablaCuerpo.addEventListener('click', function (e) {
+        const btnEditar = e.target.closest('.btn-modificar');
+        if (btnEditar) {
+          e.preventDefault();
+          const index = parseInt(btnEditar.dataset.index, 10);
+          const gasto = gastos[index];
+          if (gasto) {
+            form.descripcion.value = gasto.descripcion;
+            form.monto.value = gasto.monto_brl;
+            form.fecha.value = gasto.fecha;
+            form.personas.value = gasto.personas;
+            monedaSelect.value = 'BRL'; // Al editar, siempre mostramos en BRL
+            pagadoPorSelect.value = gasto.pagadoPor || 'Patricia'; // Default a Patricia si no existe
+            idEdicion = index;
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            form.descripcion.focus();
+          }
+          return;
+        }
+
+        const btnEliminar = e.target.closest('.btn-eliminar');
+        if (btnEliminar) {
+          e.preventDefault();
+          const index = parseInt(btnEliminar.dataset.index, 10);
+          if (confirm(`¿Estás seguro de que quieres eliminar el gasto "${gastos[index].descripcion}"?`)) {
+            gastos.splice(index, 1);
+            // Si estábamos editando este gasto, cancelamos la edición
+            if (idEdicion === index) idEdicion = null;
+            guardarYRenderizar();
+          }
+          return;
+        }
+
+        const btnPago = e.target.closest('.btn-pago');
+        if (btnPago) {
+          e.preventDefault();
+          const index = parseInt(btnPago.dataset.index, 10);
+          const persona = btnPago.dataset.persona;
+          if (gastos[index] && gastos[index].pagos && persona in gastos[index].pagos) {
+            gastos[index].pagos[persona] = !gastos[index].pagos[persona];
+            guardarYRenderizar();
+          }
+          return;
+        }
+
+        const card = e.target.closest('.card');
+        if (card) {
+          document.querySelectorAll('#tablaGastos .card.selected').forEach(c => c.classList.remove('selected'));
+          card.classList.add('selected');
+        }
+      });
+
+      // --- DELEGACIÓN DE EVENTOS (MÉTODO ROBUSTO) ---
+      totalesDiv.addEventListener('click', function (event) {
+        if (event.target.id === 'btnDescargarCSV') {
+          descargarCSV();
+        }
+        if (event.target.id === 'btnDescargarJSON') {
+          descargarJSON();
+        }
+
+        const deudorStrong = event.target.closest('[data-deudor]');
+        if (deudorStrong) {
+          const deudorNombre = deudorStrong.dataset.deudor;
+          mostrarDetalleDeuda(deudorNombre);
+        }
+      });
+
+      function mostrarDetalleDeuda(deudor) {
+        const detalleContainer = document.getElementById('detalleDeudaContainer');
+        const listaFiltrada = filtroFecha.value ? gastos.filter(g => g.fecha === filtroFecha.value) : gastos;
+
+        const deudasDetalladas = listaFiltrada.filter(g =>
+          g.pagadoPor !== deudor && !g.pagos[deudor]
+        );
+
+        if (deudasDetalladas.length === 0) {
+          detalleContainer.style.display = 'none';
+          return;
+        }
+
+        let html = `<h3>Detalle de Deudas de ${deudor}</h3><ul id="detalleDeudaLista">`;
+        deudasDetalladas.forEach(gasto => {
+          const partes = asignarPartes(gasto);
+          const montoDebe = partes[deudor] * TASA_CAMBIO;
+          html += `
+            <li>
+              <strong>${gasto.descripcion}</strong> (pagado por ${gasto.pagadoPor}): 
+              <span style="float: right; font-weight: bold;">${fmtCLP(montoDebe)}</span>
+            </li>
+          `;
+        });
+        html += '</ul>';
+
+        detalleContainer.innerHTML = html;
+        detalleContainer.style.display = 'block';
+        detalleContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      };
+
+      filtroFecha.addEventListener('change', render);
+      btnLimpiarFiltro.addEventListener('click', function () {
+        filtroFecha.value = '';
+        render();
+      });
+      mostrarCLPCheckbox.addEventListener('change', render);
+
+      function descargarArchivo(contenido, nombreArchivo, tipoContenido) {
+        const blob = new Blob([contenido], { type: tipoContenido });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = nombreArchivo;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }
+
+      function descargarCSV() {
+        const listaFiltrada = filtroFecha.value ? gastos.filter(g => g.fecha === filtroFecha.value) : gastos;
+        if (listaFiltrada.length === 0) {
+          alert('No hay datos para descargar.'); return;
+        }
+        const headers = ['Descripcion', 'Monto (BRL)', 'Fecha', 'Personas'];
+        const rows = listaFiltrada.map(g =>
+          [`"${g.descripcion.replace(/"/g, '""')}"`, g.monto_brl, g.fecha, g.personas].join(',')
+        );
+        const csvContent = [headers.join(','), ...rows].join('\r\n');
+        descargarArchivo(csvContent, 'gastos_viaje.csv', 'text/csv;charset=utf-8;');
+      }
+
+      function descargarJSON() {
+        if (gastos.length === 0) {
+          alert('No hay datos para descargar.'); return;
+        }
+        const jsonContent = JSON.stringify(gastos, null, 2);
+        descargarArchivo(jsonContent, 'gastos_viaje.json', 'application/json;charset=utf-8;');
+      }
+
+      // --- Carga inicial de datos y primer renderizado ---
+      try {
+        const datosGuardados = localStorage.getItem(STORAGE_KEY);
+        if (datosGuardados) {
+          gastos = JSON.parse(datosGuardados);
+          // Migración: asegura que cada gasto tiene .pagos
+          gastos.forEach(gasto => {
+            if (!gasto.pagos) {
+              gasto.pagos = { Patricia: false, Daniela: false, Gonzalo: false };
+            }
+          });
+        }
+      } catch (e) {
+        console.error('Error al cargar datos desde localStorage:', e);
+        gastos = [];
+      }
+
+
+      if (form.fecha) form.fecha.valueAsDate = new Date();
+      render();
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', inicializarApp);
+    } else {
+      inicializarApp();
+    }
+  </script>
+
+  <!-- JAVASCRIPT ADICIONAL PARA TODAS LAS SECCIONES -->
+  <script>
+    // ========================================
+    // SISTEMA DE ALMACENAMIENTO
+    // ========================================
+    const STORAGE_KEY_APP = 'brasilTravelApp';
+
+    function cargarDatos() {
+      const datos = localStorage.getItem(STORAGE_KEY_APP);
+      if (!datos) {
+        return {
+          alojamiento: null,
+          compras: [],
+          atracciones: [],  // ← LÍNEA 11: Array de atracciones inicializado
+          tasaCambio: 150
+        };
+      }
+      return JSON.parse(datos);
+    }
+
+    function guardarDatos(datos) {
+      localStorage.setItem(STORAGE_KEY_APP, JSON.stringify(datos));
+    }
+
+    // ========================================
+    // NAVEGACIÓN
+    // ========================================
+    function navegarA(seccion) {
+      document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.mobile-nav').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.app-section').forEach(s => s.classList.remove('active'));
+
+      document.querySelector(`[data-section="${seccion}"]`)?.classList.add('active');
+      document.querySelectorAll(`[data-section="${seccion}"]`).forEach(btn => btn.classList.add('active'));
+      document.getElementById('section-' + seccion).classList.add('active');
+
+      document.getElementById('mobileMenu').classList.remove('active');
+
+      if (seccion === 'dashboard') {
+        actualizarDashboard();
+      }
+
+      window.scrollTo(0, 0);
+    }
+
+    document.querySelectorAll('.nav-tab').forEach(tab => {
+      tab.addEventListener('click', () => navegarA(tab.dataset.section));
+    });
+
+    document.querySelectorAll('.mobile-nav').forEach(btn => {
+      btn.addEventListener('click', () => navegarA(btn.dataset.section));
+    });
+
+    document.getElementById('menuToggle').addEventListener('click', () => {
+      document.getElementById('mobileMenu').classList.toggle('active');
+    });
+
+    // ========================================
+    // DASHBOARD
+    // ========================================
+    function actualizarDashboard() {
+      const datos = cargarDatos();
+      const gastosData = JSON.parse(localStorage.getItem('gastosViaje') || '[]');
+
+      let totalBRL = 0;
+      const pagadoPor = { Patricia: 0, Daniela: 0, Gonzalo: 0 };
+
+      gastosData.forEach(g => {
+        totalBRL += g.monto_brl;
+        pagadoPor[g.pagadoPor] += g.monto_brl;
+      });
+
+      const fmtBRL = v => 'R$ ' + Number(v).toLocaleString('es-CL', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      const fmtCLP = v => 'CLP$ ' + Math.round(v).toLocaleString('es-CL');
+
+      document.getElementById('totalBRL').textContent = fmtBRL(totalBRL);
+      document.getElementById('totalCLP').textContent = fmtCLP(totalBRL * datos.tasaCambio);
+
+      document.getElementById('pagadoPatricia').textContent = fmtBRL(pagadoPor.Patricia);
+      document.getElementById('pagadoDaniela').textContent = fmtBRL(pagadoPor.Daniela);
+      document.getElementById('pagadoGonzalo').textContent = fmtBRL(pagadoPor.Gonzalo);
+
+      document.getElementById('numGastos').textContent = gastosData.length;
+
+      const comprasPendientes = datos.compras.filter(c => !c.comprado).length;
+      document.getElementById('statsCompras').textContent = comprasPendientes;
+
+      // ← LÍNEA 87-89: Actualizar stats de atracciones
+      const atraccionesVisitadas = datos.atracciones.filter(a => a.visitado).length;
+      document.getElementById('statsAtracciones').textContent = atraccionesVisitadas + ' / ' + datos.atracciones.length;
+
+      if (datos.alojamiento && datos.alojamiento.checkin) {
+        const countdownCard = document.getElementById('countdownCard');
+        countdownCard.style.display = 'block';
+
+        document.getElementById('alojamientoNombre').textContent = datos.alojamiento.nombre;
+
+        const checkin = new Date(datos.alojamiento.checkin);
+        const checkout = new Date(datos.alojamiento.checkout);
+        const ahora = new Date();
+
+        const diasFaltantes = Math.ceil((checkin - ahora) / (1000 * 60 * 60 * 24));
+        const duracion = Math.ceil((checkout - checkin) / (1000 * 60 * 60 * 24));
+
+        let mensaje = '';
+        if (diasFaltantes > 0) {
+          mensaje = `⏳ Faltan <strong>${diasFaltantes} días</strong> para el viaje`;
+        } else if (diasFaltantes === 0) {
+          mensaje = '🎉 ¡El viaje es HOY!';
+        } else if (ahora < checkout) {
+          mensaje = '✈️ ¡Estás en Brasil!';
+        } else {
+          mensaje = '📸 Viaje completado';
+        }
+
+        document.getElementById('countdown').innerHTML = mensaje;
+        document.getElementById('checkinDate').textContent = checkin.toLocaleString('es-CL');
+        document.getElementById('checkoutDate').textContent = checkout.toLocaleString('es-CL');
+        document.getElementById('duracionViaje').textContent = duracion + ' noches';
+      } else {
+        document.getElementById('countdownCard').style.display = 'none';
+      }
+    }
+
+    // ========================================
+    // CONVERSOR
+    // ========================================
+    let tasaCambio = cargarDatos().tasaCambio;
+
+    document.getElementById('btnConversor').addEventListener('click', () => {
+      document.getElementById('modalConversor').classList.add('active');
+      document.getElementById('tasaActual').textContent = tasaCambio;
+    });
+
+    function cerrarModal(id) {
+      document.getElementById(id).classList.remove('active');
+      if (id === 'modalConversor') {
+        document.getElementById('inputBRL').value = '';
+        document.getElementById('inputCLP').value = '';
+      }
+    }
+
+    document.querySelectorAll('.modal').forEach(modal => {
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+          modal.classList.remove('active');
+        }
+      });
+    });
+
+    document.getElementById('inputBRL').addEventListener('input', (e) => {
+      const brl = parseFloat(e.target.value) || 0;
+      document.getElementById('inputCLP').value = Math.round(brl * tasaCambio);
+    });
+
+    document.getElementById('inputCLP').addEventListener('input', (e) => {
+      const clp = parseFloat(e.target.value) || 0;
+      document.getElementById('inputBRL').value = (clp / tasaCambio).toFixed(2);
+    });
+
+    function editarTasa() {
+      const nueva = prompt('Nueva tasa de cambio (1 BRL = X CLP):', tasaCambio);
+      if (nueva && !isNaN(nueva) && nueva > 0) {
+        tasaCambio = parseFloat(nueva);
+        document.getElementById('tasaActual').textContent = tasaCambio;
+
+        const datos = cargarDatos();
+        datos.tasaCambio = tasaCambio;
+        guardarDatos(datos);
+
+        const inputBRL = document.getElementById('inputBRL');
+        if (inputBRL.value) {
+          const brl = parseFloat(inputBRL.value);
+          document.getElementById('inputCLP').value = Math.round(brl * tasaCambio);
+        }
+
+        actualizarDashboard();
+      }
+    }
+
+    // ========================================
+    // ALOJAMIENTO
+    // ========================================
+    function cargarAlojamiento() {
+      const datos = cargarDatos();
+
+      if (datos.alojamiento) {
+        document.getElementById('alojamientoVista').style.display = 'block';
+        document.getElementById('alojamientoForm').style.display = 'none';
+
+        const a = datos.alojamiento;
+        document.getElementById('verNombre').textContent = a.nombre;
+        document.getElementById('verDireccion').textContent = a.direccion;
+
+        const checkin = new Date(a.checkin).toLocaleString('es-CL');
+        const checkout = new Date(a.checkout).toLocaleString('es-CL');
+        document.getElementById('verCheckin').textContent = checkin;
+        document.getElementById('verCheckout').textContent = checkout;
+
+        const fmtBRL = v => 'R$ ' + Number(v).toLocaleString('es-CL', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        document.getElementById('verPrecioTotal').textContent = a.precioTotal ? fmtBRL(a.precioTotal) : '-';
+        document.getElementById('verPrecioNoche').textContent = a.precioNoche ? fmtBRL(a.precioNoche) : '-';
+        document.getElementById('verNoches').textContent = a.noches || '-';
+
+        const division = a.division == 4 ? 'En 4 (Patricia 25%, Daniela 25%, Gonzalo 50%)' : 'En 3 (33% cada uno)';
+        document.getElementById('verDivision').textContent = division;
+
+        const stars = '⭐'.repeat(a.rating || 0);
+        document.getElementById('verRating').textContent = stars || 'Sin calificar';
+
+        if (a.maps) {
+          const iframe = `<iframe src="${a.maps.replace('/maps/', '/maps/embed/').replace('?', '?&')}" width="100%" height="300" style="border:0; border-radius: 8px;" allowfullscreen="" loading="lazy"></iframe>`;
+          document.getElementById('verMaps').innerHTML = iframe;
+        } else {
+          document.getElementById('verMaps').innerHTML = '';
+        }
+
+        if (a.notas) {
+          document.getElementById('verNotas').innerHTML = '<strong>📝 Notas:</strong><br>' + a.notas;
+          document.getElementById('verNotas').style.display = 'block';
+        } else {
+          document.getElementById('verNotas').style.display = 'none';
+        }
+      } else {
+        document.getElementById('alojamientoVista').style.display = 'none';
+        document.getElementById('alojamientoForm').style.display = 'block';
+      }
+    }
+
+    function editarAlojamiento() {
+      const datos = cargarDatos();
+      const a = datos.alojamiento;
+
+      document.getElementById('alojNombre').value = a.nombre;
+      document.getElementById('alojDireccion').value = a.direccion;
+      document.getElementById('alojMaps').value = a.maps || '';
+      document.getElementById('alojCheckin').value = a.checkin;
+      document.getElementById('alojCheckout').value = a.checkout;
+      document.getElementById('alojPrecioTotal').value = a.precioTotal || '';
+      document.getElementById('alojPrecioNoche').value = a.precioNoche || '';
+      document.querySelector(`input[name="alojDivision"][value="${a.division}"]`).checked = true;
+      document.getElementById('alojRating').value = a.rating || 0;
+      document.getElementById('alojNotas').value = a.notas || '';
+
+      document.getElementById('alojamientoVista').style.display = 'none';
+      document.getElementById('alojamientoForm').style.display = 'block';
+    }
+
+    function calcularPrecios() {
+      const checkin = new Date(document.getElementById('alojCheckin').value);
+      const checkout = new Date(document.getElementById('alojCheckout').value);
+
+      if (checkin && checkout && checkin < checkout) {
+        const noches = Math.ceil((checkout - checkin) / (1000 * 60 * 60 * 24));
+
+        const precioTotal = parseFloat(document.getElementById('alojPrecioTotal').value);
+        const precioNoche = parseFloat(document.getElementById('alojPrecioNoche').value);
+
+        if (precioTotal && !precioNoche) {
+          document.getElementById('alojPrecioNoche').value = (precioTotal / noches).toFixed(2);
+        } else if (precioNoche && !precioTotal) {
+          document.getElementById('alojPrecioTotal').value = (precioNoche * noches).toFixed(2);
+        }
+      }
+    }
+
+    document.getElementById('alojCheckin')?.addEventListener('change', calcularPrecios);
+    document.getElementById('alojCheckout')?.addEventListener('change', calcularPrecios);
+    document.getElementById('alojPrecioTotal')?.addEventListener('input', function () {
+      if (this.value) document.getElementById('alojPrecioNoche').value = '';
+      calcularPrecios();
+    });
+    document.getElementById('alojPrecioNoche')?.addEventListener('input', function () {
+      if (this.value) document.getElementById('alojPrecioTotal').value = '';
+      calcularPrecios();
+    });
+
+    document.getElementById('formAlojamiento')?.addEventListener('submit', (e) => {
+      e.preventDefault();
+
+      const checkin = new Date(document.getElementById('alojCheckin').value);
+      const checkout = new Date(document.getElementById('alojCheckout').value);
+      const noches = Math.ceil((checkout - checkin) / (1000 * 60 * 60 * 24));
+
+      const alojamiento = {
+        nombre: document.getElementById('alojNombre').value.trim(),
+        direccion: document.getElementById('alojDireccion').value.trim(),
+        maps: document.getElementById('alojMaps').value.trim(),
+        checkin: document.getElementById('alojCheckin').value,
+        checkout: document.getElementById('alojCheckout').value,
+        noches: noches,
+        precioTotal: parseFloat(document.getElementById('alojPrecioTotal').value) || null,
+        precioNoche: parseFloat(document.getElementById('alojPrecioNoche').value) || null,
+        division: document.querySelector('input[name="alojDivision"]:checked').value,
+        rating: parseInt(document.getElementById('alojRating').value),
+        notas: document.getElementById('alojNotas').value.trim()
+      };
+
+      const datos = cargarDatos();
+      datos.alojamiento = alojamiento;
+      guardarDatos(datos);
+
+      cargarAlojamiento();
+      actualizarDashboard();
+      alert('✅ Alojamiento guardado correctamente');
+    });
+
+    // ========================================
+    // COMPRAS
+    // ========================================
+    function renderizarCompras(filtro = 'todos') {
+      const datos = cargarDatos();
+      const lista = document.getElementById('listaCompras');
+      lista.innerHTML = '';
+
+      let compras = datos.compras;
+      if (filtro === 'pendientes') compras = compras.filter(c => !c.comprado);
+      if (filtro === 'comprados') compras = compras.filter(c => c.comprado);
+
+      if (compras.length === 0) {
+        lista.innerHTML = '<p style="text-align: center; color: var(--gris-oscuro); padding: 2rem;">No hay compras</p>';
+        return;
+      }
+
+      compras.forEach((compra, index) => {
+        const div = document.createElement('div');
+        div.className = 'compra-item' + (compra.comprado ? ' comprado' : '');
+        div.innerHTML = `
+          <input type="checkbox" ${compra.comprado ? 'checked' : ''} onchange="toggleCompra(${compra.id})">
+          <div class="compra-info">
+            <div class="compra-nombre">${compra.articulo} ${compra.cantidad > 1 ? '(x' + compra.cantidad + ')' : ''}</div>
+            <div class="compra-detalles">${compra.categoria}${compra.notas ? ' • ' + compra.notas : ''}</div>
+            ${compra.precio ? '<div class="compra-detalles" style="color: var(--verde-brasil);">Pagado: R$ ' + compra.precio.toFixed(2) + '</div>' : ''}
+          </div>
+          <div class="compra-actions">
+            <button class="btn-small btn-danger" onclick="eliminarCompra(${compra.id})">🗑️</button>
+          </div>
+        `;
+        lista.appendChild(div);
+      });
+
+      const pendientes = datos.compras.filter(c => !c.comprado).length;
+      const comprados = datos.compras.filter(c => c.comprado).length;
+      document.getElementById('contadorCompras').textContent = `${pendientes} pendientes, ${comprados} comprados`;
+    }
+
+    function filtrarCompras(filtro) {
+      renderizarCompras(filtro);
+    }
+
+    function toggleCompra(id) {
+      const datos = cargarDatos();
+      const compra = datos.compras.find(c => c.id === id);
+      compra.comprado = !compra.comprado;
+
+      if (compra.comprado && !compra.precio) {
+        const precio = prompt('¿Cuánto costó? (opcional, en BRL)');
+        if (precio && !isNaN(precio)) {
+          compra.precio = parseFloat(precio);
+        }
+      }
+
+      guardarDatos(datos);
+      renderizarCompras();
+      actualizarDashboard();
+    }
+
+    function eliminarCompra(id) {
+      if (!confirm('¿Eliminar esta compra?')) return;
+
+      const datos = cargarDatos();
+      datos.compras = datos.compras.filter(c => c.id !== id);
+      guardarDatos(datos);
+      renderizarCompras();
+      actualizarDashboard();
+    }
+
+    document.getElementById('formCompra')?.addEventListener('submit', (e) => {
+      e.preventDefault();
+
+      const compra = {
+        id: Date.now(),
+        articulo: document.getElementById('compraArticulo').value.trim(),
+        cantidad: parseInt(document.getElementById('compraCantidad').value),
+        categoria: document.getElementById('compraCategoria').value,
+        notas: document.getElementById('compraNotas').value.trim(),
+        comprado: false,
+        precio: null
+      };
+
+      const datos = cargarDatos();
+      datos.compras.push(compra);
+      guardarDatos(datos);
+
+      e.target.reset();
+      document.getElementById('compraCantidad').value = 1;
+      renderizarCompras();
+      actualizarDashboard();
+    });
+
+    // ========================================
+    // ATRACCIONES
+    // ========================================
+    let atraccionActual = null;
+
+    function abrirModalNuevaAtraccion() {
+      document.getElementById('modalNuevaAtraccion').classList.add('active');
+      document.getElementById('formNuevaAtraccion').reset();
+      document.getElementById('tituloModalAtraccion').textContent = '➕ Nueva Atracción';
+      atraccionActual = null;
+    }
+
+    // ← LÍNEA 442-456: Conversión automática BRL ↔ CLP en precio de entrada
+    document.getElementById('atracPrecioBRL')?.addEventListener('input', (e) => {
+      const brl = parseFloat(e.target.value) || 0;
+      if (brl > 0) {
+        document.getElementById('atracPrecioCLP').value = Math.round(brl * tasaCambio);
+      } else {
+        document.getElementById('atracPrecioCLP').value = '';
+      }
+    });
+
+    document.getElementById('atracPrecioCLP')?.addEventListener('input', (e) => {
+      const clp = parseFloat(e.target.value) || 0;
+      if (clp > 0) {
+        document.getElementById('atracPrecioBRL').value = (clp / tasaCambio).toFixed(2);
+      } else {
+        document.getElementById('atracPrecioBRL').value = '';
+      }
+    });
+
+    // ← LÍNEA 460-496: Formulario nueva atracción
+    document.getElementById('formNuevaAtraccion')?.addEventListener('submit', (e) => {
+      e.preventDefault();
+
+      const imagenes = document.getElementById('atracImagenes').value
+        .split('\n')
+        .map(url => url.trim())
+        .filter(url => url.length > 0);
+
+      const atraccion = {
+        id: atraccionActual?.id || Date.now(),
+        nombre: document.getElementById('atracNombre').value.trim(),
+        categoria: document.getElementById('atracCategoria').value,
+        direccion: document.getElementById('atracDireccion').value.trim(),
+        maps: document.getElementById('atracMaps').value.trim(),
+        precioBRL: parseFloat(document.getElementById('atracPrecioBRL').value) || null,
+        imagenes: imagenes,
+        notas: document.getElementById('atracNotas').value.trim(),
+        visitado: atraccionActual?.visitado || false,
+        fechaVisita: atraccionActual?.fechaVisita || null,
+        rating: atraccionActual?.rating || 0
+      };
+
+      const datos = cargarDatos();
+
+      if (atraccionActual) {
+        const index = datos.atracciones.findIndex(a => a.id === atraccionActual.id);
+        datos.atracciones[index] = atraccion;
+      } else {
+        datos.atracciones.push(atraccion);
+      }
+
+      guardarDatos(datos);
+      cerrarModal('modalNuevaAtraccion');
+      renderizarAtracciones();
+      actualizarDashboard();
+      alert('✅ Atracción guardada correctamente');
+    });
+
+    // ← LÍNEA 500-568: Renderizar atracciones con filtros
+    function renderizarAtracciones(filtro = 'todas') {
+      const datos = cargarDatos();
+      const grid = document.getElementById('gridAtracciones');
+      grid.innerHTML = '';
+
+      let atracciones = datos.atracciones;
+
+      if (filtro === 'pendientes') atracciones = atracciones.filter(a => !a.visitado);
+      if (filtro === 'visitadas') atracciones = atracciones.filter(a => a.visitado);
+      if (['playa', 'restaurant', 'museo', 'compras', 'nocturna', 'parque', 'otro'].includes(filtro)) {
+        atracciones = atracciones.filter(a => a.categoria === filtro);
+      }
+
+      if (atracciones.length === 0) {
+        grid.innerHTML = '<p style="text-align: center; color: var(--gris-oscuro); padding: 3rem; grid-column: 1/-1;">No hay atracciones</p>';
+        document.getElementById('contadorAtracciones').textContent = '0 atracciones';
+        return;
+      }
+
+      const categoriaLabels = {
+        playa: '🏖️ Playa',
+        restaurant: '🍽️ Restaurant',
+        museo: '🎨 Museo',
+        compras: '🛍️ Compras',
+        nocturna: '🌃 Vida Nocturna',
+        parque: '🌳 Parque',
+        otro: '📍 Otro'
+      };
+
+      atracciones.forEach(atraccion => {
+        const card = document.createElement('div');
+        card.className = 'atraccion-card';
+        card.onclick = () => mostrarDetalleAtraccion(atraccion.id);
+
+        const imagenSrc = atraccion.imagenes && atraccion.imagenes.length > 0
+          ? atraccion.imagenes[0]
+          : 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="400" height="200"><rect fill="%23e0e0e0" width="400" height="200"/><text x="50%" y="50%" text-anchor="middle" fill="%23999" font-size="20">Sin imagen</text></svg>';
+
+        const estadoHtml = atraccion.visitado
+          ? '<div class="atraccion-estado estado-visitado">✓ Visitado</div>'
+          : '<div class="atraccion-estado estado-pendiente">⏳ Pendiente</div>';
+
+        const ratingHtml = atraccion.rating > 0
+          ? `<div class="atraccion-rating">${'⭐'.repeat(atraccion.rating)}</div>`
+          : '';
+
+        const precioHtml = atraccion.precioBRL
+          ? `<div style="margin-top: 0.5rem; font-weight: 600; color: var(--verde-brasil);">R$ ${atraccion.precioBRL.toFixed(2)}</div>`
+          : '';
+
+        card.innerHTML = `
+          <img src="${imagenSrc}" class="atraccion-card-image" alt="${atraccion.nombre}">
+          <div class="atraccion-card-body">
+            <div class="atraccion-card-header">
+              <h3 class="atraccion-card-title">${atraccion.nombre}</h3>
+              <span class="atraccion-badge badge-${atraccion.categoria}">${categoriaLabels[atraccion.categoria]}</span>
+            </div>
+            <div class="atraccion-info">
+              ${atraccion.direccion ? `<div>📍 ${atraccion.direccion}</div>` : ''}
+              ${precioHtml}
+            </div>
+            ${ratingHtml}
+            ${estadoHtml}
+          </div>
+        `;
+
+        grid.appendChild(card);
+      });
+
+      const visitadas = datos.atracciones.filter(a => a.visitado).length;
+      document.getElementById('contadorAtracciones').textContent =
+        `${atracciones.length} atracciones (${visitadas} visitadas)`;
+    }
+
+    // ← LÍNEA 572-634: Mostrar detalle de atracción
+    function mostrarDetalleAtraccion(id) {
+      const datos = cargarDatos();
+      const atraccion = datos.atracciones.find(a => a.id === id);
+      atraccionActual = atraccion;
+
+      const categoriaLabels = {
+        playa: '🏖️ Playa',
+        restaurant: '🍽️ Restaurant',
+        museo: '🎨 Museo',
+        compras: '🛍️ Compras',
+        nocturna: '🌃 Vida Nocturna',
+        parque: '🌳 Parque',
+        otro: '📍 Otro'
+      };
+
+      const imagenesHtml = atraccion.imagenes && atraccion.imagenes.length > 0
+        ? atraccion.imagenes.map(url => `<img src="${url}" style="width: 100%; border-radius: 8px; margin-bottom: 1rem;">`).join('')
+        : '';
+
+      const estadoBtnHtml = atraccion.visitado
+        ? '<button class="btn-secondary" onclick="marcarPendiente()" style="width: 100%;">⏳ Marcar como Pendiente</button>'
+        : '<button class="btn-primary" onclick="marcarVisitado()" style="width: 100%;">✓ Marcar como Visitado</button>';
+
+      const fmtBRL = v => 'R$ ' + Number(v).toLocaleString('es-CL', { minimumFractionDigits: 2 });
+      const precioHtml = atraccion.precioBRL
+        ? `<div><strong>💰 Precio:</strong> ${fmtBRL(atraccion.precioBRL)} (CLP$ ${Math.round(atraccion.precioBRL * tasaCambio).toLocaleString('es-CL')})</div>`
+        : '';
+
+      const mapsHtml = atraccion.maps
+        ? `<iframe src="${atraccion.maps.replace('/maps/', '/maps/embed/')}" width="100%" height="300" style="border:0; border-radius: 8px; margin-top: 1rem;" allowfullscreen="" loading="lazy"></iframe>`
+        : '';
+
+      document.getElementById('detalleAtraccionContent').innerHTML = `
+        <h2 style="color: var(--verde-brasil); margin-bottom: 1rem;">${atraccion.nombre}</h2>
+        <span class="atraccion-badge badge-${atraccion.categoria}">${categoriaLabels[atraccion.categoria]}</span>
+
+        ${imagenesHtml}
+
+        <div style="display: grid; gap: 0.75rem; margin: 1.5rem 0;">
+          ${atraccion.direccion ? `<div><strong>📍 Dirección:</strong> ${atraccion.direccion}</div>` : ''}
+          ${precioHtml}
+          ${atraccion.rating > 0 ? `<div><strong>⭐ Rating:</strong> ${'⭐'.repeat(atraccion.rating)}</div>` : ''}
+          ${atraccion.visitado && atraccion.fechaVisita ? `<div><strong>📅 Visitado:</strong> ${new Date(atraccion.fechaVisita).toLocaleDateString('es-CL')}</div>` : ''}
+        </div>
+
+        ${atraccion.notas ? `<div style="padding: 1rem; background: var(--gris-claro); border-radius: 8px; margin: 1rem 0;"><strong>📝 Notas:</strong><br>${atraccion.notas}</div>` : ''}
+
+        ${mapsHtml}
+
+        <div style="margin-top: 1.5rem;">
+          ${estadoBtnHtml}
+        </div>
+      `;
+
+      document.getElementById('modalDetalleAtraccion').classList.add('active');
+    }
+
+    // ← LÍNEA 638-662: Marcar como visitado
+    function marcarVisitado() {
+      const fecha = prompt('Fecha de visita (opcional, formato: DD/MM/YYYY):');
+      let fechaVisita = null;
+
+      if (fecha) {
+        const partes = fecha.split('/');
+        if (partes.length === 3) {
+          fechaVisita = `${partes[2]}-${partes[1]}-${partes[0]}`;
+        }
+      }
+
+      const rating = prompt('Rating (1-5 estrellas, opcional):');
+
+      const datos = cargarDatos();
+      const atraccion = datos.atracciones.find(a => a.id === atraccionActual.id);
+      atraccion.visitado = true;
+      atraccion.fechaVisita = fechaVisita || new Date().toISOString().split('T')[0];
+      atraccion.rating = parseInt(rating) || 0;
+
+      guardarDatos(datos);
+      cerrarModal('modalDetalleAtraccion');
+      renderizarAtracciones();
+      actualizarDashboard();
+      alert('✅ Marcado como visitado');
+    }
+
+    // ← LÍNEA 666-676: Marcar como pendiente
+    function marcarPendiente() {
+      if (!confirm('¿Marcar como pendiente?')) return;
+
+      const datos = cargarDatos();
+      const atraccion = datos.atracciones.find(a => a.id === atraccionActual.id);
+      atraccion.visitado = false;
+      atraccion.fechaVisita = null;
+      atraccion.rating = 0;
+
+      guardarDatos(datos);
+      cerrarModal('modalDetalleAtraccion');
+      renderizarAtracciones();
+      actualizarDashboard();
+    }
+
+    // ← LÍNEA 680-695: Editar atracción
+    function editarAtraccion() {
+      const a = atraccionActual;
+      document.getElementById('atracNombre').value = a.nombre;
+      document.getElementById('atracCategoria').value = a.categoria;
+      document.getElementById('atracDireccion').value = a.direccion || '';
+      document.getElementById('atracMaps').value = a.maps || '';
+      document.getElementById('atracPrecioBRL').value = a.precioBRL || '';
+      document.getElementById('atracImagenes').value = a.imagenes ? a.imagenes.join('\n') : '';
+      document.getElementById('atracNotas').value = a.notas || '';
+
+      document.getElementById('tituloModalAtraccion').textContent = '✏️ Editar Atracción';
+
+      cerrarModal('modalDetalleAtraccion');
+      document.getElementById('modalNuevaAtraccion').classList.add('active');
+    }
+
+    // ← LÍNEA 699-710: Eliminar atracción
+    function eliminarAtraccion() {
+      if (!confirm('¿Eliminar esta atracción?')) return;
+
+      const datos = cargarDatos();
+      datos.atracciones = datos.atracciones.filter(a => a.id !== atraccionActual.id);
+      guardarDatos(datos);
+
+      cerrarModal('modalDetalleAtraccion');
+      renderizarAtracciones();
+      actualizarDashboard();
+      alert('✅ Atracción eliminada');
+    }
+
+    // ← LÍNEA 714-719: Filtros de atracciones
+    document.querySelectorAll('.filtros-atracciones button').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.filtros-atracciones button').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        renderizarAtracciones(btn.dataset.filtro);
+      });
+    });
+    // ========================================
+    // CONFIGURACIÓN
+    // ========================================
+
+    function cargarEstadisticas() {
+      const datos = cargarDatos();
+      const gastosData = JSON.parse(localStorage.getItem('gastosViaje') || '[]');
+
+      document.getElementById('statGastos').textContent = gastosData.length;
+      document.getElementById('statCompras').textContent = datos.compras.length;
+      document.getElementById('statAtracciones').textContent = datos.atracciones.length;
+
+      const allData = {
+        app: datos,
+        gastos: gastosData
+      };
+      const dataStr = JSON.stringify(allData);
+      const tamanoKB = (new Blob([dataStr]).size / 1024).toFixed(2);
+      document.getElementById('statTamano').textContent = tamanoKB + ' KB';
+
+      document.getElementById('tasaCambioConfig').textContent = datos.tasaCambio;
+    }
+
+    function exportarJSON() {
+      const datos = cargarDatos();
+      const gastosData = JSON.parse(localStorage.getItem('gastosViaje') || '[]');
+
+      const exportData = {
+        version: '1.0',
+        fecha: new Date().toISOString(),
+        app: datos,
+        gastos: gastosData
+      };
+
+      const dataStr = JSON.stringify(exportData, null, 2);
+      const blob = new Blob([dataStr], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `brasil-travel-backup-${new Date().toISOString().split('T')[0]}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      alert('✅ Backup descargado correctamente');
+    }
+
+    async function copiarAlPortapapeles() {
+      const datos = cargarDatos();
+      const gastosData = JSON.parse(localStorage.getItem('gastosViaje') || '[]');
+
+      const exportData = {
+        version: '1.0',
+        fecha: new Date().toISOString(),
+        app: datos,
+        gastos: gastosData
+      };
+
+      const dataStr = JSON.stringify(exportData);
+
+      try {
+        await navigator.clipboard.writeText(dataStr);
+        alert('✅ Datos copiados al portapapeles\n\nAhora puedes pegarlos en WhatsApp, Telegram, email, etc. para compartir con otra persona.');
+      } catch (err) {
+        const textarea = document.createElement('textarea');
+        textarea.value = dataStr;
+        textarea.style.position = 'fixed';
+        textarea.style.opacity = '0';
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+        alert('✅ Datos copiados al portapapeles\n\nAhora puedes pegarlos en WhatsApp, Telegram, email, etc.');
+      }
+    }
+
+    function importarJSON(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        try {
+          const importData = JSON.parse(e.target.result);
+
+          if (!importData.version || !importData.app || !importData.gastos) {
+            alert('❌ Archivo inválido. Debe ser un backup exportado desde esta app.');
+            return;
+          }
+
+          const confirmar = confirm('⚠️ ¿Reemplazar todos los datos actuales?\n\nEsta acción sobrescribirá toda tu información actual con los datos importados.');
+
+          if (confirmar) {
+            localStorage.setItem(STORAGE_KEY_APP, JSON.stringify(importData.app));
+            localStorage.setItem('gastosViaje', JSON.stringify(importData.gastos));
+
+            alert('✅ Datos importados correctamente\n\nRecargando la página...');
+            location.reload();
+          }
+        } catch (error) {
+          alert('❌ Error al importar: Archivo corrupto o formato inválido');
+          console.error(error);
+        }
+      };
+      reader.readAsText(file);
+
+      event.target.value = '';
+    }
+
+    async function pegarDesdePortapapeles() {
+      try {
+        const texto = await navigator.clipboard.readText();
+
+        if (!texto) {
+          alert('❌ No hay nada en el portapapeles');
+          return;
+        }
+
+        try {
+          const importData = JSON.parse(texto);
+
+          if (!importData.version || !importData.app || !importData.gastos) {
+            alert('❌ Datos inválidos en el portapapeles.\n\nDebes copiar datos exportados desde esta app.');
+            return;
+          }
+
+          const confirmar = confirm('⚠️ ¿Reemplazar todos los datos actuales?\n\nEsta acción sobrescribirá toda tu información actual con los datos pegados.');
+
+          if (confirmar) {
+            localStorage.setItem(STORAGE_KEY_APP, JSON.stringify(importData.app));
+            localStorage.setItem('gastosViaje', JSON.stringify(importData.gastos));
+
+            alert('✅ Datos importados correctamente\n\nRecargando la página...');
+            location.reload();
+          }
+        } catch (parseError) {
+          alert('❌ Error: Los datos en el portapapeles no son válidos');
+          console.error(parseError);
+        }
+      } catch (err) {
+        const texto = prompt('Pega aquí los datos copiados:');
+        if (!texto) return;
+
+        try {
+          const importData = JSON.parse(texto);
+
+          if (!importData.version || !importData.app || !importData.gastos) {
+            alert('❌ Datos inválidos');
+            return;
+          }
+
+          const confirmar = confirm('⚠️ ¿Reemplazar todos los datos actuales?');
+
+          if (confirmar) {
+            localStorage.setItem(STORAGE_KEY_APP, JSON.stringify(importData.app));
+            localStorage.setItem('gastosViaje', JSON.stringify(importData.gastos));
+            alert('✅ Datos importados correctamente');
+            location.reload();
+          }
+        } catch (error) {
+          alert('❌ Error: Datos inválidos');
+        }
+      }
+    }
+
+    function borrarTodosDatos() {
+      const confirmar1 = confirm('⚠️ ¿ESTÁS SEGURO?\n\nEsta acción eliminará TODO:\n- Gastos\n- Alojamiento\n- Compras\n- Atracciones\n\n¿Continuar?');
+
+      if (!confirmar1) return;
+
+      const confirmar2 = confirm('⚠️⚠️ ÚLTIMA CONFIRMACIÓN\n\nEsta acción NO SE PUEDE DESHACER.\n\n¿Borrar TODOS los datos?');
+
+      if (confirmar2) {
+        localStorage.removeItem(STORAGE_KEY_APP);
+        localStorage.removeItem('gastosViaje');
+        alert('✅ Todos los datos han sido eliminados\n\nRecargando la página...');
+        location.reload();
+      }
+    }
+
+    // ========================================
+    // INICIALIZACIÓN
+    // ========================================
+    // ← LÍNEA 726-730: Inicializar TODAS las secciones al cargar
+    window.addEventListener('load', () => {
+      actualizarDashboard();
+      cargarAlojamiento();
+      renderizarCompras();
+      renderizarAtracciones();  // ← Aquí se inicializa la sección de atracciones
+    });
+  </script>
+</body>
+
+</html>

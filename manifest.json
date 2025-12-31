@@ -1,0 +1,56 @@
+{
+  "name": "Brasil Travel App",
+  "short_name": "Brasil Travel",
+  "description": "App de gestión de viaje a Brasil - Gastos, Alojamiento, Compras y Atracciones",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#009b3a",
+  "theme_color": "#009b3a",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": [
+    "travel",
+    "finance",
+    "productivity"
+  ],
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "Ver Gastos",
+      "short_name": "Gastos",
+      "description": "Ver lista de gastos del viaje",
+      "url": "/?section=gastos",
+      "icons": [
+        {
+          "src": "icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Ver Atracciones",
+      "short_name": "Atracciones",
+      "description": "Ver atracciones turísticas",
+      "url": "/?section=atracciones",
+      "icons": [
+        {
+          "src": "icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
+  ]
+}
