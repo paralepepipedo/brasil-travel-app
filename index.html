@@ -2594,7 +2594,12 @@
           });
 
           const totalBRL = listaFiltrada.reduce((acc, g) => acc + g.monto_brl, 0);
-          const totalCLP = totalBRL * TASA_CAMBIO;
+          const totalCLP = listaFiltrada.reduce((acc, g) => {
+            if (g.moneda === 'CLP' && g.monto_original) {
+              return acc + g.monto_original;
+            }
+            return acc + (g.monto_brl * TASA_CAMBIO);
+          }, 0);
 
           // Objeto para almacenar las deudas detalladas. Ej: deudas.Daniela.aPatricia = 100 (Daniela le debe 100 a Patricia)
           const personas = ['Patricia', 'Daniela', 'Gonzalo'];
@@ -2711,6 +2716,8 @@
           id: Date.now() + Math.floor(Math.random() * 1000), // ⬅️ AGREGAR ESTA LÍNEA
           descripcion: form.descripcion.value.trim(),
           monto_brl: montoEnBRL,
+          moneda: monedaSelect.value,
+          monto_original: montoIngresado,
           fecha: form.fecha.value,
           personas: parseInt(form.personas.value),
           pagadoPor: pagadoPorSelect.value
@@ -2753,10 +2760,15 @@
           if (gasto) {
             form.descripcion.value = gasto.descripcion;
 
-            form.monto.value = gasto.monto_brl;
+            if (gasto.moneda && gasto.monto_original) {
+              form.monto.value = gasto.monto_original;
+              monedaSelect.value = gasto.moneda;
+            } else {
+              form.monto.value = gasto.monto_brl;
+              monedaSelect.value = 'BRL';
+            }
             form.fecha.value = gasto.fecha;
             form.personas.value = gasto.personas;
-            monedaSelect.value = 'BRL'; // Al editar, siempre mostramos en BRL
             pagadoPorSelect.value = gasto.pagadoPor || 'Patricia'; // Default a Patricia si no existe
             idEdicion = index;
             window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -3027,18 +3039,25 @@
       const gastosData = JSON.parse(localStorage.getItem('gastosViaje') || '[]');
 
       let totalBRL = 0;
+      let totalCLP = 0;
       const pagadoPor = { Patricia: 0, Daniela: 0, Gonzalo: 0 };
 
       gastosData.forEach(g => {
         totalBRL += g.monto_brl;
         pagadoPor[g.pagadoPor] += g.monto_brl;
+
+        if (g.moneda === 'CLP' && g.monto_original) {
+          totalCLP += g.monto_original;
+        } else {
+          totalCLP += g.monto_brl * datos.tasaCambio;
+        }
       });
 
       const fmtBRL = v => 'R$ ' + Number(v).toLocaleString('es-CL', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
       const fmtCLP = v => 'CLP$ ' + Math.round(v).toLocaleString('es-CL');
 
       document.getElementById('totalBRL').textContent = fmtBRL(totalBRL);
-      document.getElementById('totalCLP').textContent = fmtCLP(totalBRL * datos.tasaCambio);
+      document.getElementById('totalCLP').textContent = fmtCLP(totalCLP);
 
       document.getElementById('pagadoPatricia').textContent = fmtBRL(pagadoPor.Patricia);
       document.getElementById('pagadoDaniela').textContent = fmtBRL(pagadoPor.Daniela);
