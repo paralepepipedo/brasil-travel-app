@@ -1617,14 +1617,14 @@
 
       <div class="form-group">
         <label for="inputBRL">Reales Brasileños (R$)</label>
-        <input type="number" id="inputBRL" placeholder="0.00" step="0.01" min="0">
+        <input type="text" inputmode="decimal" id="inputBRL" placeholder="0,00">
       </div>
 
       <div style="text-align: center; font-size: 2rem; color: var(--gris-oscuro); margin: 1rem 0;">⇅</div>
 
       <div class="form-group">
         <label for="inputCLP">Pesos Chilenos ($)</label>
-        <input type="number" id="inputCLP" placeholder="0" step="1" min="0">
+        <input type="text" inputmode="numeric" id="inputCLP" placeholder="0">
       </div>
 
       <div
@@ -3114,14 +3114,23 @@
       });
     });
 
+    // Función auxiliar para parsear números con formato local (1.000,00)
+    function parseMontoLocal(valor) {
+      if (!valor) return 0;
+      // Eliminar puntos de miles y reemplazar coma decimal por punto para cálculo JS
+      return parseFloat(valor.replace(/\./g, '').replace(',', '.')) || 0;
+    }
+
     document.getElementById('inputBRL').addEventListener('input', (e) => {
-      const brl = parseFloat(e.target.value) || 0;
-      document.getElementById('inputCLP').value = Math.round(brl * tasaCambio);
+      const brl = parseMontoLocal(e.target.value);
+      const clp = Math.round(brl * tasaCambio);
+      document.getElementById('inputCLP').value = clp.toLocaleString('es-CL');
     });
 
     document.getElementById('inputCLP').addEventListener('input', (e) => {
-      const clp = parseFloat(e.target.value) || 0;
-      document.getElementById('inputBRL').value = (clp / tasaCambio).toFixed(2);
+      const clp = parseMontoLocal(e.target.value);
+      const brl = clp / tasaCambio;
+      document.getElementById('inputBRL').value = brl.toLocaleString('es-CL', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     });
 
     function editarTasa() {
@@ -3136,8 +3145,8 @@
 
         const inputBRL = document.getElementById('inputBRL');
         if (inputBRL.value) {
-          const brl = parseFloat(inputBRL.value);
-          document.getElementById('inputCLP').value = Math.round(brl * tasaCambio);
+          const brl = parseMontoLocal(inputBRL.value);
+          document.getElementById('inputCLP').value = Math.round(brl * tasaCambio).toLocaleString('es-CL');
         }
 
         actualizarDashboard();
@@ -4370,6 +4379,7 @@
 
     function renderizarCardVueloDashboard(vuelo, tipo) {
       const salida = new Date(vuelo.fechaSalida);
+      const llegada = new Date(vuelo.fechaLlegada);
       const tiempoRestante = calcularTiempoRestante(salida);
       const colorAlerta = obtenerColorAlerta(tiempoRestante.total);
 
@@ -4397,7 +4407,8 @@
           </div>
         </div>
         <div style="margin: 1rem 0; font-size: 0.95rem;">
-          📅 ${formatearFecha(salida)}
+          <div>🛫 Salida: ${formatearFecha(salida)}</div>
+          <div>🛬 Llegada: ${formatearFecha(llegada)}</div>
         </div>
         <div class="vuelo-info">
           📋 ${vuelo.aerolinea} ${vuelo.numeroVuelo}${vuelo.codigoReserva ? ` - ${vuelo.codigoReserva}` : ''}
