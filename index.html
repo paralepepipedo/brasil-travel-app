@@ -9,6 +9,8 @@
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#009b3a">
   <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Brasil Travel">
   <style>
@@ -1587,6 +1589,7 @@
       <button class="nav-tab" data-section="alojamiento">🏠 Alojamiento</button>
       <button class="nav-tab" data-section="compras">🛒 Compras</button>
       <button class="nav-tab" data-section="atracciones">📍 Atracciones</button>
+      <button class="nav-tab" onclick="window.location.href='itinerario.html'">📅 Itinerario</button>
       <button class="nav-tab" data-section="vuelos">✈️ Vuelos</button>
       <button class="nav-tab" data-section="documentos">📄 Documentos</button>
       <button class="nav-tab" data-section="configuracion">⚙️ Configuración</button>
@@ -1601,6 +1604,7 @@
     <button class="mobile-nav" data-section="alojamiento">🏠 Alojamiento</button>
     <button class="mobile-nav" data-section="compras">🛒 Compras</button>
     <button class="mobile-nav" data-section="atracciones">📍 Atracciones</button>
+    <button class="mobile-nav" onclick="window.location.href='itinerario.html'">📅 Itinerario</button>
     <button class="mobile-nav" data-section="vuelos">✈️ Vuelos</button>
     <button class="mobile-nav" data-section="documentos">📄 Documentos</button>
     <button class="mobile-nav" data-section="configuracion">⚙️ Configuración</button>
@@ -3202,9 +3206,12 @@
         const stars = '⭐'.repeat(a.rating || 0);
         document.getElementById('verRating').textContent = stars || 'Sin calificar';
 
-        if (a.maps) {
-          const iframe = `<iframe src="${a.maps.replace('/maps/', '/maps/embed/').replace('?', '?&')}" width="100%" height="300" style="border:0; border-radius: 8px;" allowfullscreen="" loading="lazy"></iframe>`;
-          document.getElementById('verMaps').innerHTML = iframe;
+        if (a.nombre || a.direccion) {
+          // Generamos el mapa buscando por Nombre + Dirección para evitar bloqueo
+          const query = encodeURIComponent(`${a.nombre} ${a.direccion || ''}`);
+          const iframeSrc = `https://maps.google.com/maps?q=${query}&t=&z=15&ie=UTF8&iwloc=&output=embed`;
+
+          document.getElementById('verMaps').innerHTML = `<iframe src="${iframeSrc}" width="100%" height="350" style="border:0; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);" allowfullscreen="" loading="lazy"></iframe>`;
         } else {
           document.getElementById('verMaps').innerHTML = '';
         }
@@ -3566,9 +3573,9 @@
         ? `<div><strong>💰 Precio:</strong> ${fmtBRL(atraccion.precioBRL)} (CLP$ ${Math.round(atraccion.precioBRL * tasaCambio).toLocaleString('es-CL')})</div>`
         : '';
 
-      const mapsHtml = atraccion.maps
-        ? `<iframe src="${atraccion.maps.replace('/maps/', '/maps/embed/')}" width="100%" height="300" style="border:0; border-radius: 8px; margin-top: 1rem;" allowfullscreen="" loading="lazy"></iframe>`
-        : '';
+      // Generamos mapa incrustado basado en el nombre y dirección
+      const queryMap = encodeURIComponent(`${atraccion.nombre} ${atraccion.direccion || ''}`);
+      const mapsHtml = `<iframe src="https://maps.google.com/maps?q=${queryMap}&t=&z=15&ie=UTF8&iwloc=&output=embed" width="100%" height="300" style="border:0; border-radius: 8px; margin-top: 1rem;" allowfullscreen="" loading="lazy"></iframe>`;
 
       document.getElementById('detalleAtraccionContent').innerHTML = `
         <h2 style="color: var(--verde-brasil); margin-bottom: 1rem;">${atraccion.nombre}</h2>

@@ -1,0 +1,1169 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#009b3a">
+    <title>Itinerario - Brasil Travel App</title>
+    <link rel="manifest" href="manifest.json">
+
+    <style>
+        :root {
+            --verde-brasil: #009b3a;
+            --amarillo-brasil: #fedf00;
+            --azul-brasil: #002776;
+            --verde-claro: #00b060;
+            --azul-claro: #0055a5;
+            --gris-claro: #f7f7f7;
+            --gris-medio: #ddd;
+            --gris-oscuro: #666;
+            --texto-oscuro: #222;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--gris-claro);
+            color: var(--texto-oscuro);
+            padding-top: 70px;
+            min-height: 100vh;
+        }
+
+        /* HEADER */
+        .app-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background: linear-gradient(135deg, var(--verde-brasil) 0%, var(--verde-claro) 100%);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 1.5rem;
+            z-index: 1000;
+        }
+
+        .app-title {
+            color: white;
+            font-size: 1.5rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-volver {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            font-weight: 600;
+            transition: 0.3s ease;
+        }
+
+        .btn-volver:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        /* CONTAINER */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1.5rem;
+        }
+
+        /* SELECTOR DE FECHA */
+        .fecha-selector {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .fecha-selector h2 {
+            color: var(--verde-brasil);
+            font-size: 1.3rem;
+        }
+
+        .fecha-controls {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .btn-fecha {
+            background: var(--azul-brasil);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: 0.3s ease;
+        }
+
+        .btn-fecha:hover {
+            background: var(--azul-claro);
+        }
+
+        #fechaActual {
+            padding: 0.5rem 1rem;
+            border: 2px solid var(--verde-brasil);
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--texto-oscuro);
+        }
+
+        /* BOTÓN NUEVA ACTIVIDAD */
+        .btn-nueva-actividad {
+            background: var(--verde-brasil);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-nueva-actividad:hover {
+            background: var(--verde-claro);
+            transform: translateY(-2px);
+        }
+
+        /* RESUMEN DEL DÍA */
+        .resumen-dia {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 1.5rem;
+        }
+
+        .resumen-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .resumen-item {
+            text-align: center;
+            padding: 1rem;
+            background: var(--gris-claro);
+            border-radius: 8px;
+        }
+
+        .resumen-item-valor {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--verde-brasil);
+        }
+
+        .resumen-item-label {
+            font-size: 0.9rem;
+            color: var(--gris-oscuro);
+            margin-top: 0.25rem;
+        }
+
+        /* TIMELINE VISUAL */
+        .timeline-container {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .timeline-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .timeline-header h3 {
+            color: var(--azul-brasil);
+        }
+
+        .timeline-visual {
+            position: relative;
+        }
+
+        .hora-bloque {
+            display: flex;
+            border-bottom: 1px solid var(--gris-medio);
+            min-height: 60px;
+            position: relative;
+        }
+
+        .hora-bloque:last-child {
+            border-bottom: none;
+        }
+
+        .hora-label {
+            width: 80px;
+            padding: 0.75rem;
+            font-weight: 600;
+            color: var(--azul-brasil);
+            font-size: 0.9rem;
+            flex-shrink: 0;
+            background: var(--gris-claro);
+            border-right: 2px solid var(--gris-medio);
+        }
+
+        .hora-contenido {
+            flex: 1;
+            position: relative;
+            cursor: pointer;
+            transition: background 0.2s;
+            padding: 0.5rem;
+        }
+
+        .hora-contenido.libre:hover {
+            background: #e8f5e9;
+        }
+
+        .hora-contenido.libre::after {
+            content: '➕ Clic para agregar actividad';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: var(--gris-oscuro);
+            font-size: 0.85rem;
+            opacity: 0;
+            transition: opacity 0.2s;
+            pointer-events: none;
+            white-space: nowrap;
+        }
+
+        .hora-contenido.libre:hover::after {
+            opacity: 0.6;
+        }
+
+        .actividad-bloque {
+            position: absolute;
+            left: 0;
+            right: 0;
+            background: linear-gradient(135deg, #c8e6c9, #a5d6a7);
+            border-left: 4px solid var(--verde-brasil);
+            border-radius: 6px;
+            padding: 0.75rem;
+            cursor: pointer;
+            transition: 0.2s;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+            z-index: 10;
+        }
+
+        .actividad-bloque:hover {
+            transform: translateX(3px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .actividad-bloque-titulo {
+            font-weight: 700;
+            color: var(--texto-oscuro);
+            margin-bottom: 0.25rem;
+            font-size: 0.95rem;
+        }
+
+        .actividad-bloque-hora {
+            font-size: 0.8rem;
+            color: var(--gris-oscuro);
+            margin-bottom: 0.25rem;
+        }
+
+        .actividad-bloque-badges {
+            display: flex;
+            gap: 0.25rem;
+            flex-wrap: wrap;
+            margin-top: 0.5rem;
+        }
+
+        .badge {
+            padding: 0.15rem 0.5rem;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .badge-atraccion {
+            background: #b3e5fc;
+            color: #01579b;
+        }
+
+        .badge-notificacion {
+            background: #fff9c4;
+            color: #f57f17;
+        }
+
+        .actividad-bloque-acciones {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            display: flex;
+            gap: 0.25rem;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .actividad-bloque:hover .actividad-bloque-acciones {
+            opacity: 1;
+        }
+
+        .btn-accion {
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+            padding: 0.25rem 0.4rem;
+            border-radius: 4px;
+            transition: 0.2s;
+        }
+
+        .btn-editar {
+            color: var(--amarillo-brasil);
+        }
+
+        .btn-editar:hover {
+            background: white;
+            color: #d9bf00;
+        }
+
+        .btn-eliminar {
+            color: #e53935;
+        }
+
+        .btn-eliminar:hover {
+            background: white;
+            color: #c62828;
+        }
+
+        /* MENSAJE VACÍO */
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: var(--gris-oscuro);
+        }
+
+        .empty-state-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+
+        /* MODAL */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+            overflow-y: auto;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            max-width: 600px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+            margin: 1rem;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: transparent;
+            border: none;
+            font-size: 2rem;
+            cursor: pointer;
+            color: var(--gris-oscuro);
+        }
+
+        .modal-title {
+            color: var(--verde-brasil);
+            margin-bottom: 1.5rem;
+            font-size: 1.5rem;
+        }
+
+        /* FORMULARIO */
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            color: var(--azul-brasil);
+            margin-bottom: 0.5rem;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid var(--gris-medio);
+            border-radius: 8px;
+            font-size: 1rem;
+            font-family: inherit;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--verde-brasil);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .btn-primary {
+            background: var(--verde-brasil);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.3s ease;
+            width: 100%;
+            margin-top: 1rem;
+        }
+
+        .btn-primary:hover {
+            background: var(--verde-claro);
+        }
+
+        /* SELECTOR DE ATRACCIONES */
+        .atracciones-list {
+            max-height: 300px;
+            overflow-y: auto;
+            border: 2px solid var(--gris-medio);
+            border-radius: 8px;
+            padding: 0.5rem;
+        }
+
+        .atraccion-option {
+            padding: 0.75rem;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-bottom: 0.5rem;
+            background: var(--gris-claro);
+            transition: 0.2s;
+        }
+
+        .atraccion-option:hover {
+            background: #e8f5e9;
+            border-left: 4px solid var(--verde-brasil);
+        }
+
+        .atraccion-option.seleccionada {
+            background: #c8e6c9;
+            border-left: 4px solid var(--verde-brasil);
+        }
+
+        .atraccion-option-titulo {
+            font-weight: 600;
+            color: var(--texto-oscuro);
+        }
+
+        .atraccion-option-categoria {
+            font-size: 0.85rem;
+            color: var(--gris-oscuro);
+            margin-top: 0.25rem;
+        }
+
+        .conflicto-warning {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 0.75rem;
+            border-radius: 6px;
+            margin-top: 1rem;
+            color: #856404;
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+
+            .fecha-selector {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .fecha-controls {
+                flex-direction: column;
+            }
+
+            .hora-label {
+                width: 60px;
+                font-size: 0.8rem;
+                padding: 0.5rem;
+            }
+
+            .hora-contenido.libre::after {
+                font-size: 0.7rem;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .resumen-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .actividad-bloque-titulo {
+                font-size: 0.85rem;
+            }
+
+            .actividad-bloque-hora {
+                font-size: 0.75rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- HEADER -->
+    <header class="app-header">
+        <h1 class="app-title">
+            <span>📅</span> Itinerario
+        </h1>
+        <button class="btn-volver" onclick="window.location.href='index.html'">
+            ← Volver
+        </button>
+    </header>
+
+    <!-- CONTAINER PRINCIPAL -->
+    <div class="container">
+        <!-- SELECTOR DE FECHA -->
+        <div class="fecha-selector">
+            <h2 id="diaActualTexto">Hoy</h2>
+            <div class="fecha-controls">
+                <button class="btn-fecha" onclick="cambiarDia(-1)">← Anterior</button>
+                <input type="date" id="fechaActual">
+                <button class="btn-fecha" onclick="cambiarDia(1)">Siguiente →</button>
+            </div>
+            <button class="btn-nueva-actividad" onclick="abrirModalActividad()">
+                <span>➕</span> Nueva Actividad
+            </button>
+        </div>
+
+        <!-- RESUMEN DEL DÍA -->
+        <div class="resumen-dia">
+            <h3 style="color: var(--azul-brasil); margin-bottom: 0.5rem;">Resumen del día</h3>
+            <div class="resumen-grid">
+                <div class="resumen-item">
+                    <div class="resumen-item-valor" id="totalActividades">0</div>
+                    <div class="resumen-item-label">Actividades</div>
+                </div>
+                <div class="resumen-item">
+                    <div class="resumen-item-valor" id="horasOcupadas">0h</div>
+                    <div class="resumen-item-label">Tiempo ocupado</div>
+                </div>
+                <div class="resumen-item">
+                    <div class="resumen-item-valor" id="horasLibres">24h</div>
+                    <div class="resumen-item-label">Tiempo libre</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TIMELINE VISUAL -->
+        <div class="timeline-container">
+            <div class="timeline-header">
+                <h3>Horario del día</h3>
+            </div>
+            <div class="timeline-visual" id="timelineVisual">
+                <!-- Se genera dinámicamente -->
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL NUEVA/EDITAR ACTIVIDAD -->
+    <div class="modal" id="modalActividad">
+        <div class="modal-content">
+            <button class="modal-close" onclick="cerrarModal()">×</button>
+            <h2 class="modal-title" id="tituloModal">Nueva Actividad</h2>
+
+            <form id="formActividad" onsubmit="guardarActividad(event)">
+                <div class="form-group">
+                    <label>Tipo de actividad</label>
+                    <select id="tipoActividad" onchange="cambiarTipoActividad()">
+                        <option value="manual">✍️ Manual (escribir título)</option>
+                        <option value="atraccion">🎯 Desde Atracciones</option>
+                    </select>
+                </div>
+
+                <div class="form-group" id="grupoManual">
+                    <label for="tituloActividad">Título *</label>
+                    <input type="text" id="tituloActividad" placeholder="Ej: Desayuno, Playa, etc." required>
+                </div>
+
+                <div class="form-group" id="grupoAtracciones" style="display: none;">
+                    <label>Selecciona una atracción</label>
+                    <div class="atracciones-list" id="listaAtracciones"></div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="horaInicio">Hora inicio *</label>
+                        <input type="time" id="horaInicio" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="horaFin">Hora fin *</label>
+                        <input type="time" id="horaFin" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="notasActividad">Notas</label>
+                    <textarea id="notasActividad" rows="3" placeholder="Observaciones, recordatorios, etc."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>Notificación</label>
+                    <select id="notificacionMinutos">
+                        <option value="0">Sin notificación</option>
+                        <option value="15">15 minutos antes</option>
+                        <option value="30">30 minutos antes</option>
+                        <option value="60">1 hora antes</option>
+                        <option value="120">2 horas antes</option>
+                    </select>
+                </div>
+
+                <div id="alertaConflicto" class="conflicto-warning" style="display: none;">
+                    ⚠️ Esta actividad se solapa con otra existente
+                </div>
+
+                <button type="submit" class="btn-primary">Guardar Actividad</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT -->
+    <script>
+        // CONSTANTES
+        const STORAGE_KEY = 'brasilTravelApp';
+
+        // Variables globales
+        let fechaSeleccionada = new Date();
+        let actividadEditando = null;
+        let atraccionSeleccionada = null;
+        let horaPreseleccionada = null;
+
+        // INICIALIZACIÓN
+        document.addEventListener('DOMContentLoaded', function () {
+            inicializarApp();
+        });
+
+        function inicializarApp() {
+            // Configurar fecha actual
+            const today = new Date();
+            fechaSeleccionada = today;
+            document.getElementById('fechaActual').valueAsDate = today;
+
+            // Event listener para cambio de fecha
+            document.getElementById('fechaActual').addEventListener('change', function () {
+                fechaSeleccionada = new Date(this.value + 'T00:00:00');
+                cargarActividades();
+            });
+
+            // Solicitar permiso de notificaciones
+            if ('Notification' in window && Notification.permission === 'default') {
+                Notification.requestPermission();
+            }
+
+            // Cargar actividades del día
+            cargarActividades();
+        }
+
+        // GESTIÓN DE FECHAS
+        function cambiarDia(dias) {
+            fechaSeleccionada.setDate(fechaSeleccionada.getDate() + dias);
+            document.getElementById('fechaActual').valueAsDate = fechaSeleccionada;
+            cargarActividades();
+        }
+
+        function formatearFecha(fecha) {
+            return fecha.toISOString().split('T')[0];
+        }
+
+        function obtenerTextoFecha(fecha) {
+            const hoy = new Date();
+            hoy.setHours(0, 0, 0, 0);
+            const fechaComp = new Date(fecha);
+            fechaComp.setHours(0, 0, 0, 0);
+
+            const diff = Math.floor((fechaComp - hoy) / (1000 * 60 * 60 * 24));
+
+            if (diff === 0) return 'Hoy';
+            if (diff === 1) return 'Mañana';
+            if (diff === -1) return 'Ayer';
+
+            return fecha.toLocaleDateString('es-CL', {
+                weekday: 'long',
+                day: 'numeric',
+                month: 'long'
+            });
+        }
+
+        // STORAGE
+        function obtenerDatos() {
+            try {
+                const data = localStorage.getItem(STORAGE_KEY);
+                if (!data) return { itinerario: [] };
+
+                const parsed = JSON.parse(data);
+                if (!parsed.itinerario) parsed.itinerario = [];
+
+                return parsed;
+            } catch (error) {
+                console.error('Error al cargar datos:', error);
+                return { itinerario: [] };
+            }
+        }
+
+        function guardarDatos(data) {
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+                return true;
+            } catch (error) {
+                console.error('Error al guardar datos:', error);
+                return false;
+            }
+        }
+
+        function obtenerActividadesDia(fecha) {
+            const data = obtenerDatos();
+            const fechaStr = formatearFecha(fecha);
+
+            const diaData = data.itinerario.find(d => d.fecha === fechaStr);
+            return diaData ? diaData.actividades : [];
+        }
+
+        function guardarActividadesDia(fecha, actividades) {
+            const data = obtenerDatos();
+            const fechaStr = formatearFecha(fecha);
+
+            const index = data.itinerario.findIndex(d => d.fecha === fechaStr);
+
+            if (index >= 0) {
+                data.itinerario[index].actividades = actividades;
+            } else {
+                data.itinerario.push({
+                    fecha: fechaStr,
+                    actividades: actividades
+                });
+            }
+
+            return guardarDatos(data);
+        }
+
+        // RENDERIZADO
+        function cargarActividades() {
+            const actividades = obtenerActividadesDia(fechaSeleccionada);
+
+            // Actualizar texto de fecha
+            document.getElementById('diaActualTexto').textContent = obtenerTextoFecha(fechaSeleccionada);
+
+            // Actualizar resumen
+            actualizarResumen(actividades);
+
+            // Renderizar timeline visual
+            renderizarTimelineVisual(actividades);
+        }
+
+        function actualizarResumen(actividades) {
+            const total = actividades.length;
+            let minutosOcupados = 0;
+
+            actividades.forEach(act => {
+                const inicio = convertirHoraAMinutos(act.horaInicio);
+                const fin = convertirHoraAMinutos(act.horaFin);
+                minutosOcupados += (fin - inicio);
+            });
+
+            const horasOcupadas = Math.floor(minutosOcupados / 60);
+            const minutosRestantes = minutosOcupados % 60;
+            const minutosLibres = (24 * 60) - minutosOcupados;
+            const horasLibres = Math.floor(minutosLibres / 60);
+            const minutosLibresRestantes = minutosLibres % 60;
+
+            document.getElementById('totalActividades').textContent = total;
+            document.getElementById('horasOcupadas').textContent =
+                minutosRestantes > 0 ? `${horasOcupadas}h ${minutosRestantes}m` : `${horasOcupadas}h`;
+            document.getElementById('horasLibres').textContent =
+                minutosLibresRestantes > 0 ? `${horasLibres}h ${minutosLibresRestantes}m` : `${horasLibres}h`;
+        }
+
+        function renderizarTimelineVisual(actividades) {
+            const container = document.getElementById('timelineVisual');
+            let html = '';
+
+            // Crear 24 bloques de horas
+            for (let hora = 0; hora < 24; hora++) {
+                const horaStr = hora.toString().padStart(2, '0') + ':00';
+                const horaFinStr = (hora + 1).toString().padStart(2, '0') + ':00';
+
+                // Verificar si hay actividades en esta hora
+                const actividadesEnHora = obtenerActividadesEnHora(actividades, hora);
+
+                html += `
+                    <div class="hora-bloque">
+                        <div class="hora-label">${horaStr}</div>
+                        <div class="hora-contenido ${actividadesEnHora.length === 0 ? 'libre' : 'ocupado'}" 
+                             onclick="clickEnHora(${hora})" 
+                             data-hora="${hora}">
+                            ${renderizarActividadesEnHora(actividadesEnHora, hora)}
+                        </div>
+                    </div>
+                `;
+            }
+
+            container.innerHTML = html;
+        }
+
+        function obtenerActividadesEnHora(actividades, hora) {
+            return actividades.filter(act => {
+                const inicio = convertirHoraAMinutos(act.horaInicio);
+                const fin = convertirHoraAMinutos(act.horaFin);
+                const horaInicio = hora * 60;
+                const horaFin = (hora + 1) * 60;
+
+                // Actividad que comienza o termina en esta hora
+                return (inicio < horaFin && fin > horaInicio);
+            });
+        }
+
+        function renderizarActividadesEnHora(actividades, hora) {
+            if (actividades.length === 0) return '';
+
+            let html = '';
+            actividades.forEach(act => {
+                const tieneNotificacion = act.notificacion && act.notificacion.activa;
+                const esAtraccion = act.atraccionId !== null;
+
+                html += `
+                    <div class="actividad-bloque" onclick="event.stopPropagation(); editarActividad(${JSON.stringify(act).replace(/"/g, '&quot;')})">
+                        <div class="actividad-bloque-titulo">${act.titulo}</div>
+                        <div class="actividad-bloque-hora">⏱️ ${act.horaInicio} - ${act.horaFin}</div>
+                        ${act.notas ? `<div style="font-size: 0.8rem; color: var(--gris-oscuro); margin-top: 0.25rem;">📝 ${act.notas}</div>` : ''}
+                        <div class="actividad-bloque-badges">
+                            ${esAtraccion ? '<span class="badge badge-atraccion">🎯 Atracción</span>' : ''}
+                            ${tieneNotificacion ? `<span class="badge badge-notificacion">🔔 ${act.notificacion.minAntes}min</span>` : ''}
+                        </div>
+                        <div class="actividad-bloque-acciones">
+                            <button class="btn-accion btn-editar" onclick="event.stopPropagation(); editarActividad(${JSON.stringify(act).replace(/"/g, '&quot;')})" title="Editar">✏️</button>
+                            <button class="btn-accion btn-eliminar" onclick="event.stopPropagation(); eliminarActividad('${act.id}')" title="Eliminar">🗑️</button>
+                        </div>
+                    </div>
+                `;
+            });
+
+            return html;
+        }
+
+        function clickEnHora(hora) {
+            // Solo abrir modal si la hora está libre
+            const actividades = obtenerActividadesDia(fechaSeleccionada);
+            const actividadesEnHora = obtenerActividadesEnHora(actividades, hora);
+
+            if (actividadesEnHora.length === 0) {
+                horaPreseleccionada = hora;
+                abrirModalActividad();
+            }
+        }
+
+        // UTILIDADES
+        function convertirHoraAMinutos(hora) {
+            const [h, m] = hora.split(':').map(Number);
+            return h * 60 + m;
+        }
+
+        function calcularDuracion(inicio, fin) {
+            const minInicio = convertirHoraAMinutos(inicio);
+            const minFin = convertirHoraAMinutos(fin);
+            const diff = minFin - minInicio;
+
+            const horas = Math.floor(diff / 60);
+            const minutos = diff % 60;
+
+            if (horas === 0) return `${minutos} min`;
+            if (minutos === 0) return `${horas}h`;
+            return `${horas}h ${minutos}min`;
+        }
+
+        function verificarConflicto(horaInicio, horaFin, idExcluir = null) {
+            const actividades = obtenerActividadesDia(fechaSeleccionada);
+            const inicio = convertirHoraAMinutos(horaInicio);
+            const fin = convertirHoraAMinutos(horaFin);
+
+            return actividades.some(act => {
+                if (idExcluir && act.id === idExcluir) return false;
+
+                const actInicio = convertirHoraAMinutos(act.horaInicio);
+                const actFin = convertirHoraAMinutos(act.horaFin);
+
+                return (inicio < actFin && fin > actInicio);
+            });
+        }
+
+        // MODAL
+        function abrirModalActividad(actividad = null) {
+            actividadEditando = actividad;
+            const modal = document.getElementById('modalActividad');
+            const form = document.getElementById('formActividad');
+
+            form.reset();
+            document.getElementById('alertaConflicto').style.display = 'none';
+
+            if (actividad) {
+                document.getElementById('tituloModal').textContent = 'Editar Actividad';
+                document.getElementById('tituloActividad').value = actividad.titulo;
+                document.getElementById('horaInicio').value = actividad.horaInicio;
+                document.getElementById('horaFin').value = actividad.horaFin;
+                document.getElementById('notasActividad').value = actividad.notas || '';
+                document.getElementById('notificacionMinutos').value =
+                    actividad.notificacion?.activa ? actividad.notificacion.minAntes : 0;
+
+                if (actividad.atraccionId) {
+                    document.getElementById('tipoActividad').value = 'atraccion';
+                    cambiarTipoActividad();
+                    atraccionSeleccionada = actividad.atraccionId;
+                }
+                horaPreseleccionada = null;
+            } else {
+                document.getElementById('tituloModal').textContent = 'Nueva Actividad';
+                document.getElementById('tipoActividad').value = 'manual';
+                cambiarTipoActividad();
+
+                // Si hay hora preseleccionada, configurar
+                if (horaPreseleccionada !== null) {
+                    const horaInicio = horaPreseleccionada.toString().padStart(2, '0') + ':00';
+                    const horaFin = (horaPreseleccionada + 1).toString().padStart(2, '0') + ':00';
+                    document.getElementById('horaInicio').value = horaInicio;
+                    document.getElementById('horaFin').value = horaFin;
+                }
+            }
+
+            modal.classList.add('active');
+        }
+
+        function cerrarModal() {
+            document.getElementById('modalActividad').classList.remove('active');
+            actividadEditando = null;
+            atraccionSeleccionada = null;
+            horaPreseleccionada = null;
+        }
+
+        function cambiarTipoActividad() {
+            const tipo = document.getElementById('tipoActividad').value;
+            const grupoManual = document.getElementById('grupoManual');
+            const grupoAtracciones = document.getElementById('grupoAtracciones');
+
+            if (tipo === 'manual') {
+                grupoManual.style.display = 'block';
+                grupoAtracciones.style.display = 'none';
+                document.getElementById('tituloActividad').required = true;
+            } else {
+                grupoManual.style.display = 'none';
+                grupoAtracciones.style.display = 'block';
+                document.getElementById('tituloActividad').required = false;
+                cargarAtracciones();
+            }
+        }
+
+        function cargarAtracciones() {
+            const data = obtenerDatos();
+            const atracciones = data.atracciones || [];
+            const container = document.getElementById('listaAtracciones');
+
+            if (atracciones.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 2rem; color: var(--gris-oscuro);">
+                        <p>No hay atracciones guardadas</p>
+                        <p style="font-size: 0.9rem; margin-top: 0.5rem;">Agrega atracciones desde la sección principal</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '';
+            atracciones.forEach(atr => {
+                const seleccionada = atraccionSeleccionada === atr.id ? 'seleccionada' : '';
+                html += `
+                    <div class="atraccion-option ${seleccionada}" onclick="seleccionarAtraccion('${atr.id}', '${atr.nombre.replace(/'/g, "\\'")}')">
+                        <div class="atraccion-option-titulo">${atr.nombre}</div>
+                        <div class="atraccion-option-categoria">📍 ${atr.categoria}</div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        function seleccionarAtraccion(id, nombre) {
+            atraccionSeleccionada = id;
+            document.getElementById('tituloActividad').value = nombre;
+            cargarAtracciones(); // Recargar para mostrar selección
+        }
+
+        function editarActividad(actividad) {
+            abrirModalActividad(actividad);
+        }
+
+        function guardarActividad(event) {
+            event.preventDefault();
+
+            const tipo = document.getElementById('tipoActividad').value;
+            const titulo = document.getElementById('tituloActividad').value;
+            const horaInicio = document.getElementById('horaInicio').value;
+            const horaFin = document.getElementById('horaFin').value;
+            const notas = document.getElementById('notasActividad').value;
+            const notifMin = parseInt(document.getElementById('notificacionMinutos').value);
+
+            // Validar horas
+            if (horaInicio >= horaFin) {
+                alert('La hora de fin debe ser posterior a la hora de inicio');
+                return;
+            }
+
+            // Verificar conflictos
+            const hayConflicto = verificarConflicto(
+                horaInicio,
+                horaFin,
+                actividadEditando?.id
+            );
+
+            if (hayConflicto) {
+                document.getElementById('alertaConflicto').style.display = 'block';
+                const confirmar = confirm('Esta actividad se solapa con otra existente. ¿Deseas continuar de todas formas?');
+                if (!confirmar) return;
+            }
+
+            const actividades = obtenerActividadesDia(fechaSeleccionada);
+
+            const actividadData = {
+                id: actividadEditando?.id || Date.now().toString() + Math.random().toString(36).substr(2, 9),
+                titulo: titulo.trim(),
+                horaInicio: horaInicio,
+                horaFin: horaFin,
+                notas: notas.trim(),
+                atraccionId: tipo === 'atraccion' ? atraccionSeleccionada : null,
+                notificacion: notifMin > 0 ? {
+                    activa: true,
+                    minAntes: notifMin
+                } : { activa: false }
+            };
+
+            if (actividadEditando) {
+                // Editar
+                const index = actividades.findIndex(a => a.id === actividadEditando.id);
+                if (index >= 0) {
+                    actividades[index] = actividadData;
+                }
+            } else {
+                // Nueva
+                actividades.push(actividadData);
+            }
+
+            if (guardarActividadesDia(fechaSeleccionada, actividades)) {
+                cerrarModal();
+                cargarActividades();
+
+                // Programar notificación si está activa
+                if (actividadData.notificacion.activa) {
+                    programarNotificacion(actividadData, fechaSeleccionada);
+                }
+            } else {
+                alert('Error al guardar la actividad');
+            }
+        }
+
+        function eliminarActividad(id) {
+            if (!confirm('¿Estás seguro de eliminar esta actividad?')) return;
+
+            const actividades = obtenerActividadesDia(fechaSeleccionada);
+            const nuevas = actividades.filter(a => a.id !== id);
+
+            if (guardarActividadesDia(fechaSeleccionada, nuevas)) {
+                cargarActividades();
+            }
+        }
+
+        // NOTIFICACIONES
+        function programarNotificacion(actividad, fecha) {
+            if ('Notification' in window && Notification.permission === 'granted') {
+                const fechaHora = new Date(formatearFecha(fecha) + 'T' + actividad.horaInicio);
+                const notifTime = new Date(fechaHora.getTime() - (actividad.notificacion.minAntes * 60000));
+                const ahora = new Date();
+
+                if (notifTime > ahora) {
+                    const delay = notifTime - ahora;
+                    setTimeout(() => {
+                        new Notification('🇧🇷 Brasil Travel - Recordatorio', {
+                            body: `${actividad.titulo} comienza en ${actividad.notificacion.minAntes} minutos`,
+                            icon: 'icons/icon-192.png',
+                            badge: 'icons/icon-72.png'
+                        });
+                    }, delay);
+                }
+            }
+        }
+
+        // Cerrar modal al hacer clic fuera
+        document.getElementById('modalActividad').addEventListener('click', function (e) {
+            if (e.target === this) {
+                cerrarModal();
+            }
+        });
+    </script>
+</body>
+
+</html>
