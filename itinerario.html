@@ -297,6 +297,31 @@
             pointer-events: auto;
         }
 
+        .actividad-bloque.actividad-compacta {
+            padding: 0.5rem 0.75rem;
+        }
+
+        .actividad-bloque.actividad-compacta .actividad-bloque-titulo {
+            font-size: 0.9rem;
+            margin-bottom: 0.15rem;
+        }
+
+        .actividad-bloque.actividad-compacta .actividad-bloque-hora {
+            font-size: 0.75rem;
+            margin-bottom: 0;
+        }
+
+        .actividad-bloque.actividad-compacta .actividad-bloque-costo {
+            font-size: 0.8rem;
+            margin-top: 0;
+        }
+
+        .actividad-bloque.actividad-compacta .badge {
+            font-size: 0.65rem;
+            padding: 0.1rem 0.35rem;
+        }
+
+
         .actividad-bloque:hover {
             transform: translateX(3px);
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
@@ -1015,26 +1040,60 @@
             const tieneNotificacion = act.notificacion && act.notificacion.activa;
             const esAtraccion = act.atraccionId !== null;
             const tieneCosto = act.costoBRL && parseFloat(act.costoBRL) > 0;
+            const tieneNotas = act.notas && act.notas.trim() !== '';
 
-            return `
-                <div class="actividad-bloque" 
-                     style="top: ${topPx}px; height: ${heightPx}px;"
-                     onclick="editarActividad(${JSON.stringify(act).replace(/"/g, '&quot;')})">
-                    <div class="actividad-bloque-titulo">${act.titulo}</div>
-                    <div class="actividad-bloque-hora">⏱️ ${act.horaInicio} - ${act.horaFin}</div>
-                    ${tieneCosto ? `<div class="actividad-bloque-costo">💰 R$ ${parseFloat(act.costoBRL).toFixed(2)}</div>` : ''}
-                    ${act.notas ? `<div style="font-size: 0.8rem; color: var(--gris-oscuro); margin-top: 0.25rem;">📝 ${act.notas}</div>` : ''}
-                    <div class="actividad-bloque-badges">
-                        ${esAtraccion ? '<span class="badge badge-atraccion">🎯 Atracción</span>' : ''}
-                        ${tieneNotificacion ? `<span class="badge badge-notificacion">🔔 ${act.notificacion.minAntes}min</span>` : ''}
+            // Determinar si es un bloque pequeño (menos de 90px = 1.5 horas)
+            const esPequeno = heightPx < 90;
+
+            // Layout compacto para bloques pequeños
+            if (esPequeno) {
+                return `
+            <div class="actividad-bloque actividad-compacta" 
+                 style="top: ${topPx}px; height: ${heightPx}px;"
+                 onclick="editarActividad(${JSON.stringify(act).replace(/"/g, '&quot;')})">
+                <div style="display: flex; justify-content: space-between; align-items: start; gap: 0.5rem;">
+                    <div style="flex: 1; min-width: 0;">
+                        <div class="actividad-bloque-titulo">${act.titulo}</div>
+                        <div class="actividad-bloque-hora">⏱️ ${act.horaInicio} - ${act.horaFin}</div>
                     </div>
-                    <div class="actividad-bloque-acciones">
-                        <button class="btn-accion btn-editar" onclick="event.stopPropagation(); editarActividad(${JSON.stringify(act).replace(/"/g, '&quot;')})" title="Editar">✏️</button>
-                        <button class="btn-accion btn-eliminar" onclick="event.stopPropagation(); eliminarActividad('${act.id}')" title="Eliminar">🗑️</button>
+                    <div style="text-align: right; flex-shrink: 0;">
+                        ${tieneCosto ? `<div class="actividad-bloque-costo">💰 R$ ${parseFloat(act.costoBRL).toFixed(2)}</div>` : ''}
+                        <div style="display: flex; gap: 0.25rem; justify-content: flex-end; margin-top: 0.25rem;">
+                            ${esAtraccion ? '<span class="badge badge-atraccion">🎯</span>' : ''}
+                            ${tieneNotificacion ? `<span class="badge badge-notificacion">🔔${act.notificacion.minAntes}m</span>` : ''}
+                        </div>
                     </div>
                 </div>
-            `;
+                ${tieneNotas && heightPx > 60 ? `<div style="font-size: 0.75rem; color: var(--gris-oscuro); margin-top: 0.25rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">📝 ${act.notas}</div>` : ''}
+                <div class="actividad-bloque-acciones">
+                    <button class="btn-accion btn-editar" onclick="event.stopPropagation(); editarActividad(${JSON.stringify(act).replace(/"/g, '&quot;')})" title="Editar">✏️</button>
+                    <button class="btn-accion btn-eliminar" onclick="event.stopPropagation(); eliminarActividad('${act.id}')" title="Eliminar">🗑️</button>
+                </div>
+            </div>
+        `;
+            }
+
+            // Layout normal para bloques grandes
+            return `
+        <div class="actividad-bloque" 
+             style="top: ${topPx}px; height: ${heightPx}px;"
+             onclick="editarActividad(${JSON.stringify(act).replace(/"/g, '&quot;')})">
+            <div class="actividad-bloque-titulo">${act.titulo}</div>
+            <div class="actividad-bloque-hora">⏱️ ${act.horaInicio} - ${act.horaFin}</div>
+            ${tieneCosto ? `<div class="actividad-bloque-costo">💰 R$ ${parseFloat(act.costoBRL).toFixed(2)}</div>` : ''}
+            ${tieneNotas ? `<div style="font-size: 0.8rem; color: var(--gris-oscuro); margin-top: 0.25rem;">📝 ${act.notas}</div>` : ''}
+            <div class="actividad-bloque-badges">
+                ${esAtraccion ? '<span class="badge badge-atraccion">🎯 Atracción</span>' : ''}
+                ${tieneNotificacion ? `<span class="badge badge-notificacion">🔔 ${act.notificacion.minAntes}min</span>` : ''}
+            </div>
+            <div class="actividad-bloque-acciones">
+                <button class="btn-accion btn-editar" onclick="event.stopPropagation(); editarActividad(${JSON.stringify(act).replace(/"/g, '&quot;')})" title="Editar">✏️</button>
+                <button class="btn-accion btn-eliminar" onclick="event.stopPropagation(); eliminarActividad('${act.id}')" title="Eliminar">🗑️</button>
+            </div>
+        </div>
+    `;
         }
+
 
         function clickEnHora(hora) {
             horaPreseleccionada = hora;
