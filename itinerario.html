@@ -1,12 +1,13 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#009b3a">
     <title>Itinerario - Brasil Travel App</title>
     <link rel="manifest" href="manifest.json">
-    
+
     <style>
         :root {
             --verde-brasil: #009b3a;
@@ -234,7 +235,6 @@
             color: var(--azul-brasil);
         }
 
-        /* VISTA SEMANAL */
         .vista-semanal {
             display: grid;
             grid-template-columns: repeat(7, 1fr);
@@ -277,7 +277,6 @@
             position: relative;
         }
 
-        /* VISTA DÍA ÚNICO */
         .timeline-visual {
             position: relative;
         }
@@ -312,7 +311,6 @@
             align-items: flex-start;
         }
 
-        /* Para vista semanal: labels más pequeños */
         .vista-semanal .hora-label {
             width: 50px;
             font-size: 0.75rem;
@@ -399,6 +397,7 @@
             color: #2e7d32;
             font-weight: 600;
             margin-top: 0.25rem;
+            margin-bottom: 0.25rem;
         }
 
         .actividad-bloque-badges {
@@ -468,7 +467,6 @@
             color: #c62828;
         }
 
-        /* Estilos para bloques compactos */
         .actividad-bloque.actividad-compacta {
             padding: 0.5rem 0.75rem;
         }
@@ -493,7 +491,6 @@
             padding: 0.1rem 0.35rem;
         }
 
-        /* Vista semanal: bloques más compactos */
         .vista-semanal .actividad-bloque {
             padding: 0.5rem;
             left: 0.25rem;
@@ -521,7 +518,6 @@
             display: none;
         }
 
-        /* TOOLTIP para notas */
         .actividad-tooltip {
             position: absolute;
             background: rgba(0, 0, 0, 0.9);
@@ -783,6 +779,7 @@
         }
     </style>
 </head>
+
 <body>
     <header class="app-header">
         <h1 class="app-title">
@@ -811,7 +808,7 @@
         </div>
 
         <div class="resumen-dia" id="resumenDia">
-            <h3 style="color: var(--azul-brasil); margin-bottom: 0.5rem;">Resumen del día</h3>
+            <h3 style="color: var(--azul-brasil); margin-bottom: 0.5rem;" id="tituloResumen">Resumen del día</h3>
             <div class="resumen-grid">
                 <div class="resumen-item">
                     <div class="resumen-item-valor" id="totalActividades">0</div>
@@ -843,17 +840,15 @@
         </div>
     </div>
 
-    <!-- Tooltip para notas -->
     <div class="actividad-tooltip" id="tooltipNotas"></div>
 
     <button class="btn-flotante" id="btnConversor" title="Conversor BRL ⇄ CLP">💱</button>
 
-    <!-- MODAL CONVERSOR -->
     <div class="modal" id="modalConversor">
         <div class="modal-content">
             <button class="modal-close" onclick="cerrarModalConversor()">×</button>
             <h2 style="color: var(--verde-brasil); margin-bottom: 1.5rem;">Conversor BRL ⇄ CLP</h2>
-            
+
             <div class="form-group">
                 <label for="inputBRL">Reales Brasileños (R$)</label>
                 <input type="text" inputmode="decimal" id="inputBRL" placeholder="0,00">
@@ -866,19 +861,20 @@
                 <input type="text" inputmode="numeric" id="inputCLP" placeholder="0">
             </div>
 
-            <div style="background: var(--gris-claro); padding: 1rem; border-radius: 8px; text-align: center; margin-top: 1rem;">
-                <p style="margin-bottom: 0.5rem;">Tasa: <strong>1 BRL = <span id="tasaCambio">150</span> CLP</strong></p>
+            <div
+                style="background: var(--gris-claro); padding: 1rem; border-radius: 8px; text-align: center; margin-top: 1rem;">
+                <p style="margin-bottom: 0.5rem;">Tasa: <strong>1 BRL = <span id="tasaCambio">150</span> CLP</strong>
+                </p>
                 <button class="btn-secondary" onclick="editarTasa()" style="margin-top: 0.5rem;">Editar Tasa</button>
             </div>
         </div>
     </div>
 
-    <!-- MODAL ACTIVIDAD -->
     <div class="modal" id="modalActividad">
         <div class="modal-content">
             <button class="modal-close" onclick="cerrarModal()">×</button>
             <h2 class="modal-title" id="tituloModal">Nueva Actividad</h2>
-            
+
             <form id="formActividad" onsubmit="guardarActividad(event)">
                 <div class="form-group">
                     <label>Tipo de actividad</label>
@@ -927,7 +923,8 @@
 
                 <div class="form-group">
                     <label for="notasActividad">Notas</label>
-                    <textarea id="notasActividad" rows="3" placeholder="Observaciones, recordatorios, dirección, etc."></textarea>
+                    <textarea id="notasActividad" rows="3"
+                        placeholder="Observaciones, recordatorios, dirección, etc."></textarea>
                 </div>
 
                 <div class="form-group">
@@ -953,26 +950,25 @@
     <script>
         const STORAGE_KEY = 'brasilTravelApp';
         const PIXELES_POR_HORA = 60;
-        
+
         let fechaSeleccionada = new Date();
         let actividadEditando = null;
         let atraccionSeleccionada = null;
         let horaPreseleccionada = null;
         let fechaPreseleccionada = null;
-        let vistaActual = 'dia'; // 'dia' o 'semana'
+        let vistaActual = 'dia';
 
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             inicializarApp();
             inicializarConversor();
-            inicializarTooltip();
         });
 
         function inicializarApp() {
             const today = new Date();
             fechaSeleccionada = today;
             document.getElementById('fechaActual').valueAsDate = today;
-            
-            document.getElementById('fechaActual').addEventListener('change', function() {
+
+            document.getElementById('fechaActual').addEventListener('change', function () {
                 fechaSeleccionada = new Date(this.value + 'T00:00:00');
                 cargarActividades();
             });
@@ -986,18 +982,18 @@
 
         function cambiarVista(vista) {
             vistaActual = vista;
-            
+
             document.getElementById('btnVista1').classList.toggle('active', vista === 'dia');
             document.getElementById('btnVista7').classList.toggle('active', vista === 'semana');
-            
+
             if (vista === 'semana') {
-                document.getElementById('resumenDia').style.display = 'none';
+                document.getElementById('tituloResumen').textContent = 'Resumen de la semana';
                 document.getElementById('tituloTimeline').textContent = 'Horario de la semana';
             } else {
-                document.getElementById('resumenDia').style.display = 'block';
+                document.getElementById('tituloResumen').textContent = 'Resumen del día';
                 document.getElementById('tituloTimeline').textContent = 'Horario del día';
             }
-            
+
             cargarActividades();
         }
 
@@ -1020,17 +1016,17 @@
             hoy.setHours(0, 0, 0, 0);
             const fechaComp = new Date(fecha);
             fechaComp.setHours(0, 0, 0, 0);
-            
+
             const diff = Math.floor((fechaComp - hoy) / (1000 * 60 * 60 * 24));
-            
+
             if (diff === 0) return 'Hoy';
             if (diff === 1) return 'Mañana';
             if (diff === -1) return 'Ayer';
-            
-            return fecha.toLocaleDateString('es-CL', { 
-                weekday: 'long', 
-                day: 'numeric', 
-                month: 'long' 
+
+            return fecha.toLocaleDateString('es-CL', {
+                weekday: 'long',
+                day: 'numeric',
+                month: 'long'
             });
         }
 
@@ -1038,11 +1034,11 @@
             try {
                 const data = localStorage.getItem(STORAGE_KEY);
                 if (!data) return { itinerario: [], configuracion: { tasaCambio: 150 } };
-                
+
                 const parsed = JSON.parse(data);
                 if (!parsed.itinerario) parsed.itinerario = [];
                 if (!parsed.configuracion) parsed.configuracion = { tasaCambio: 150 };
-                
+
                 return parsed;
             } catch (error) {
                 console.error('Error al cargar datos:', error);
@@ -1063,7 +1059,7 @@
         function obtenerActividadesDia(fecha) {
             const data = obtenerDatos();
             const fechaStr = formatearFecha(fecha);
-            
+
             const diaData = data.itinerario.find(d => d.fecha === fechaStr);
             return diaData ? diaData.actividades : [];
         }
@@ -1071,9 +1067,9 @@
         function guardarActividadesDia(fecha, actividades) {
             const data = obtenerDatos();
             const fechaStr = formatearFecha(fecha);
-            
+
             const index = data.itinerario.findIndex(d => d.fecha === fechaStr);
-            
+
             if (index >= 0) {
                 data.itinerario[index].actividades = actividades;
             } else {
@@ -1082,12 +1078,13 @@
                     actividades: actividades
                 });
             }
-            
+
             return guardarDatos(data);
         }
 
         function cargarActividades() {
             if (vistaActual === 'semana') {
+                actualizarResumenSemanal();
                 renderizarVistaSemanal();
             } else {
                 const actividades = obtenerActividadesDia(fechaSeleccionada);
@@ -1097,26 +1094,73 @@
             }
         }
 
-        function renderizarVistaSemanal() {
-            const container = document.getElementById('contenedorTimeline');
-            
-            // Obtener fecha de inicio de la semana (lunes)
+        function actualizarResumenSemanal() {
             const fechaInicio = new Date(fechaSeleccionada);
             const diaActual = fechaInicio.getDay();
             const diff = diaActual === 0 ? -6 : 1 - diaActual;
             fechaInicio.setDate(fechaInicio.getDate() + diff);
-            
-            let html = '<div class="vista-semanal">';
-            
+
+            let totalActividades = 0;
+            let minutosOcupados = 0;
+            let costoTotalBRL = 0;
+
             for (let i = 0; i < 7; i++) {
                 const fecha = new Date(fechaInicio);
                 fecha.setDate(fechaInicio.getDate() + i);
-                
+                const actividades = obtenerActividadesDia(fecha);
+
+                totalActividades += actividades.length;
+
+                actividades.forEach(act => {
+                    const inicio = convertirHoraAMinutos(act.horaInicio);
+                    const fin = convertirHoraAMinutos(act.horaFin);
+                    minutosOcupados += (fin - inicio);
+
+                    if (act.costoBRL) costoTotalBRL += parseFloat(act.costoBRL);
+                });
+            }
+
+            const horasOcupadas = Math.floor(minutosOcupados / 60);
+            const minutosRestantes = minutosOcupados % 60;
+            const totalMinutosSemana = 24 * 60 * 7;
+            const minutosLibres = totalMinutosSemana - minutosOcupados;
+            const horasLibres = Math.floor(minutosLibres / 60);
+
+            const config = obtenerDatos().configuracion || { tasaCambio: 150 };
+            const costoTotalCLP = Math.round(costoTotalBRL * config.tasaCambio);
+
+            document.getElementById('totalActividades').textContent = totalActividades;
+            document.getElementById('horasOcupadas').textContent =
+                minutosRestantes > 0 ? `${horasOcupadas}h ${minutosRestantes}m` : `${horasOcupadas}h`;
+            document.getElementById('horasLibres').textContent = `${horasLibres}h`;
+            document.getElementById('costoTotal').textContent = `R$ ${costoTotalBRL.toFixed(2)}`;
+            document.getElementById('costoTotalCLP').textContent = `$ ${costoTotalCLP.toLocaleString('es-CL')} CLP`;
+
+            const fechaFin = new Date(fechaInicio);
+            fechaFin.setDate(fechaInicio.getDate() + 6);
+            document.getElementById('diaActualTexto').textContent =
+                `${fechaInicio.getDate()}/${fechaInicio.getMonth() + 1} - ${fechaFin.getDate()}/${fechaFin.getMonth() + 1}`;
+        }
+
+        function renderizarVistaSemanal() {
+            const container = document.getElementById('contenedorTimeline');
+
+            const fechaInicio = new Date(fechaSeleccionada);
+            const diaActual = fechaInicio.getDay();
+            const diff = diaActual === 0 ? -6 : 1 - diaActual;
+            fechaInicio.setDate(fechaInicio.getDate() + diff);
+
+            let html = '<div class="vista-semanal">';
+
+            for (let i = 0; i < 7; i++) {
+                const fecha = new Date(fechaInicio);
+                fecha.setDate(fechaInicio.getDate() + i);
+
                 const actividades = obtenerActividadesDia(fecha);
                 const nombreDia = fecha.toLocaleDateString('es-CL', { weekday: 'short' });
                 const diaNum = fecha.getDate();
                 const mes = fecha.toLocaleDateString('es-CL', { month: 'short' });
-                
+
                 html += `
                     <div class="dia-columna">
                         <div class="dia-header">
@@ -1129,22 +1173,16 @@
                     </div>
                 `;
             }
-            
+
             html += '</div>';
             container.innerHTML = html;
-            
-            // Actualizar texto del header
-            const fechaFin = new Date(fechaInicio);
-            fechaFin.setDate(fechaInicio.getDate() + 6);
-            document.getElementById('diaActualTexto').textContent = 
-                `${fechaInicio.getDate()}/${fechaInicio.getMonth()+1} - ${fechaFin.getDate()}/${fechaFin.getMonth()+1}`;
         }
 
         function renderizarTimelineDiaCompacto(actividades, fecha) {
             const horasAMostrar = [0, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23];
-            
+
             let html = '<div class="timeline-grid">';
-            
+
             horasAMostrar.forEach((hora) => {
                 const horaStr = hora.toString().padStart(2, '0') + ':00';
                 const esLibre = !actividades.some(act => {
@@ -1152,7 +1190,7 @@
                     const finHora = parseInt(act.horaFin.split(':')[0]);
                     return hora >= inicioHora && hora < finHora;
                 });
-                
+
                 html += `
                     <div class="hora-fila">
                         <div class="hora-label">${horaStr}</div>
@@ -1161,21 +1199,21 @@
                     </div>
                 `;
             });
-            
+
             html += '</div>';
             html += '<div class="actividades-overlay">';
-            
+
             actividades.forEach(act => {
                 const topPx = calcularPosicionTop(act.horaInicio, horasAMostrar);
                 const heightPx = calcularAltura(act.horaInicio, act.horaFin);
-                
+
                 if (topPx !== null && heightPx > 0) {
                     html += renderizarActividadBloqueCompacto(act, topPx, heightPx, fecha);
                 }
             });
-            
+
             html += '</div>';
-            
+
             return html;
         }
 
@@ -1183,28 +1221,28 @@
             const total = actividades.length;
             let minutosOcupados = 0;
             let costoTotalBRL = 0;
-            
+
             actividades.forEach(act => {
                 const inicio = convertirHoraAMinutos(act.horaInicio);
                 const fin = convertirHoraAMinutos(act.horaFin);
                 minutosOcupados += (fin - inicio);
-                
+
                 if (act.costoBRL) costoTotalBRL += parseFloat(act.costoBRL);
             });
-            
+
             const horasOcupadas = Math.floor(minutosOcupados / 60);
             const minutosRestantes = minutosOcupados % 60;
             const minutosLibres = (24 * 60) - minutosOcupados;
             const horasLibres = Math.floor(minutosLibres / 60);
             const minutosLibresRestantes = minutosLibres % 60;
-            
+
             const config = obtenerDatos().configuracion || { tasaCambio: 150 };
             const costoTotalCLP = Math.round(costoTotalBRL * config.tasaCambio);
-            
+
             document.getElementById('totalActividades').textContent = total;
-            document.getElementById('horasOcupadas').textContent = 
+            document.getElementById('horasOcupadas').textContent =
                 minutosRestantes > 0 ? `${horasOcupadas}h ${minutosRestantes}m` : `${horasOcupadas}h`;
-            document.getElementById('horasLibres').textContent = 
+            document.getElementById('horasLibres').textContent =
                 minutosLibresRestantes > 0 ? `${horasLibres}h ${minutosLibresRestantes}m` : `${horasLibres}h`;
             document.getElementById('costoTotal').textContent = `R$ ${costoTotalBRL.toFixed(2)}`;
             document.getElementById('costoTotalCLP').textContent = `$ ${costoTotalCLP.toLocaleString('es-CL')} CLP`;
@@ -1213,9 +1251,9 @@
         function renderizarTimelineVisual(actividades, fecha) {
             const container = document.getElementById('contenedorTimeline');
             const horasAMostrar = [0, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23];
-            
+
             let htmlGrid = '<div class="timeline-grid">';
-            
+
             horasAMostrar.forEach((hora) => {
                 const horaStr = hora.toString().padStart(2, '0') + ':00';
                 const esLibre = !actividades.some(act => {
@@ -1223,7 +1261,7 @@
                     const finHora = parseInt(act.horaFin.split(':')[0]);
                     return hora >= inicioHora && hora < finHora;
                 });
-                
+
                 htmlGrid += `
                     <div class="hora-fila">
                         <div class="hora-label">${horaStr}</div>
@@ -1232,33 +1270,33 @@
                     </div>
                 `;
             });
-            
+
             htmlGrid += '</div>';
             htmlGrid += '<div class="actividades-overlay">';
-            
+
             actividades.forEach(act => {
                 const topPx = calcularPosicionTop(act.horaInicio, horasAMostrar);
                 const heightPx = calcularAltura(act.horaInicio, act.horaFin);
-                
+
                 if (topPx !== null && heightPx > 0) {
                     htmlGrid += renderizarActividadBloque(act, topPx, heightPx, fecha);
                 }
             });
-            
+
             htmlGrid += '</div>';
             container.innerHTML = htmlGrid;
         }
 
         function calcularPosicionTop(horaInicio, horasVisibles) {
             const [h, m] = horaInicio.split(':').map(Number);
-            
+
             const mapeoHoras = {
                 0: 0, 6: 1, 7: 2, 8: 3, 9: 4, 10: 5, 11: 6, 12: 7, 13: 8, 14: 9,
                 15: 10, 16: 11, 17: 12, 18: 13, 19: 14, 20: 15, 21: 16, 22: 17, 23: 18
             };
-            
+
             if (h >= 1 && h <= 5) return 0;
-            
+
             let filaBase;
             if (h === 0) {
                 filaBase = 0;
@@ -1267,7 +1305,7 @@
             } else {
                 return null;
             }
-            
+
             const offsetMinutos = (m / 60) * PIXELES_POR_HORA;
             return (filaBase * PIXELES_POR_HORA) + offsetMinutos;
         }
@@ -1276,7 +1314,7 @@
             const minInicio = convertirHoraAMinutos(horaInicio);
             const minFin = convertirHoraAMinutos(horaFin);
             const duracionMin = minFin - minInicio;
-            
+
             return (duracionMin / 60) * PIXELES_POR_HORA;
         }
 
@@ -1286,11 +1324,13 @@
             const tieneCosto = act.costoBRL && parseFloat(act.costoBRL) > 0;
             const tieneNotas = act.notas && act.notas.trim() !== '';
             const esPequeno = heightPx < 90;
-            
+
             const actJson = JSON.stringify(act).replace(/"/g, '&quot;');
-            const onmouseenter = tieneNotas ? `onmouseenter="mostrarTooltip(event, '${act.notas.replace(/'/g, "\\'")}', '${act.titulo.replace(/'/g, "\\'")}')"` : '';
+            const notasEscapadas = tieneNotas ? act.notas.replace(/'/g, "\\'").replace(/"/g, '&quot;').replace(/\n/g, ' ') : '';
+            const tituloEscapado = act.titulo.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+            const onmouseenter = tieneNotas ? `onmouseenter="mostrarTooltip(event, '${notasEscapadas}', '${tituloEscapado}')"` : '';
             const onmouseleave = tieneNotas ? 'onmouseleave="ocultarTooltip()"' : '';
-            
+
             if (esPequeno) {
                 return `
                     <div class="actividad-bloque actividad-compacta" 
@@ -1301,11 +1341,11 @@
                         <div style="display: flex; justify-content: space-between; align-items: start; gap: 0.5rem;">
                             <div style="flex: 1; min-width: 0;">
                                 <div class="actividad-bloque-titulo">${act.titulo}</div>
+                                ${tieneCosto ? `<div class="actividad-bloque-costo">💰 R$ ${parseFloat(act.costoBRL).toFixed(2)}</div>` : ''}
                                 <div class="actividad-bloque-hora">⏱️ ${act.horaInicio} - ${act.horaFin}</div>
                             </div>
                             <div style="text-align: right; flex-shrink: 0;">
-                                ${tieneCosto ? `<div class="actividad-bloque-costo">💰 R$ ${parseFloat(act.costoBRL).toFixed(2)}</div>` : ''}
-                                <div style="display: flex; gap: 0.25rem; justify-content: flex-end; margin-top: 0.25rem;">
+                                <div style="display: flex; gap: 0.25rem; justify-content: flex-end;">
                                     ${esAtraccion ? '<span class="badge badge-atraccion">🎯</span>' : ''}
                                     ${tieneNotificacion ? `<span class="badge badge-notificacion">🔔${act.notificacion.minAntes}m</span>` : ''}
                                 </div>
@@ -1318,7 +1358,7 @@
                     </div>
                 `;
             }
-            
+
             return `
                 <div class="actividad-bloque" 
                      style="top: ${topPx}px; height: ${heightPx}px;"
@@ -1326,8 +1366,8 @@
                      ${onmouseenter}
                      ${onmouseleave}>
                     <div class="actividad-bloque-titulo">${act.titulo}</div>
-                    <div class="actividad-bloque-hora">⏱️ ${act.horaInicio} - ${act.horaFin}</div>
                     ${tieneCosto ? `<div class="actividad-bloque-costo">💰 R$ ${parseFloat(act.costoBRL).toFixed(2)}</div>` : ''}
+                    <div class="actividad-bloque-hora">⏱️ ${act.horaInicio} - ${act.horaFin}</div>
                     <div class="actividad-bloque-badges">
                         ${esAtraccion ? '<span class="badge badge-atraccion">🎯 Atracción</span>' : ''}
                         ${tieneNotificacion ? `<span class="badge badge-notificacion">🔔 ${act.notificacion.minAntes}min</span>` : ''}
@@ -1344,9 +1384,11 @@
             const tieneCosto = act.costoBRL && parseFloat(act.costoBRL) > 0;
             const tieneNotas = act.notas && act.notas.trim() !== '';
             const actJson = JSON.stringify(act).replace(/"/g, '&quot;');
-            const onmouseenter = tieneNotas ? `onmouseenter="mostrarTooltip(event, '${act.notas.replace(/'/g, "\\'")}', '${act.titulo.replace(/'/g, "\\'")}')"` : '';
+            const notasEscapadas = tieneNotas ? act.notas.replace(/'/g, "\\'").replace(/"/g, '&quot;').replace(/\n/g, ' ') : '';
+            const tituloEscapado = act.titulo.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+            const onmouseenter = tieneNotas ? `onmouseenter="mostrarTooltip(event, '${notasEscapadas}', '${tituloEscapado}')"` : '';
             const onmouseleave = tieneNotas ? 'onmouseleave="ocultarTooltip()"' : '';
-            
+
             return `
                 <div class="actividad-bloque" 
                      style="top: ${topPx}px; height: ${heightPx}px;"
@@ -1354,8 +1396,8 @@
                      ${onmouseenter}
                      ${onmouseleave}>
                     <div class="actividad-bloque-titulo">${act.titulo}</div>
-                    <div class="actividad-bloque-hora">⏱️ ${act.horaInicio}-${act.horaFin}</div>
                     ${tieneCosto ? `<div class="actividad-bloque-costo">💰 R$ ${parseFloat(act.costoBRL).toFixed(2)}</div>` : ''}
+                    <div class="actividad-bloque-hora">⏱️ ${act.horaInicio}-${act.horaFin}</div>
                 </div>
             `;
         }
@@ -1381,13 +1423,13 @@
             const actividades = obtenerActividadesDia(fecha);
             const inicio = convertirHoraAMinutos(horaInicio);
             const fin = convertirHoraAMinutos(horaFin);
-            
+
             return actividades.some(act => {
                 if (idExcluir && act.id === idExcluir) return false;
-                
+
                 const actInicio = convertirHoraAMinutos(act.horaInicio);
                 const actFin = convertirHoraAMinutos(act.horaFin);
-                
+
                 return (inicio < actFin && fin > actInicio);
             });
         }
@@ -1396,11 +1438,10 @@
             actividadEditando = actividad;
             const modal = document.getElementById('modalActividad');
             const form = document.getElementById('formActividad');
-            
+
             form.reset();
             document.getElementById('alertaConflicto').style.display = 'none';
-            
-            // Mostrar selector de fecha en vista semanal
+
             const grupoFecha = document.getElementById('grupoFechaActividad');
             if (vistaActual === 'semana' && !actividad) {
                 grupoFecha.style.display = 'block';
@@ -1412,7 +1453,7 @@
             } else {
                 grupoFecha.style.display = 'none';
             }
-            
+
             if (actividad) {
                 document.getElementById('tituloModal').textContent = 'Editar Actividad';
                 document.getElementById('tituloActividad').value = actividad.titulo;
@@ -1421,9 +1462,9 @@
                 document.getElementById('notasActividad').value = actividad.notas || '';
                 document.getElementById('costoBRL').value = actividad.costoBRL || '';
                 document.getElementById('costoCLP').value = actividad.costoCLP || '';
-                document.getElementById('notificacionMinutos').value = 
+                document.getElementById('notificacionMinutos').value =
                     actividad.notificacion?.activa ? actividad.notificacion.minAntes : 0;
-                
+
                 if (actividad.atraccionId) {
                     document.getElementById('tipoActividad').value = 'atraccion';
                     cambiarTipoActividad();
@@ -1435,7 +1476,7 @@
                 document.getElementById('tituloModal').textContent = 'Nueva Actividad';
                 document.getElementById('tipoActividad').value = 'manual';
                 cambiarTipoActividad();
-                
+
                 if (horaPreseleccionada !== null) {
                     const horaInicio = horaPreseleccionada.toString().padStart(2, '0') + ':00';
                     const horaFin = (horaPreseleccionada + 1).toString().padStart(2, '0') + ':00';
@@ -1443,7 +1484,7 @@
                     document.getElementById('horaFin').value = horaFin;
                 }
             }
-            
+
             modal.classList.add('active');
         }
 
@@ -1459,7 +1500,7 @@
             const tipo = document.getElementById('tipoActividad').value;
             const grupoManual = document.getElementById('grupoManual');
             const grupoAtracciones = document.getElementById('grupoAtracciones');
-            
+
             if (tipo === 'manual') {
                 grupoManual.style.display = 'block';
                 grupoAtracciones.style.display = 'none';
@@ -1476,7 +1517,7 @@
             const data = obtenerDatos();
             const atracciones = data.atracciones || [];
             const container = document.getElementById('listaAtracciones');
-            
+
             if (atracciones.length === 0) {
                 container.innerHTML = `
                     <div style="text-align: center; padding: 2rem; color: var(--gris-oscuro);">
@@ -1486,7 +1527,7 @@
                 `;
                 return;
             }
-            
+
             let html = '';
             atracciones.forEach(atr => {
                 const seleccionada = atraccionSeleccionada === atr.id ? 'seleccionada' : '';
@@ -1497,7 +1538,7 @@
                     </div>
                 `;
             });
-            
+
             container.innerHTML = html;
         }
 
@@ -1513,7 +1554,7 @@
 
         function guardarActividad(event) {
             event.preventDefault();
-            
+
             const tipo = document.getElementById('tipoActividad').value;
             const titulo = document.getElementById('tituloActividad').value;
             const horaInicio = document.getElementById('horaInicio').value;
@@ -1522,8 +1563,7 @@
             const costoBRL = document.getElementById('costoBRL').value;
             const costoCLP = document.getElementById('costoCLP').value;
             const notifMin = parseInt(document.getElementById('notificacionMinutos').value);
-            
-            // Determinar fecha a usar
+
             let fechaAUsar = fechaSeleccionada;
             if (vistaActual === 'semana' && !actividadEditando) {
                 const inputFecha = document.getElementById('fechaActividad');
@@ -1531,27 +1571,27 @@
                     fechaAUsar = new Date(inputFecha.value + 'T00:00:00');
                 }
             }
-            
+
             if (horaInicio >= horaFin) {
                 alert('La hora de fin debe ser posterior a la hora de inicio');
                 return;
             }
-            
+
             const hayConflicto = verificarConflicto(
-                horaInicio, 
-                horaFin, 
+                horaInicio,
+                horaFin,
                 fechaAUsar,
                 actividadEditando?.id
             );
-            
+
             if (hayConflicto) {
                 document.getElementById('alertaConflicto').style.display = 'block';
                 const confirmar = confirm('Esta actividad se solapa con otra existente. ¿Deseas continuar de todas formas?');
                 if (!confirmar) return;
             }
-            
+
             const actividades = obtenerActividadesDia(fechaAUsar);
-            
+
             const actividadData = {
                 id: actividadEditando?.id || Date.now().toString() + Math.random().toString(36).substr(2, 9),
                 titulo: titulo.trim(),
@@ -1566,7 +1606,7 @@
                     minAntes: notifMin
                 } : { activa: false }
             };
-            
+
             if (actividadEditando) {
                 const index = actividades.findIndex(a => a.id === actividadEditando.id);
                 if (index >= 0) {
@@ -1575,11 +1615,11 @@
             } else {
                 actividades.push(actividadData);
             }
-            
+
             if (guardarActividadesDia(fechaAUsar, actividades)) {
                 cerrarModal();
                 cargarActividades();
-                
+
                 if (actividadData.notificacion.activa) {
                     programarNotificacion(actividadData, fechaAUsar);
                 }
@@ -1590,10 +1630,10 @@
 
         function eliminarActividad(id) {
             if (!confirm('¿Estás seguro de eliminar esta actividad?')) return;
-            
+
             const actividades = obtenerActividadesDia(fechaSeleccionada);
             const nuevas = actividades.filter(a => a.id !== id);
-            
+
             if (guardarActividadesDia(fechaSeleccionada, nuevas)) {
                 cargarActividades();
             }
@@ -1604,7 +1644,7 @@
                 const fechaHora = new Date(formatearFecha(fecha) + 'T' + actividad.horaInicio);
                 const notifTime = new Date(fechaHora.getTime() - (actividad.notificacion.minAntes * 60000));
                 const ahora = new Date();
-                
+
                 if (notifTime > ahora) {
                     const delay = notifTime - ahora;
                     setTimeout(() => {
@@ -1618,17 +1658,11 @@
             }
         }
 
-        // TOOLTIP
-        function inicializarTooltip() {
-            // Ya está creado en el HTML
-        }
-
         function mostrarTooltip(event, notas, titulo) {
             const tooltip = document.getElementById('tooltipNotas');
             tooltip.innerHTML = `<strong>${titulo}</strong><br>${notas}`;
             tooltip.classList.add('visible');
-            
-            // Posicionar tooltip
+
             const rect = event.target.getBoundingClientRect();
             tooltip.style.left = rect.left + 'px';
             tooltip.style.top = (rect.bottom + 10) + 'px';
@@ -1639,35 +1673,34 @@
             tooltip.classList.remove('visible');
         }
 
-        // CONVERSOR
         function inicializarConversor() {
             const btnConversor = document.getElementById('btnConversor');
             const modal = document.getElementById('modalConversor');
             const inputBRL = document.getElementById('inputBRL');
             const inputCLP = document.getElementById('inputCLP');
             const tasaSpan = document.getElementById('tasaCambio');
-            
+
             const config = obtenerDatos().configuracion || { tasaCambio: 150 };
             let tasaCambio = config.tasaCambio || 150;
             tasaSpan.textContent = tasaCambio;
-            
+
             btnConversor.addEventListener('click', () => {
                 modal.classList.add('active');
                 inputBRL.focus();
             });
-            
+
             inputBRL.addEventListener('input', (e) => {
                 const brl = parseFloat(e.target.value) || 0;
                 const clp = Math.round(brl * tasaCambio);
                 inputCLP.value = clp;
             });
-            
+
             inputCLP.addEventListener('input', (e) => {
                 const clp = parseFloat(e.target.value) || 0;
                 const brl = (clp / tasaCambio).toFixed(2);
                 inputBRL.value = brl;
             });
-            
+
             modal.addEventListener('click', (e) => {
                 if (e.target === modal) {
                     cerrarModalConversor();
@@ -1685,31 +1718,32 @@
         function editarTasa() {
             const config = obtenerDatos().configuracion || { tasaCambio: 150 };
             const tasaActual = config.tasaCambio || 150;
-            
+
             const nuevaTasa = prompt('Nueva tasa de cambio (1 BRL = X CLP):', tasaActual);
-            
+
             if (nuevaTasa && !isNaN(nuevaTasa) && nuevaTasa > 0) {
                 config.tasaCambio = parseFloat(nuevaTasa);
-                
+
                 const data = obtenerDatos();
                 data.configuracion = config;
                 guardarDatos(data);
-                
+
                 document.getElementById('tasaCambio').textContent = nuevaTasa;
                 alert('Tasa actualizada correctamente');
-                
+
                 document.getElementById('inputBRL').value = '';
                 document.getElementById('inputCLP').value = '';
-                
+
                 cargarActividades();
             }
         }
 
-        document.getElementById('modalActividad').addEventListener('click', function(e) {
+        document.getElementById('modalActividad').addEventListener('click', function (e) {
             if (e.target === this) {
                 cerrarModal();
             }
         });
     </script>
 </body>
+
 </html>
