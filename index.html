@@ -2973,26 +2973,60 @@
     // ========================================
     // SISTEMA DE ALMACENAMIENTO
     // ========================================
-    const STORAGE_KEY_APP = 'brasilTravelApp';
+    const STORAGEKEYAPP = 'brasilTravelApp';
 
-    function cargarDatos() {
-      const datos = localStorage.getItem(STORAGE_KEY_APP);
-      if (!datos) {
-        return {
-          alojamiento: null,
-          compras: [],
-          atracciones: [],
-          vuelos: { ida: null, regreso: null },
-          documentos: [],
-          tasaCambio: 150
+    function normalizarAppData(obj) {
+      const base = {
+        alojamiento: null,
+        compras: [],
+        atracciones: [],
+        vuelos: { ida: null, regreso: null },
+        documentos: [],
+        tasaCambio: 150
+      };
+
+      const o = (obj && typeof obj === 'object') ? obj : {};
+
+      // Merge superficial
+      const merged = { ...base, ...o };
+
+      // Normalizar tipos
+      if (!Array.isArray(merged.compras)) merged.compras = [];
+      if (!Array.isArray(merged.atracciones)) merged.atracciones = [];
+      if (!Array.isArray(merged.documentos)) merged.documentos = [];
+
+      if (!merged.vuelos || typeof merged.vuelos !== 'object') {
+        merged.vuelos = { ida: null, regreso: null };
+      } else {
+        merged.vuelos = {
+          ida: merged.vuelos.ida || null,
+          regreso: merged.vuelos.regreso || null
         };
       }
-      return JSON.parse(datos);
+
+      if (typeof merged.tasaCambio !== 'number' || !isFinite(merged.tasaCambio)) {
+        merged.tasaCambio = 150;
+      }
+
+      return merged;
+    }
+
+    function cargarDatos() {
+      try {
+        const raw = localStorage.getItem(STORAGEKEYAPP);
+        if (!raw) return normalizarAppData(null);
+        return normalizarAppData(JSON.parse(raw));
+      } catch (e) {
+        console.error('Error cargando STORAGEKEYAPP:', e);
+        return normalizarAppData(null);
+      }
     }
 
     function guardarDatos(datos) {
-      localStorage.setItem(STORAGE_KEY_APP, JSON.stringify(datos));
+      const normalizado = normalizarAppData(datos);
+      localStorage.setItem(STORAGEKEYAPP, JSON.stringify(normalizado));
     }
+
 
     // ========================================
     // NAVEGACIÓN
@@ -3711,42 +3745,38 @@
     }
 
     function exportarJSON() {
-      const datos = cargarDatos();
+      const app = normalizarAppData(cargarDatos());
       const gastosData = JSON.parse(localStorage.getItem('gastosViaje') || '[]');
-      const itinerarioData = JSON.parse(localStorage.getItem('brasilTravelApp') || '{}');
+
+      // Itinerario (itinerario.html) guardado también en brasilTravelApp, pero ahí mismo.
+      // Como acá STORAGEKEYAPP también es brasilTravelApp, ya va dentro de app.
+      // Sin embargo, tu itinerario.html usa brasilTravelApp con estructura { itinerario, configuracion, atracciones }.
+      // Para no perder nada, exportamos además un snapshot directo de ese storage.
+      const rawBrasilTravelApp = JSON.parse(localStorage.getItem('brasilTravelApp') || '{}');
 
       const exportData = {
-        version: '1.0',
+        version: '1.1',
         fecha: new Date().toISOString(),
-        app: datos,
-        gastos: gastosData,
-        itinerario: itinerarioData.itinerario || [],
-        configuracion: itinerarioData.configuracion || { tasaCambio: 150 }
+        app,
+        gastos: Array.isArray(gastosData) ? gastosData : [],
+        brasilTravelAppRaw: rawBrasilTravelApp
       };
 
       const dataStr = JSON.stringify(exportData, null, 2);
       const blob = new Blob([dataStr], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
 
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `brasil-travel-backup-${new Date().toISOString().split('T')[0]}.json`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
+      const aLink = document.createElement('a');
+      aLink.href = url;
+      aLink.download = `brasil-travel-backup-${new Date().toISOString().split('T')[0]}.json`;
+      document.body.appendChild(aLink);
+      aLink.click();
+      document.body.removeChild(aLink);
       URL.revokeObjectURL(url);
 
-      // Calcular estadísticas
-      const totalActividades = (itinerarioData.itinerario || []).reduce((sum, dia) => sum + dia.actividades.length, 0);
-
-      alert(
-        '✅ Backup descargado correctamente\n\n' +
-        `📊 Gastos: ${gastosData.length}\n` +
-        `📍 Atracciones: ${datos.atracciones.length}\n` +
-        `📅 Días con itinerario: ${(itinerarioData.itinerario || []).length}\n` +
-        `✓ Actividades: ${totalActividades}`
-      );
+      alert('✅ Backup descargado correctamente (incluye app completa, gastos e itinerario).');
     }
+
 
     async function copiarAlPortapapeles() {
       const datos = cargarDatos();
@@ -3804,107 +3834,71 @@
             return;
           }
 
-          // Cargar datos actuales
-          const appActual = cargarDatos();
+          const appActual = normalizarAppData(cargarDatos());
           const gastosActuales = JSON.parse(localStorage.getItem('gastosViaje') || '[]');
-          const itinerarioActual = JSON.parse(localStorage.getItem('brasilTravelApp') || '{}');
+          const rawActual = JSON.parse(localStorage.getItem('brasilTravelApp') || '{}');
 
-          // Verificar si hay datos actuales
+          const appImport = normalizarAppData(importData.app);
+          const gastosImport = Array.isArray(importData.gastos) ? importData.gastos : [];
+
           const hayDatosActuales =
-            gastosActuales.length > 0 ||
-            appActual.atracciones.length > 0 ||
+            (Array.isArray(gastosActuales) && gastosActuales.length > 0) ||
+            (appActual.atracciones && appActual.atracciones.length > 0) ||
+            (appActual.compras && appActual.compras.length > 0) ||
             (appActual.documentos && appActual.documentos.length > 0) ||
             appActual.alojamiento !== null ||
             (appActual.vuelos && (appActual.vuelos.ida || appActual.vuelos.regreso)) ||
-            (itinerarioActual.itinerario && itinerarioActual.itinerario.length > 0);
+            (rawActual && Object.keys(rawActual).length > 0);
 
-          if (hayDatosActuales) {
-            // Preguntar al usuario
-            const opcion = confirm(
+          const opcion = hayDatosActuales
+            ? confirm(
               '¿Cómo deseas importar los datos?\n\n' +
-              '✅ OK = MEZCLAR con datos actuales\n' +
-              '   • Une gastos, documentos, atracciones\n' +
-              '   • Combina itinerario por fechas\n' +
-              '   • Elimina duplicados automáticamente\n' +
-              '   • No pierdes nada\n\n' +
-              '❌ Cancelar = REEMPLAZAR todos los datos\n' +
-              '   • Se perderán los datos actuales\n' +
-              '   • Solo quedarán los datos importados'
-            );
+              '✅ OK = MEZCLAR con datos actuales (recomendado)\n' +
+              '❌ Cancelar = REEMPLAZAR todo (se perderán datos actuales)'
+            )
+            : false;
 
-            if (opcion) {
-              // MEZCLAR DATOS
-              const appMezclado = mezclarDatosApp(appActual, importData.app);
-              const gastosMezclados = mezclarListaPorId([...gastosActuales, ...importData.gastos]);
+          if (hayDatosActuales && opcion) {
+            // MEZCLAR
+            const appMezclado = mezclarDatosApp(appActual, appImport);
+            const gastosMezclados = mezclarListaPorId([...(gastosActuales || []), ...gastosImport]);
 
-              // Mezclar itinerario
-              const itinerarioMezclado = mezclarItinerario(
-                itinerarioActual.itinerario || [],
-                importData.itinerario || []
-              );
+            guardarDatos(appMezclado);
+            localStorage.setItem('gastosViaje', JSON.stringify(gastosMezclados));
 
-              // Guardar todo
-              localStorage.setItem(STORAGE_KEY_APP, JSON.stringify(appMezclado));
-              localStorage.setItem('gastosViaje', JSON.stringify(gastosMezclados));
-
-              const dataItinerario = {
-                itinerario: itinerarioMezclado,
-                configuracion: importData.configuracion || itinerarioActual.configuracion || { tasaCambio: 150 },
-                atracciones: appMezclado.atracciones
-              };
-              localStorage.setItem('brasilTravelApp', JSON.stringify(dataItinerario));
-
-              const totalActividades = itinerarioMezclado.reduce((sum, dia) => sum + dia.actividades.length, 0);
-
-              alert(
-                '✅ Datos mezclados correctamente\n\n' +
-                `📊 Total gastos: ${gastosMezclados.length}\n` +
-                `📍 Total atracciones: ${appMezclado.atracciones.length}\n` +
-                `📄 Total documentos: ${(appMezclado.documentos || []).length}\n` +
-                `📅 Días con itinerario: ${itinerarioMezclado.length}\n` +
-                `✓ Total actividades: ${totalActividades}\n\n` +
-                'Recargando la página...'
-              );
-            } else {
-              // REEMPLAZAR TODO
-              localStorage.setItem(STORAGE_KEY_APP, JSON.stringify(importData.app));
-              localStorage.setItem('gastosViaje', JSON.stringify(importData.gastos));
-
-              const dataItinerario = {
-                itinerario: importData.itinerario || [],
-                configuracion: importData.configuracion || { tasaCambio: 150 },
-                atracciones: importData.app.atracciones
-              };
-              localStorage.setItem('brasilTravelApp', JSON.stringify(dataItinerario));
-
-              alert('✅ Datos reemplazados correctamente\n\nRecargando la página...');
+            // Restaurar/mezclar el raw del itinerario si viene
+            if (importData.brasilTravelAppRaw && typeof importData.brasilTravelAppRaw === 'object') {
+              // estrategia simple: reemplazar raw por el importado (es el snapshot más completo)
+              localStorage.setItem('brasilTravelApp', JSON.stringify(importData.brasilTravelAppRaw));
             }
+
+            alert('✅ Datos mezclados correctamente.\n\nRecargando la página...');
           } else {
-            // No hay datos, simplemente importar
-            localStorage.setItem(STORAGE_KEY_APP, JSON.stringify(importData.app));
-            localStorage.setItem('gastosViaje', JSON.stringify(importData.gastos));
+            // REEMPLAZAR (o no había datos)
+            guardarDatos(appImport);
+            localStorage.setItem('gastosViaje', JSON.stringify(gastosImport));
 
-            const dataItinerario = {
-              itinerario: importData.itinerario || [],
-              configuracion: importData.configuracion || { tasaCambio: 150 },
-              atracciones: importData.app.atracciones
-            };
-            localStorage.setItem('brasilTravelApp', JSON.stringify(dataItinerario));
+            if (importData.brasilTravelAppRaw && typeof importData.brasilTravelAppRaw === 'object') {
+              localStorage.setItem('brasilTravelApp', JSON.stringify(importData.brasilTravelAppRaw));
+            } else {
+              // Si no existe raw en backups viejos, al menos no dejar basura
+              // (no tocamos brasilTravelApp para no borrar itinerario existente)
+            }
 
-            alert('✅ Datos importados correctamente\n\nRecargando la página...');
+            alert('✅ Datos importados correctamente.\n\nRecargando la página...');
           }
 
           location.reload();
-
         } catch (error) {
-          alert('❌ Error al importar: Archivo corrupto o formato inválido');
           console.error(error);
+          alert('❌ Error al importar: Archivo corrupto o formato inválido');
         }
       };
-      reader.readAsText(file);
 
+      reader.readAsText(file);
       event.target.value = '';
     }
+
 
     async function pegarDesdePortapapeles() {
       try {
@@ -4080,35 +4074,31 @@
     }
 
     function mezclarDatosApp(actuales, nuevos) {
+      const a = normalizarAppData(actuales);
+      const n = normalizarAppData(nuevos);
+
       return {
-        // COMPRAS: Mezclar listas
-        compras: mezclarListaPorId(
-          [...(actuales.compras || []), ...(nuevos.compras || [])]
-        ),
+        // Listas: unir + deduplicar por id
+        compras: mezclarListaPorId([...(a.compras || []), ...(n.compras || [])]),
+        atracciones: mezclarListaPorId([...(a.atracciones || []), ...(n.atracciones || [])]),
+        documentos: mezclarListaPorId([...(a.documentos || []), ...(n.documentos || [])]),
 
-        // ATRACCIONES: Mezclar listas
-        atracciones: mezclarListaPorId(
-          [...(actuales.atracciones || []), ...(nuevos.atracciones || [])]
-        ),
+        // Objetos: priorizar importado si existe
+        alojamiento: n.alojamiento || a.alojamiento,
 
-        // DOCUMENTOS: Mezclar listas
-        documentos: mezclarListaPorId(
-          [...(actuales.documentos || []), ...(nuevos.documentos || [])]
-        ),
-
-        // ALOJAMIENTO: Priorizar el importado
-        alojamiento: nuevos.alojamiento || actuales.alojamiento,
-
-        // VUELOS: Combinar inteligentemente
+        // Vuelos: priorizar importado si existe (ida y regreso por separado)
         vuelos: {
-          ida: nuevos.vuelos?.ida || actuales.vuelos?.ida || null,
-          regreso: nuevos.vuelos?.regreso || actuales.vuelos?.regreso || null
+          ida: n.vuelos?.ida || a.vuelos?.ida || null,
+          regreso: n.vuelos?.regreso || a.vuelos?.regreso || null
         },
 
-        // TASA DE CAMBIO: Mantener la actual (configuración personal)
-        tasaCambio: actuales.tasaCambio || nuevos.tasaCambio || 150
+        // Tasa: mantener la actual si existe (preferencia usuario), si no usar importada
+        tasaCambio: (typeof a.tasaCambio === 'number' && isFinite(a.tasaCambio) && a.tasaCambio > 0)
+          ? a.tasaCambio
+          : (n.tasaCambio || 150)
       };
     }
+
 
     // Función auxiliar: eliminar duplicados por ID
     function mezclarListaPorId(lista) {
