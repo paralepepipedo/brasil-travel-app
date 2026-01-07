@@ -99,64 +99,104 @@ async function uploadPendingChanges() {
 
   const localData = getAllLocalData();
 
-  // Gastos
+  // Gastos (filtrar inválidos)
   if (localData.gastos.length > 0) {
-    const { error } = await supabaseClient.from('gastos').upsert(
-      localData.gastos.map(g => ({
+    const gastosValidos = localData.gastos
+      .filter(g => {
+        // Validar campos obligatorios
+        const valido =
+          g.id &&
+          g.descripcion &&
+          g.montobrl != null &&
+          !isNaN(parseFloat(g.montobrl)) &&
+          g.fecha;
+
+        if (!valido) {
+          console.warn('⚠️ Gasto inválido ignorado:', g);
+        }
+        return valido;
+      })
+      .map(g => ({
         id: g.id,
         user_id: DEFAULT_USER_ID,
         descripcion: g.descripcion,
-        monto_brl: g.montobrl,
+        monto_brl: parseFloat(g.montobrl),
         moneda: g.moneda || 'BRL',
-        monto_original: g.montooriginal,
+        monto_original: g.montooriginal ? parseFloat(g.montooriginal) : null,
         fecha: g.fecha,
-        personas: g.personas,
-        pagado_por: g.pagadoPor,
-        pagos: g.pagos,
+        personas: g.personas || 3,
+        pagado_por: g.pagadoPor || 'Patricia',
+        pagos: g.pagos || {},
         fijo: g.fijo || false
-      })),
-      { onConflict: 'id' }
-    );
-    if (error) console.error('Error subiendo gastos:', error);
+      }));
+
+    if (gastosValidos.length > 0) {
+      const { error } = await supabaseClient.from('gastos').upsert(
+        gastosValidos,
+        { onConflict: 'id' }
+      );
+      if (error) {
+        console.error('Error subiendo gastos:', error);
+      } else {
+        console.log(`✅ ${gastosValidos.length} gastos sincronizados`);
+      }
+    }
   }
 
-  // Compras
+
+  // Compras (filtrar inválidos)
   if (localData.compras.length > 0) {
-    await supabaseClient.from('compras').upsert(
-      localData.compras.map(c => ({
+    const comprasValidas = localData.compras
+      .filter(c => c.id && c.articulo)
+      .map(c => ({
         id: c.id,
         user_id: DEFAULT_USER_ID,
         articulo: c.articulo,
-        cantidad: c.cantidad,
-        categoria: c.categoria,
-        notas: c.notas,
+        cantidad: c.cantidad || 1,
+        categoria: c.categoria || 'Otros',
+        notas: c.notas || '',
         comprado: c.comprado || false
-      })),
-      { onConflict: 'id' }
-    );
+      }));
+
+    if (comprasValidas.length > 0) {
+      const { error } = await supabaseClient.from('compras').upsert(
+        comprasValidas,
+        { onConflict: 'id' }
+      );
+      if (error) console.error('Error subiendo compras:', error);
+    }
   }
 
-  // Atracciones
+
+  // Atracciones (filtrar inválidos)
   if (localData.atracciones.length > 0) {
-    await supabaseClient.from('atracciones').upsert(
-      localData.atracciones.map(a => ({
+    const atraccionesValidas = localData.atracciones
+      .filter(a => a.id && a.nombre)
+      .map(a => ({
         id: a.id,
         user_id: DEFAULT_USER_ID,
         nombre: a.nombre,
-        categoria: a.categoria,
-        direccion: a.direccion,
-        coordenadas: a.coordenadas,
-        precio_brl: a.precioBRL,
-        horario: a.horario,
+        categoria: a.categoria || 'Otros',
+        direccion: a.direccion || '',
+        coordenadas: a.coordenadas || '',
+        precio_brl: a.precioBRL ? parseFloat(a.precioBRL) : null,
+        horario: a.horario || '',
         rating: a.rating || 0,
-        notas: a.notas,
+        notas: a.notas || '',
         visitado: a.visitado || false,
-        fecha_visita: a.fechaVisita,
-        imagen_url: a.imagenUrl
-      })),
-      { onConflict: 'id' }
-    );
+        fecha_visita: a.fechaVisita || null,
+        imagen_url: a.imagenUrl || ''
+      }));
+
+    if (atraccionesValidas.length > 0) {
+      const { error } = await supabaseClient.from('atracciones').upsert(
+        atraccionesValidas,
+        { onConflict: 'id' }
+      );
+      if (error) console.error('Error subiendo atracciones:', error);
+    }
   }
+
 
   // App config (alojamiento + tasa)
   await supabaseClient.from('app_config').upsert({
