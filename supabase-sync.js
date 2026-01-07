@@ -6,9 +6,8 @@
 const SUPABASE_URL = 'https://lpspcmwxallshngaggmw.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_d96GjwG17EM1jBNXupW0rQ_EVzmEES0';
 
-// Cliente Supabase (carga desde CDN)
-let supabase = window.supabase || null;
-
+// Cliente Supabase
+let supabaseClient = null;
 
 // Usuario por defecto (modo offline)
 const DEFAULT_USER_ID = '00000000-0000-0000-0000-000000000001';
@@ -26,12 +25,14 @@ let syncState = {
 // =====================================================
 async function initSupabase() {
   try {
-    // Cargar cliente desde CDN si no está
-    if (typeof createClient === 'undefined') {
-      await loadScript('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2');
+    // Verificar que Supabase está disponible
+    if (!window.supabase || !window.supabase.createClient) {
+      console.error('❌ Supabase SDK no está disponible');
+      return false;
     }
 
-    supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    console.log('✅ Supabase cliente inicializado');
 
     // Detectar cambios de conexión
     window.addEventListener('online', () => {
@@ -59,21 +60,11 @@ async function initSupabase() {
   }
 }
 
-function loadScript(src) {
-  return new Promise((resolve, reject) => {
-    const script = document.createElement('script');
-    script.src = src;
-    script.onload = resolve;
-    script.onerror = reject;
-    document.head.appendChild(script);
-  });
-}
-
 // =====================================================
 // SINCRONIZACIÓN COMPLETA (BIDIRECCIONAL)
 // =====================================================
 async function syncAll() {
-  if (!syncState.online || syncState.syncing) return;
+  if (!syncState.online || syncState.syncing || !supabaseClient) return;
 
   syncState.syncing = true;
   updateSyncUI('Sincronizando...');
@@ -104,11 +95,13 @@ async function syncAll() {
 // SUBIR CAMBIOS LOCALES → SUPABASE
 // =====================================================
 async function uploadPendingChanges() {
+  if (!supabaseClient) return;
+
   const localData = getAllLocalData();
 
   // Gastos
   if (localData.gastos.length > 0) {
-    const { error } = await supabase.from('gastos').upsert(
+    const { error } = await supabaseClient.from('gastos').upsert(
       localData.gastos.map(g => ({
         id: g.id,
         user_id: DEFAULT_USER_ID,
@@ -129,7 +122,7 @@ async function uploadPendingChanges() {
 
   // Compras
   if (localData.compras.length > 0) {
-    await supabase.from('compras').upsert(
+    await supabaseClient.from('compras').upsert(
       localData.compras.map(c => ({
         id: c.id,
         user_id: DEFAULT_USER_ID,
@@ -145,7 +138,7 @@ async function uploadPendingChanges() {
 
   // Atracciones
   if (localData.atracciones.length > 0) {
-    await supabase.from('atracciones').upsert(
+    await supabaseClient.from('atracciones').upsert(
       localData.atracciones.map(a => ({
         id: a.id,
         user_id: DEFAULT_USER_ID,
@@ -165,112 +158,8 @@ async function uploadPendingChanges() {
     );
   }
 
-  // Vuelos
-  if (localData.vuelos.ida) {
-    await supabase.from('vuelos').upsert({
-      id: 'ida-' + DEFAULT_USER_ID,
-      user_id: DEFAULT_USER_ID,
-      tipo: 'ida',
-      ...normalizeVuelo(localData.vuelos.ida)
-    }, { onConflict: 'id' });
-  }
-
-  if (localData.vuelos.regreso) {
-    await supabase.from('vuelos').upsert({
-      id: 'regreso-' + DEFAULT_USER_ID,
-      user_id: DEFAULT_USER_ID,
-      tipo: 'regreso',
-      ...normalizeVuelo(localData.vuelos.regreso)
-    }, { onConflict: 'id' });
-  }
-
-  // Documentos (con subida de archivos a Storage)
-  if (localData.documentos.length > 0) {
-    const docsParaUpsert = [];
-
-    for (const d of localData.documentos) {
-      const docData = {
-        id: d.id,
-        user_id: DEFAULT_USER_ID,
-        categoria: d.categoria,
-        titulo: d.titulo,
-        descripcion: d.descripcion,
-        fecha_evento: d.fechaEvento,
-        recordatorio: d.recordatorio || 0,
-        etiquetas: d.etiquetas,
-        notas: d.notas,
-        archivo_nombre: d.archivoNombre,
-        archivo_tipo: d.archivoTipo
-      };
-
-      // ✨ SUBIR ARCHIVO SI EXISTE EN BASE64
-      if (d.archivoBase64 && d.archivoBase64.startsWith('data:')) {
-        try {
-          const fileName = `${d.id}-${d.archivoNombre}`;
-          const base64Data = d.archivoBase64.split(',')[1]; // quitar "data:image/png;base64,"
-
-          const { data: uploadData, error: uploadError } = await supabase.storage
-            .from('documentos')
-            .upload(fileName, atob(base64Data), {
-              contentType: d.archivoTipo || 'application/octet-stream',
-              upsert: true
-            });
-
-          if (!uploadError && uploadData) {
-            const publicUrl = supabase.storage
-              .from('documentos')
-              .getPublicUrl(fileName).data.publicUrl;
-            docData.archivo_url = publicUrl;
-            console.log(`✅ Archivo subido: ${fileName}`);
-          } else {
-            console.warn('Error subiendo archivo:', uploadError);
-          }
-        } catch (e) {
-          console.error('Error procesando archivo:', e);
-        }
-      }
-
-      docsParaUpsert.push(docData);
-    }
-
-    if (docsParaUpsert.length > 0) {
-      const { error } = await supabase
-        .from('documentos')
-        .upsert(docsParaUpsert, { onConflict: 'id' });
-
-      if (error) console.error('Error subiendo documentos:', error);
-    }
-  }
-
-
-  // Itinerario
-  if (localData.itinerario.length > 0) {
-    const actividadesFlat = [];
-    localData.itinerario.forEach(dia => {
-      dia.actividades.forEach(act => {
-        actividadesFlat.push({
-          id: act.id,
-          user_id: DEFAULT_USER_ID,
-          fecha: dia.fecha,
-          titulo: act.titulo,
-          hora_inicio: act.horaInicio,
-          hora_fin: act.horaFin,
-          notas: act.notas,
-          costo_brl: act.costoBRL,
-          costo_clp: act.costoCLP,
-          atraccion_id: act.atraccionId,
-          notificacion: act.notificacion
-        });
-      });
-    });
-
-    if (actividadesFlat.length > 0) {
-      await supabase.from('itinerario').upsert(actividadesFlat, { onConflict: 'id' });
-    }
-  }
-
   // App config (alojamiento + tasa)
-  await supabase.from('app_config').upsert({
+  await supabaseClient.from('app_config').upsert({
     user_id: DEFAULT_USER_ID,
     alojamiento: localData.alojamiento,
     tasa_cambio: localData.tasaCambio || 150
@@ -281,14 +170,13 @@ async function uploadPendingChanges() {
 // DESCARGAR ACTUALIZACIONES SUPABASE → LOCAL
 // =====================================================
 async function downloadUpdates() {
-  const lastSync = localStorage.getItem('lastSync');
+  if (!supabaseClient) return;
 
   // Gastos
-  const { data: gastos } = await supabase
+  const { data: gastos } = await supabaseClient
     .from('gastos')
     .select('*')
-    .eq('user_id', DEFAULT_USER_ID)
-    .order('updated_at', { ascending: false });
+    .eq('user_id', DEFAULT_USER_ID);
 
   if (gastos && gastos.length > 0) {
     const gastosLocal = gastos.map(g => ({
@@ -307,87 +195,35 @@ async function downloadUpdates() {
   }
 
   // Compras
-  const { data: compras } = await supabase
+  const { data: compras } = await supabaseClient
     .from('compras')
     .select('*')
     .eq('user_id', DEFAULT_USER_ID);
 
   // Atracciones
-  const { data: atracciones } = await supabase
+  const { data: atracciones } = await supabaseClient
     .from('atracciones')
     .select('*')
     .eq('user_id', DEFAULT_USER_ID);
 
-  // Vuelos
-  const { data: vuelos } = await supabase
-    .from('vuelos')
-    .select('*')
-    .eq('user_id', DEFAULT_USER_ID);
-
-  const vuelosObj = {
-    ida: vuelos?.find(v => v.tipo === 'ida') || null,
-    regreso: vuelos?.find(v => v.tipo === 'regreso') || null
-  };
-
-  // Documentos (con URLs de Storage)
-  const { data: documentos } = await supabase
-    .from('documentos')
-    .select('*, archivo_url')
-    .eq('user_id', DEFAULT_USER_ID);
-
-
-  // Itinerario
-  const { data: itinerario } = await supabase
-    .from('itinerario')
-    .select('*')
-    .eq('user_id', DEFAULT_USER_ID)
-    .order('fecha', { ascending: true });
-
-  // Reconstruir estructura itinerario
-  const itinerarioAgrupado = [];
-  if (itinerario) {
-    const porFecha = {};
-    itinerario.forEach(act => {
-      if (!porFecha[act.fecha]) {
-        porFecha[act.fecha] = { fecha: act.fecha, actividades: [] };
-      }
-      porFecha[act.fecha].actividades.push({
-        id: act.id,
-        titulo: act.titulo,
-        horaInicio: act.hora_inicio,
-        horaFin: act.hora_fin,
-        notas: act.notas,
-        costoBRL: act.costo_brl,
-        costoCLP: act.costo_clp,
-        atraccionId: act.atraccion_id,
-        notificacion: act.notificacion
-      });
-    });
-    Object.values(porFecha).forEach(dia => itinerarioAgrupado.push(dia));
-  }
-
   // App config
-  const { data: appConfig } = await supabase
+  const { data: appConfig } = await supabaseClient
     .from('app_config')
     .select('*')
     .eq('user_id', DEFAULT_USER_ID)
     .single();
 
-  // Guardar todo en localStorage (estructura normalizada)
+  // Guardar en localStorage
   const datosApp = {
     alojamiento: appConfig?.alojamiento || null,
     compras: compras || [],
     atracciones: atracciones || [],
-    vuelos: vuelosObj,
-    documentos: documentos || [],
+    vuelos: { ida: null, regreso: null },
+    documentos: [],
     tasaCambio: appConfig?.tasa_cambio || 150
   };
 
-  localStorage.setItem('brasilTravelApp', JSON.stringify({
-    ...datosApp,
-    itinerario: itinerarioAgrupado,
-    configuracion: { tasaCambio: datosApp.tasaCambio }
-  }));
+  localStorage.setItem('brasilTravelApp', JSON.stringify(datosApp));
 }
 
 // =====================================================
@@ -412,41 +248,20 @@ function getAllLocalData() {
   };
 }
 
-function normalizeVuelo(v) {
-  return {
-    aerolinea: v.aerolinea,
-    numero_vuelo: v.numeroVuelo,
-    codigo_reserva: v.codigoReserva,
-    origen_codigo: v.origenCodigo,
-    origen_nombre: v.origenNombre,
-    destino_codigo: v.destinoCodigo,
-    destino_nombre: v.destinoNombre,
-    fecha_salida: v.fechaSalida,
-    fecha_llegada: v.fechaLlegada,
-    terminal: v.terminal,
-    puerta: v.puerta,
-    asientos: v.asientos,
-    equipaje: v.equipaje,
-    notas: v.notas,
-    boarding_pass_url: v.boardingPassUrl
-  };
-}
-
 function updateSyncUI(message) {
   const indicator = document.getElementById('syncIndicator');
   if (indicator) {
     indicator.textContent = message;
-    indicator.style.display = message ? 'block' : 'none';
+    indicator.style.display = message ? 'inline' : 'none';
   }
 }
 
-// Marcar cambios pendientes cuando se guarda algo
+// Marcar cambios pendientes
 function markPendingChanges() {
   syncState.pendingChanges++;
 
-  // Intentar sync inmediato si hay red
   if (syncState.online && !syncState.syncing) {
-    setTimeout(syncAll, 1000); // delay de 1 segundo
+    setTimeout(syncAll, 1000);
   }
 }
 
@@ -457,3 +272,5 @@ window.SupabaseSync = {
   markPending: markPendingChanges,
   state: syncState
 };
+
+console.log('✅ supabase-sync.js cargado');
