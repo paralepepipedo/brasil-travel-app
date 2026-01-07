@@ -7,7 +7,8 @@ const SUPABASE_URL = 'https://lpspcmwxallshngaggmw.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_d96GjwG17EM1jBNXupW0rQ_EVzmEES0';
 
 // Cliente Supabase (carga desde CDN)
-let supabase = null;
+let supabase = window.supabase || null;
+
 
 // Usuario por defecto (modo offline)
 const DEFAULT_USER_ID = '00000000-0000-0000-0000-000000000001';
