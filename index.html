@@ -1573,6 +1573,12 @@
       }
     }
   </style>
+  <!-- Supabase Client desde CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <!-- Capa de sincronización -->
+  <script src="supabase-sync.js"></script>
+
 </head>
 
 <body>
@@ -1580,8 +1586,12 @@
   <!-- HEADER CON NAVEGACIÓN -->
   <header class="app-header">
     <h1 class="app-title">
-      <span>🇧🇷</span> Brasil Travel
+      <span>🇧🇷</span> Brasil Travel App
+      <!-- ✨ NUEVO: Indicador de sync -->
+      <span id="syncIndicator" style="font-size: 0.7rem; margin-left: 1rem; color: #fedf00; display: none;"></span>
     </h1>
+
+
 
     <nav class="nav-tabs">
       <button class="nav-tab active" data-section="dashboard">📊 Resumen</button>
@@ -2479,6 +2489,23 @@
             📋 Pegar Datos Copiados
           </button>
         </div>
+        <!-- ✨ NUEVO: Sincronización con Supabase -->
+        <div style="border-top: 2px solid var(--gris-medio); margin: 1.5rem 0;"></div>
+
+        <button class="btn-primary" onclick="SupabaseSync.sync()" style="width: 100%;">
+          ☁️ Sincronizar con Supabase
+        </button>
+
+        <div style="margin-top: 0.5rem; font-size: 0.85rem; color: var(--gris-oscuro);">
+          <strong>Estado:</strong>
+          <span id="syncStatus">
+            <span id="syncOnline" style="display: none;">🟢 En línea</span>
+            <span id="syncOffline" style="display: none;">🔴 Sin conexión (modo offline)</span>
+          </span>
+          <br>
+          <strong>Última sincronización:</strong> <span id="lastSyncTime">Nunca</span>
+        </div>
+
 
         <div style="margin-top: 1rem; padding: 1rem; background: #e3f2fd; border-radius: 8px; font-size: 0.9rem;">
           <strong>💡 Tip:</strong> Para compartir con otra persona, usa "Copiar Datos" y envíalo por WhatsApp, Telegram
@@ -2961,11 +2988,63 @@
 
     }
 
+    // =====================================================
+    // INICIALIZACIÓN CON SUPABASE
+    // =====================================================
     if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', inicializarApp);
+      document.addEventListener('DOMContentLoaded', async function () {
+        // ✨ INICIALIZAR SUPABASE
+        if (window.SupabaseSync) {
+          const supabaseOK = await SupabaseSync.init();
+
+          if (supabaseOK) {
+            console.log('✅ Supabase inicializado');
+
+            // Actualizar UI de estado de sincronización
+            const updateStatusUI = () => {
+              const online = navigator.onLine;
+              const onlineEl = document.getElementById('syncOnline');
+              const offlineEl = document.getElementById('syncOffline');
+              const lastSyncEl = document.getElementById('lastSyncTime');
+
+              if (onlineEl) onlineEl.style.display = online ? 'inline' : 'none';
+              if (offlineEl) offlineEl.style.display = online ? 'none' : 'inline';
+
+              const lastSync = localStorage.getItem('lastSync');
+              if (lastSync && lastSyncEl) {
+                const date = new Date(lastSync);
+                lastSyncEl.textContent = date.toLocaleString('es-CL');
+              }
+            };
+
+            updateStatusUI();
+            setInterval(updateStatusUI, 5000);
+
+            // Sincronizar al arrancar (solo si hay red)
+            if (navigator.onLine) {
+              setTimeout(() => SupabaseSync.sync(), 2000);
+            }
+          } else {
+            console.warn('⚠️ Supabase no disponible - modo offline permanente');
+          }
+        }
+
+        // Llamar a la inicialización normal de la app
+        inicializarApp();
+      });
     } else {
-      inicializarApp();
+      // Si ya cargó, ejecutar directo
+      (async function () {
+        if (window.SupabaseSync) {
+          await SupabaseSync.init();
+          if (navigator.onLine) {
+            setTimeout(() => SupabaseSync.sync(), 2000);
+          }
+        }
+        inicializarApp();
+      })();
     }
+
   </script>
 
   <!-- JAVASCRIPT ADICIONAL PARA TODAS LAS SECCIONES -->
@@ -3024,8 +3103,33 @@
 
     function guardarDatos(datos) {
       const normalizado = normalizarAppData(datos);
-      localStorage.setItem(STORAGEKEYAPP, JSON.stringify(normalizado));
+      const json = JSON.stringify(normalizado);
+
+      try {
+        localStorage.setItem(STORAGEKEYAPP, json);
+
+        // Verificación
+        const verif = localStorage.getItem(STORAGEKEYAPP);
+        if (!verif || verif.length < Math.min(json.length, 50)) {
+          throw new Error('Verificación fallida: no se guardó correctamente.');
+        }
+
+        // ✨ NUEVO: marcar para sincronización
+        if (window.SupabaseSync) {
+          window.SupabaseSync.markPending();
+        }
+
+        return true;
+      } catch (e) {
+        console.error('guardarDatos() falló:', e);
+        alert(
+          '❌ No se pudo guardar todo (posible límite de almacenamiento).\n\n' +
+          'Sugerencia: elimina documentos pesados.\nDetalle: ' + (e?.name || e?.message || e)
+        );
+        return false;
+      }
     }
+
 
 
     // ========================================

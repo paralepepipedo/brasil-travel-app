@@ -222,6 +222,7 @@
             padding: 1.5rem;
             border-radius: 12px;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            position: relative;
         }
 
         .timeline-header {
@@ -279,6 +280,7 @@
 
         .timeline-visual {
             position: relative;
+            min-height: 600px;
         }
 
         .timeline-grid {
@@ -778,6 +780,12 @@
             }
         }
     </style>
+    <!-- Supabase Client desde CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <!-- Capa de sincronización -->
+    <script src="supabase-sync.js"></script>
+
 </head>
 
 <body>
@@ -1067,20 +1075,25 @@
         function guardarActividadesDia(fecha, actividades) {
             const data = obtenerDatos();
             const fechaStr = formatearFecha(fecha);
-
             const index = data.itinerario.findIndex(d => d.fecha === fechaStr);
 
             if (index >= 0) {
                 data.itinerario[index].actividades = actividades;
             } else {
-                data.itinerario.push({
-                    fecha: fechaStr,
-                    actividades: actividades
-                });
+                data.itinerario.push({ fecha: fechaStr, actividades: actividades });
             }
 
-            return guardarDatos(data);
+            // Guardar normalmente en localStorage
+            const guardado = guardarDatos(data);
+
+            // ✨ NUEVO: si se guardó bien y existe SupabaseSync, marcar cambios pendientes
+            if (guardado && window.SupabaseSync) {
+                window.SupabaseSync.markPending();
+            }
+
+            return guardado;
         }
+
 
         function cargarActividades() {
             if (vistaActual === 'semana') {
@@ -1179,32 +1192,35 @@
         }
 
         function renderizarTimelineDiaCompacto(actividades, fecha) {
-            const horasAMostrar = [0, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23];
+            const horasAMostrar = [6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23];
 
-            let html = '<div class="timeline-grid">';
+            let html = '<div class="timeline-visual">';
+            html += '<div class="timeline-grid">';
 
             horasAMostrar.forEach((hora) => {
                 const horaStr = hora.toString().padStart(2, '0') + ':00';
                 const esLibre = !actividades.some(act => {
                     const inicioHora = parseInt(act.horaInicio.split(':')[0]);
                     const finHora = parseInt(act.horaFin.split(':')[0]);
-                    return hora >= inicioHora && hora < finHora;
+                    const finMin = parseInt(act.horaFin.split(':')[1]);
+                    const finHoraReal = finMin > 0 ? finHora + 1 : finHora;
+                    return hora >= inicioHora && hora < finHoraReal;
                 });
 
                 html += `
-                    <div class="hora-fila">
-                        <div class="hora-label">${horaStr}</div>
-                        <div class="hora-espacio ${esLibre ? 'libre' : ''}" 
-                             ${esLibre ? `onclick="clickEnHoraFecha(${hora}, '${formatearFecha(fecha)}')"` : ''}></div>
-                    </div>
-                `;
+            <div class="hora-fila">
+                <div class="hora-label">${horaStr}</div>
+                <div class="hora-espacio ${esLibre ? 'libre' : ''}" 
+                     ${esLibre ? `onclick="clickEnHoraFecha(${hora}, '${formatearFecha(fecha)}')"` : ''}></div>
+            </div>
+        `;
             });
 
             html += '</div>';
             html += '<div class="actividades-overlay">';
 
             actividades.forEach(act => {
-                const topPx = calcularPosicionTop(act.horaInicio, horasAMostrar);
+                const topPx = calcularPosicionTopMejorado(act.horaInicio);
                 const heightPx = calcularAltura(act.horaInicio, act.horaFin);
 
                 if (topPx !== null && heightPx > 0) {
@@ -1213,9 +1229,11 @@
             });
 
             html += '</div>';
+            html += '</div>';
 
             return html;
         }
+
 
         function actualizarResumen(actividades) {
             const total = actividades.length;
@@ -1250,42 +1268,51 @@
 
         function renderizarTimelineVisual(actividades, fecha) {
             const container = document.getElementById('contenedorTimeline');
-            const horasAMostrar = [0, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23];
+            container.innerHTML = '';
 
-            let htmlGrid = '<div class="timeline-grid">';
+            const horasAMostrar = [6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23];
+
+            // Crear estructura con wrapper para posicionamiento relativo
+            let html = '<div class="timeline-visual">';
+            html += '<div class="timeline-grid">';
 
             horasAMostrar.forEach((hora) => {
                 const horaStr = hora.toString().padStart(2, '0') + ':00';
                 const esLibre = !actividades.some(act => {
                     const inicioHora = parseInt(act.horaInicio.split(':')[0]);
                     const finHora = parseInt(act.horaFin.split(':')[0]);
-                    return hora >= inicioHora && hora < finHora;
+                    const finMin = parseInt(act.horaFin.split(':')[1]);
+                    const finHoraReal = finMin > 0 ? finHora + 1 : finHora;
+                    return hora >= inicioHora && hora < finHoraReal;
                 });
 
-                htmlGrid += `
-                    <div class="hora-fila">
-                        <div class="hora-label">${horaStr}</div>
-                        <div class="hora-espacio ${esLibre ? 'libre' : ''}" 
-                             ${esLibre ? `onclick="clickEnHora(${hora})"` : ''}></div>
-                    </div>
-                `;
+                html += `
+            <div class="hora-fila">
+                <div class="hora-label">${horaStr}</div>
+                <div class="hora-espacio ${esLibre ? 'libre' : ''}" 
+                     ${esLibre ? `onclick="clickEnHora(${hora})"` : ''}></div>
+            </div>
+        `;
             });
 
-            htmlGrid += '</div>';
-            htmlGrid += '<div class="actividades-overlay">';
+            html += '</div>'; // cierra timeline-grid
+            html += '<div class="actividades-overlay">';
 
             actividades.forEach(act => {
-                const topPx = calcularPosicionTop(act.horaInicio, horasAMostrar);
+                const topPx = calcularPosicionTopMejorado(act.horaInicio);
                 const heightPx = calcularAltura(act.horaInicio, act.horaFin);
 
                 if (topPx !== null && heightPx > 0) {
-                    htmlGrid += renderizarActividadBloque(act, topPx, heightPx, fecha);
+                    html += renderizarActividadBloque(act, topPx, heightPx, fecha);
                 }
             });
 
-            htmlGrid += '</div>';
-            container.innerHTML = htmlGrid;
+            html += '</div>'; // cierra actividades-overlay
+            html += '</div>'; // cierra timeline-visual
+
+            container.innerHTML = html;
         }
+
 
         function calcularPosicionTop(horaInicio, horasVisibles) {
             const [h, m] = horaInicio.split(':').map(Number);
@@ -1309,6 +1336,24 @@
             const offsetMinutos = (m / 60) * PIXELES_POR_HORA;
             return (filaBase * PIXELES_POR_HORA) + offsetMinutos;
         }
+        function calcularPosicionTopMejorado(horaInicio) {
+            const [h, m] = horaInicio.split(':').map(Number);
+
+            // Horas que se muestran empiezan en 6:00
+            const horaBase = 6;
+
+            // Si la hora es antes de las 6am, posicionar en 0
+            if (h < horaBase) {
+                return 0;
+            }
+
+            // Calcular la fila (cada hora = 60px)
+            const filaIndex = h - horaBase;
+            const offsetMinutos = (m / 60) * PIXELES_POR_HORA;
+
+            return (filaIndex * PIXELES_POR_HORA) + offsetMinutos;
+        }
+
 
         function calcularAltura(horaInicio, horaFin) {
             const minInicio = convertirHoraAMinutos(horaInicio);
