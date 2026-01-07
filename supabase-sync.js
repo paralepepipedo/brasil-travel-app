@@ -1,18 +1,14 @@
 // =====================================================
-// SUPABASE-SYNC.JS - Capa de sincronización offline-first
+// SUPABASE-SYNC.JS - Capa de sincronización offline-first (CORREGIDO)
 // =====================================================
 
-// 🔧 CONFIGURACIÓN (reemplaza con tus credenciales)
+// 🔧 CONFIGURACIÓN
 const SUPABASE_URL = 'https://lpspcmwxallshngaggmw.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_d96GjwG17EM1jBNXupW0rQ_EVzmEES0';
 
-// Cliente Supabase
 let supabaseClient = null;
-
-// Usuario por defecto (modo offline)
 const DEFAULT_USER_ID = '00000000-0000-0000-0000-000000000001';
 
-// Estado de sincronización
 let syncState = {
   online: navigator.onLine,
   syncing: false,
@@ -25,7 +21,6 @@ let syncState = {
 // =====================================================
 async function initSupabase() {
   try {
-    // Verificar que Supabase está disponible
     if (!window.supabase || !window.supabase.createClient) {
       console.error('❌ Supabase SDK no está disponible');
       return false;
@@ -34,7 +29,6 @@ async function initSupabase() {
     supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     console.log('✅ Supabase cliente inicializado');
 
-    // Detectar cambios de conexión
     window.addEventListener('online', () => {
       syncState.online = true;
       console.log('✅ Conexión restaurada - iniciando sync');
@@ -43,10 +37,9 @@ async function initSupabase() {
 
     window.addEventListener('offline', () => {
       syncState.online = false;
-      console.log('📴 Sin conexión - modo offline');
+      console.log('🔴 Sin conexión - modo offline');
     });
 
-    // Sincronización automática cada 5 minutos (si hay cambios)
     setInterval(() => {
       if (syncState.online && syncState.pendingChanges > 0) {
         syncAll();
@@ -70,10 +63,7 @@ async function syncAll() {
   updateSyncUI('Sincronizando...');
 
   try {
-    // 1) Subir cambios locales pendientes
     await uploadPendingChanges();
-
-    // 2) Descargar actualizaciones remotas
     await downloadUpdates();
 
     syncState.lastSync = new Date();
@@ -92,23 +82,22 @@ async function syncAll() {
 }
 
 // =====================================================
-// SUBIR CAMBIOS LOCALES → SUPABASE
+// SUBIR CAMBIOS LOCALES → SUPABASE (CORREGIDO)
 // =====================================================
 async function uploadPendingChanges() {
   if (!supabaseClient) return;
 
   const localData = getAllLocalData();
 
-  // Gastos (filtrar inválidos)
+  // ✅ GASTOS - Validación y normalización corregida
   if (localData.gastos.length > 0) {
     const gastosValidos = localData.gastos
       .filter(g => {
-        // Validar campos obligatorios
         const valido =
           g.id &&
           g.descripcion &&
-          g.montobrl != null &&
-          !isNaN(parseFloat(g.montobrl)) &&
+          g.monto_brl != null &&
+          !isNaN(parseFloat(g.monto_brl)) &&
           g.fecha;
 
         if (!valido) {
@@ -117,12 +106,12 @@ async function uploadPendingChanges() {
         return valido;
       })
       .map(g => ({
-        id: g.id,
+        id: String(g.id),
         user_id: DEFAULT_USER_ID,
         descripcion: g.descripcion,
-        monto_brl: parseFloat(g.montobrl),
+        monto_brl: parseFloat(g.monto_brl),
         moneda: g.moneda || 'BRL',
-        monto_original: g.montooriginal ? parseFloat(g.montooriginal) : null,
+        monto_original: g.monto_original ? parseFloat(g.monto_original) : null,
         fecha: g.fecha,
         personas: g.personas || 3,
         pagado_por: g.pagadoPor || 'Patricia',
@@ -143,19 +132,19 @@ async function uploadPendingChanges() {
     }
   }
 
-
-  // Compras (filtrar inválidos)
+  // ✅ COMPRAS
   if (localData.compras.length > 0) {
     const comprasValidas = localData.compras
       .filter(c => c.id && c.articulo)
       .map(c => ({
-        id: c.id,
+        id: String(c.id),
         user_id: DEFAULT_USER_ID,
         articulo: c.articulo,
         cantidad: c.cantidad || 1,
         categoria: c.categoria || 'Otros',
         notas: c.notas || '',
-        comprado: c.comprado || false
+        comprado: c.comprado || false,
+        precio: c.precio ? parseFloat(c.precio) : null
       }));
 
     if (comprasValidas.length > 0) {
@@ -164,28 +153,28 @@ async function uploadPendingChanges() {
         { onConflict: 'id' }
       );
       if (error) console.error('Error subiendo compras:', error);
+      else console.log(`✅ ${comprasValidas.length} compras sincronizadas`);
     }
   }
 
-
-  // Atracciones (filtrar inválidos)
+  // ✅ ATRACCIONES
   if (localData.atracciones.length > 0) {
     const atraccionesValidas = localData.atracciones
       .filter(a => a.id && a.nombre)
       .map(a => ({
-        id: a.id,
+        id: String(a.id),
         user_id: DEFAULT_USER_ID,
         nombre: a.nombre,
-        categoria: a.categoria || 'Otros',
+        categoria: a.categoria || 'otro',
         direccion: a.direccion || '',
-        coordenadas: a.coordenadas || '',
+        coordenadas: a.maps || '',
         precio_brl: a.precioBRL ? parseFloat(a.precioBRL) : null,
-        horario: a.horario || '',
+        horario: '',
         rating: a.rating || 0,
         notas: a.notas || '',
         visitado: a.visitado || false,
         fecha_visita: a.fechaVisita || null,
-        imagen_url: a.imagenUrl || ''
+        imagen_url: (a.imagenes && a.imagenes[0]) || ''
       }));
 
     if (atraccionesValidas.length > 0) {
@@ -194,20 +183,32 @@ async function uploadPendingChanges() {
         { onConflict: 'id' }
       );
       if (error) console.error('Error subiendo atracciones:', error);
+      else console.log(`✅ ${atraccionesValidas.length} atracciones sincronizadas`);
     }
   }
 
-
-  // App config (alojamiento + tasa)
-  await supabaseClient.from('app_config').upsert({
+  // ✅ APP CONFIG (alojamiento + tasa + vuelos + itinerario)
+  const appConfigData = {
     user_id: DEFAULT_USER_ID,
     alojamiento: localData.alojamiento,
-    tasa_cambio: localData.tasaCambio || 150
-  }, { onConflict: 'user_id' });
+    tasa_cambio: localData.tasaCambio || 150,
+    vuelos: localData.vuelos || { ida: null, regreso: null },
+    itinerario: localData.itinerario || []
+  };
+
+  const { error: configError } = await supabaseClient
+    .from('app_config')
+    .upsert(appConfigData, { onConflict: 'user_id' });
+
+  if (configError) {
+    console.error('Error subiendo app_config:', configError);
+  } else {
+    console.log('✅ Configuración sincronizada (alojamiento, vuelos, itinerario)');
+  }
 }
 
 // =====================================================
-// DESCARGAR ACTUALIZACIONES SUPABASE → LOCAL
+// DESCARGAR ACTUALIZACIONES SUPABASE → LOCAL (CORREGIDO)
 // =====================================================
 async function downloadUpdates() {
   if (!supabaseClient) return;
@@ -222,14 +223,14 @@ async function downloadUpdates() {
     const gastosLocal = gastos.map(g => ({
       id: g.id,
       descripcion: g.descripcion,
-      montobrl: parseFloat(g.monto_brl),
+      monto_brl: parseFloat(g.monto_brl),
       moneda: g.moneda,
-      montooriginal: g.monto_original ? parseFloat(g.monto_original) : null,
+      monto_original: g.monto_original ? parseFloat(g.monto_original) : null,
       fecha: g.fecha,
       personas: g.personas,
       pagadoPor: g.pagado_por,
-      pagos: g.pagos,
-      fijo: g.fijo
+      pagos: g.pagos || {},
+      fijo: g.fijo || false
     }));
     localStorage.setItem('gastosViaje', JSON.stringify(gastosLocal));
   }
@@ -256,14 +257,37 @@ async function downloadUpdates() {
   // Guardar en localStorage
   const datosApp = {
     alojamiento: appConfig?.alojamiento || null,
-    compras: compras || [],
-    atracciones: atracciones || [],
-    vuelos: { ida: null, regreso: null },
+    compras: (compras || []).map(c => ({
+      id: c.id,
+      articulo: c.articulo,
+      cantidad: c.cantidad,
+      categoria: c.categoria,
+      notas: c.notas,
+      comprado: c.comprado,
+      precio: c.precio
+    })),
+    atracciones: (atracciones || []).map(a => ({
+      id: a.id,
+      nombre: a.nombre,
+      categoria: a.categoria,
+      direccion: a.direccion,
+      maps: a.coordenadas,
+      precioBRL: a.precio_brl,
+      rating: a.rating,
+      notas: a.notas,
+      visitado: a.visitado,
+      fechaVisita: a.fecha_visita,
+      imagenes: a.imagen_url ? [a.imagen_url] : []
+    })),
+    vuelos: appConfig?.vuelos || { ida: null, regreso: null },
     documentos: [],
-    tasaCambio: appConfig?.tasa_cambio || 150
+    tasaCambio: appConfig?.tasa_cambio || 150,
+    itinerario: appConfig?.itinerario || [],
+    configuracion: { tasaCambio: appConfig?.tasa_cambio || 150 }
   };
 
   localStorage.setItem('brasilTravelApp', JSON.stringify(datosApp));
+  console.log('✅ Datos descargados de Supabase');
 }
 
 // =====================================================
@@ -273,8 +297,22 @@ function getAllLocalData() {
   const gastosRaw = localStorage.getItem('gastosViaje') || '[]';
   const appRaw = localStorage.getItem('brasilTravelApp') || '{}';
 
-  const gastos = JSON.parse(gastosRaw);
-  const app = JSON.parse(appRaw);
+  let gastos = [];
+  let app = {};
+
+  try {
+    gastos = JSON.parse(gastosRaw);
+  } catch (e) {
+    console.error('Error parseando gastos:', e);
+    gastos = [];
+  }
+
+  try {
+    app = JSON.parse(appRaw);
+  } catch (e) {
+    console.error('Error parseando app:', e);
+    app = {};
+  }
 
   return {
     gastos: gastos || [],
@@ -296,7 +334,6 @@ function updateSyncUI(message) {
   }
 }
 
-// Marcar cambios pendientes
 function markPendingChanges() {
   syncState.pendingChanges++;
 
@@ -313,4 +350,4 @@ window.SupabaseSync = {
   state: syncState
 };
 
-console.log('✅ supabase-sync.js cargado');
+console.log('✅ supabase-sync.js cargado (versión corregida)');

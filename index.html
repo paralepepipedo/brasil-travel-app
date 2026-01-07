@@ -3925,6 +3925,11 @@
       }
     }
 
+    // =====================================================
+    // FUNCIÓN DE IMPORTACIÓN JSON CORREGIDA
+    // =====================================================
+    // Reemplazar en index.html la función importarJSON
+
     function importarJSON(event) {
       const file = event.target.files[0];
       if (!file) return;
@@ -3971,23 +3976,44 @@
             guardarDatos(appMezclado);
             localStorage.setItem('gastosViaje', JSON.stringify(gastosMezclados));
 
-            // Restaurar/mezclar el raw del itinerario si viene
-            if (importData.brasilTravelAppRaw && typeof importData.brasilTravelAppRaw === 'object') {
-              // estrategia simple: reemplazar raw por el importado (es el snapshot más completo)
-              localStorage.setItem('brasilTravelApp', JSON.stringify(importData.brasilTravelAppRaw));
+            // ✅ RESTAURAR ITINERARIO DESDE brasilTravelAppRaw
+            if (importData.brasilTravelAppRaw) {
+              const rawImportado = importData.brasilTravelAppRaw;
+              const rawMezclado = {
+                ...rawImportado,
+                // Mezclar itinerarios
+                itinerario: mezclarItinerario(
+                  rawActual.itinerario || [],
+                  rawImportado.itinerario || []
+                ),
+                // Mantener configuración más reciente
+                configuracion: rawImportado.configuracion || rawActual.configuracion || { tasaCambio: 150 }
+              };
+              localStorage.setItem('brasilTravelApp', JSON.stringify(rawMezclado));
             }
 
             alert('✅ Datos mezclados correctamente.\n\nRecargando la página...');
           } else {
-            // REEMPLAZAR (o no había datos)
+            // REEMPLAZAR
             guardarDatos(appImport);
             localStorage.setItem('gastosViaje', JSON.stringify(gastosImport));
 
-            if (importData.brasilTravelAppRaw && typeof importData.brasilTravelAppRaw === 'object') {
+            // ✅ RESTAURAR TODO DESDE brasilTravelAppRaw
+            if (importData.brasilTravelAppRaw) {
               localStorage.setItem('brasilTravelApp', JSON.stringify(importData.brasilTravelAppRaw));
             } else {
-              // Si no existe raw en backups viejos, al menos no dejar basura
-              // (no tocamos brasilTravelApp para no borrar itinerario existente)
+              // Fallback: construir desde datos básicos
+              const datosReconstruidos = {
+                alojamiento: appImport.alojamiento,
+                compras: appImport.compras,
+                atracciones: appImport.atracciones,
+                vuelos: appImport.vuelos,
+                documentos: appImport.documentos,
+                tasaCambio: appImport.tasaCambio,
+                itinerario: importData.itinerario || [],
+                configuracion: importData.configuracion || { tasaCambio: 150 }
+              };
+              localStorage.setItem('brasilTravelApp', JSON.stringify(datosReconstruidos));
             }
 
             alert('✅ Datos importados correctamente.\n\nRecargando la página...');
@@ -4002,6 +4028,46 @@
 
       reader.readAsText(file);
       event.target.value = '';
+    }
+
+    // ✅ FUNCIÓN AUXILIAR PARA MEZCLAR ITINERARIOS
+    function mezclarItinerario(itinerarioActual, itinerarioNuevo) {
+      const itinerarioPorFecha = {};
+
+      // Agregar días actuales
+      (itinerarioActual || []).forEach(dia => {
+        itinerarioPorFecha[dia.fecha] = {
+          fecha: dia.fecha,
+          actividades: [...(dia.actividades || [])]
+        };
+      });
+
+      // Mezclar con días nuevos
+      (itinerarioNuevo || []).forEach(dia => {
+        if (itinerarioPorFecha[dia.fecha]) {
+          // Si la fecha ya existe, mezclar actividades sin duplicados
+          const actividadesExistentes = new Set(
+            itinerarioPorFecha[dia.fecha].actividades.map(a => a.id)
+          );
+
+          (dia.actividades || []).forEach(act => {
+            if (!actividadesExistentes.has(act.id)) {
+              itinerarioPorFecha[dia.fecha].actividades.push(act);
+            }
+          });
+        } else {
+          // Si la fecha no existe, agregarla
+          itinerarioPorFecha[dia.fecha] = {
+            fecha: dia.fecha,
+            actividades: [...(dia.actividades || [])]
+          };
+        }
+      });
+
+      // Convertir objeto a array y ordenar por fecha
+      return Object.values(itinerarioPorFecha).sort((a, b) =>
+        new Date(a.fecha) - new Date(b.fecha)
+      );
     }
 
 
