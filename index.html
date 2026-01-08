@@ -32,12 +32,15 @@
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       background: var(--gris-claro);
       color: var(--texto-oscuro);
-      margin: 1rem;
+      margin: 0;
+      /* ✅ CAMBIADO: Sin margen */
       min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
+      padding: 0;
+      /* ✅ NUEVO */
+      overflow-x: hidden;
+      /* ✅ NUEVO: Evitar scroll horizontal */
     }
+
 
     h1 {
       text-align: center;
@@ -661,6 +664,14 @@
       padding-top: 70px;
     }
 
+    /* ✅ NUEVO: Ajustar contenedor en móvil */
+    .app-section {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 0 0.5rem;
+      /* Espaciado mínimo en móvil */
+    }
+
     .app-section {
       display: none;
     }
@@ -1090,6 +1101,9 @@
 
     .section-container {
       padding: 0 1rem;
+      width: 100%;
+      max-width: 100%;
+      box-sizing: border-box;
     }
 
     @media (max-width: 768px) {
@@ -1159,7 +1173,56 @@
       .filtros-atracciones button {
         width: 100%;
       }
+
+      body {
+        padding-top: 65px;
+        /* Menos padding en móvil */
+      }
+
+      .app-section {
+        padding: 0.5rem !important;
+      }
+
+      .section-container {
+        padding: 0 0.5rem !important;
+        max-width: 100vw;
+      }
+
+      #dashboardContent {
+        padding: 0 0.5rem !important;
+      }
+
+      /* ✅ Ajustar cards para móvil */
+      .dashboard-card {
+        padding: 1rem;
+      }
+
+      /* ✅ Tablas y grids responsive */
+      .resumen-grid {
+        gap: 0.75rem;
+      }
+
+      /* ✅ Formularios móvil */
+      form {
+        padding: 1rem;
+      }
+
+      .modal-content {
+        padding: 1rem !important;
+        width: 95vw !important;
+      }
+
+      /* ✅ Mejorar botones en móvil */
+      .dashboard-buttons {
+        gap: 0.75rem;
+      }
+
+      /* ✅ Cards más compactos */
+      .card {
+        padding: 0.75rem 1rem;
+      }
     }
+
 
     @media (min-width: 769px) {
       #dashboardContent {
@@ -2524,7 +2587,42 @@
           ✏️ Cambiar Tasa
         </button>
       </div>
+      <!-- =====================================================
+     AGREGAR ESTE BLOQUE COMPLETO JUSTO ANTES DE "Zona de Peligro"
+     ===================================================== -->
 
+      <!-- Diagnóstico de sincronización -->
+      <div class="dashboard-card" style="border: 2px solid var(--amarillo-brasil);">
+        <h3 style="color: var(--azul-brasil);">🔍 Diagnóstico de Sincronización</h3>
+        <p style="color: var(--gris-oscuro); margin-bottom: 1rem; font-size: 0.95rem;">
+          Verifica qué datos tienes localmente y en Supabase
+        </p>
+
+        <div style="display: grid; gap: 1rem;">
+          <button class="btn-primary" onclick="diagnosticarDatos()" style="width: 100%;">
+            🔍 Ejecutar Diagnóstico
+          </button>
+
+          <button class="btn-secondary" onclick="descargarDesdeSupabase()"
+            style="width: 100%; background: var(--azul-brasil);">
+            📥 Descargar desde Supabase (Sobrescribir Local)
+          </button>
+
+          <button class="btn-secondary" onclick="forzarSincronizacion()"
+            style="width: 100%; background: var(--verde-claro);">
+            🔄 Subir y Descargar (Sincronización Completa)
+          </button>
+
+          <button class="btn-secondary" onclick="limpiarYRecargar()"
+            style="width: 100%; background: var(--amarillo-brasil); color: var(--texto-oscuro);">
+            ⚠️ Limpiar localStorage y Recargar
+          </button>
+        </div>
+
+        <div id="resultadoDiagnostico"
+          style="margin-top: 1rem; padding: 1rem; background: var(--gris-claro); border-radius: 8px; font-family: monospace; font-size: 0.85rem; max-height: 400px; overflow-y: auto; display: none;">
+        </div>
+      </div>
       <!-- Zona de peligro -->
       <div class="dashboard-card" style="border: 2px solid #ffebee;">
         <h3 style="color: #d32f2f;">⚠️ Zona de Peligro</h3>
@@ -2539,6 +2637,7 @@
       </div>
     </div>
   </div>
+
   <script>
     // --- Variables globales ---
     const STORAGE_KEY = 'gastosViaje';
@@ -2955,15 +3054,33 @@
           let datosUsuario = [];
           const datosGuardados = localStorage.getItem(STORAGE_KEY);
           if (datosGuardados) {
-            datosUsuario = JSON.parse(datosGuardados);
-            // Filtrar para eliminar cualquier dato "fijo" que el usuario haya guardado por error
-            datosUsuario = datosUsuario.filter(g => !g.fijo);
+            try {
+              datosUsuario = JSON.parse(datosGuardados);
+              // Filtrar datos fijos que no deberían estar aquí
+              datosUsuario = datosUsuario.filter(g => !g.fijo);
+            } catch (e) {
+              console.error('Error parseando gastos:', e);
+              datosUsuario = [];
+            }
           }
 
-          // 3. Combinar: datos fijos + datos del usuario
-          gastos = [...datosFijos, ...datosUsuario];
+          // 3. ✅ ELIMINAR DUPLICADOS usando Map (clave = ID)
+          const gastosMap = new Map();
 
-          // 4. Migración: asegura que cada gasto tiene .pagos e ID
+          // Primero agregar fijos
+          datosFijos.forEach(g => {
+            if (g.id) gastosMap.set(String(g.id), g);
+          });
+
+          // Luego sobrescribir con usuario (tienen prioridad)
+          datosUsuario.forEach(g => {
+            if (g.id) gastosMap.set(String(g.id), g);
+          });
+
+          // Convertir a array
+          gastos = Array.from(gastosMap.values());
+
+          // 4. Migración: asegurar que tienen pagos e ID
           gastos.forEach(gasto => {
             if (!gasto.pagos) {
               gasto.pagos = { Patricia: false, Daniela: false, Gonzalo: false };
@@ -2972,6 +3089,8 @@
               gasto.id = Date.now() + Math.floor(Math.random() * 1000);
             }
           });
+
+          console.log(`✅ Gastos cargados: ${gastos.length} (${datosFijos.length} fijos + ${datosUsuario.length} usuario - duplicados eliminados)`);
 
         } catch (e) {
           console.error('Error al cargar datos iniciales:', e);
@@ -3150,6 +3269,9 @@
       if (seccion === 'dashboard') {
         actualizarDashboard();
       }
+      if (seccion === 'alojamiento') {
+        cargarAlojamiento();
+      }
       if (seccion === 'vuelos') {
         inicializarVuelos();
       }
@@ -3318,52 +3440,157 @@
     // ========================================
     // ALOJAMIENTO
     // ========================================
+    // Función para extraer coordenadas de un link de Google Maps
+    async function obtenerCoordenadas(url) {
+      if (!url) return null;
+
+      // Si el link ya tiene coordenadas embebidas
+      const coordMatch = url.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/);
+      if (coordMatch) {
+        return { lat: coordMatch[1], lng: coordMatch[2] };
+      }
+
+      // Si es un link acortado, intentar expandirlo
+      if (url.includes('goo.gl') || url.includes('maps.app.goo.gl')) {
+        try {
+          // Fetch para seguir la redirección y obtener el link completo
+          const response = await fetch(url, {
+            method: 'HEAD',
+            redirect: 'follow'
+          });
+          const fullUrl = response.url;
+
+          const coordMatchExpanded = fullUrl.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/);
+          if (coordMatchExpanded) {
+            return { lat: coordMatchExpanded[1], lng: coordMatchExpanded[2] };
+          }
+        } catch (e) {
+          console.log('No se pudo expandir URL:', e);
+        }
+      }
+
+      return null;
+    }
+    // ========================================
+    // ALOJAMIENTO - Cargar y mostrar datos
+    // ========================================
     function cargarAlojamiento() {
       const datos = cargarDatos();
 
-      if (datos.alojamiento) {
-        document.getElementById('alojamientoVista').style.display = 'block';
-        document.getElementById('alojamientoForm').style.display = 'none';
+      console.log('🏠 Cargando alojamiento:', datos.alojamiento);
 
-        const a = datos.alojamiento;
-        document.getElementById('verNombre').textContent = a.nombre;
-        document.getElementById('verDireccion').textContent = a.direccion;
-
-        const checkin = new Date(a.checkin).toLocaleString('es-CL');
-        const checkout = new Date(a.checkout).toLocaleString('es-CL');
-        document.getElementById('verCheckin').textContent = checkin;
-        document.getElementById('verCheckout').textContent = checkout;
-
-        const fmtBRL = v => 'R$ ' + Number(v).toLocaleString('es-CL', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-        document.getElementById('verPrecioTotal').textContent = a.precioTotal ? fmtBRL(a.precioTotal) : '-';
-        document.getElementById('verPrecioNoche').textContent = a.precioNoche ? fmtBRL(a.precioNoche) : '-';
-        document.getElementById('verNoches').textContent = a.noches || '-';
-
-        const division = a.division == 4 ? 'En 4 (Patricia 25%, Daniela 25%, Gonzalo 50%)' : 'En 3 (33% cada uno)';
-        document.getElementById('verDivision').textContent = division;
-
-        const stars = '⭐'.repeat(a.rating || 0);
-        document.getElementById('verRating').textContent = stars || 'Sin calificar';
-
-        if (a.nombre || a.direccion) {
-          // Generamos el mapa buscando por Nombre + Dirección para evitar bloqueo
-          const query = encodeURIComponent(`${a.nombre} ${a.direccion || ''}`);
-          const iframeSrc = `https://maps.google.com/maps?q=${query}&t=&z=15&ie=UTF8&iwloc=&output=embed`;
-
-          document.getElementById('verMaps').innerHTML = `<iframe src="${iframeSrc}" width="100%" height="350" style="border:0; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);" allowfullscreen="" loading="lazy"></iframe>`;
-        } else {
-          document.getElementById('verMaps').innerHTML = '';
-        }
-
-        if (a.notas) {
-          document.getElementById('verNotas').innerHTML = '<strong>📝 Notas:</strong><br>' + a.notas;
-          document.getElementById('verNotas').style.display = 'block';
-        } else {
-          document.getElementById('verNotas').style.display = 'none';
-        }
-      } else {
+      if (!datos.alojamiento || !datos.alojamiento.nombre) {
+        // No hay alojamiento, mostrar formulario
         document.getElementById('alojamientoVista').style.display = 'none';
         document.getElementById('alojamientoForm').style.display = 'block';
+        console.log('📝 Mostrando formulario (no hay datos)');
+        return;
+      }
+
+      const a = datos.alojamiento;
+
+      // Hay alojamiento, mostrar vista de lectura
+      document.getElementById('alojamientoVista').style.display = 'block';
+      document.getElementById('alojamientoForm').style.display = 'none';
+      console.log('✅ Mostrando vista con datos');
+
+      // Llenar los datos
+      document.getElementById('verNombre').textContent = a.nombre;
+      document.getElementById('verDireccion').textContent = a.direccion || 'No especificada';
+
+      // Formatear fechas
+      const checkin = new Date(a.checkin);
+      const checkout = new Date(a.checkout);
+
+      document.getElementById('verCheckin').textContent = checkin.toLocaleString('es-CL', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+
+      document.getElementById('verCheckout').textContent = checkout.toLocaleString('es-CL', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+
+      // Formatear precios
+      const tasaCambioActual = datos.tasaCambio || 150;
+      const fmtBRL = v => 'R$ ' + Number(v).toLocaleString('es-CL', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      const fmtCLP = v => 'CLP$ ' + Math.round(v).toLocaleString('es-CL');
+
+      if (a.precioTotal) {
+        const precioTotalCLP = a.precioTotal * tasaCambioActual;
+        document.getElementById('verPrecioTotal').innerHTML = `${fmtBRL(a.precioTotal)} <span style="color: var(--gris-oscuro); font-size: 0.9rem;">(${fmtCLP(precioTotalCLP)})</span>`;
+      } else {
+        document.getElementById('verPrecioTotal').textContent = 'No especificado';
+      }
+
+      if (a.precioNoche) {
+        const precioNocheCLP = a.precioNoche * tasaCambioActual;
+        document.getElementById('verPrecioNoche').innerHTML = `${fmtBRL(a.precioNoche)} <span style="color: var(--gris-oscuro); font-size: 0.9rem;">(${fmtCLP(precioNocheCLP)})</span>`;
+      } else {
+        document.getElementById('verPrecioNoche').textContent = 'No especificado';
+      }
+
+      document.getElementById('verNoches').textContent = a.noches || 'No especificado';
+
+      // División del costo
+      const divisionTexto = a.division === '4'
+        ? 'En 4 partes (Patricia 25%, Daniela 25%, Gonzalo 50%)'
+        : 'En 3 partes (33% cada uno)';
+      document.getElementById('verDivision').textContent = divisionTexto;
+
+      // Rating
+      const ratingTexto = a.rating > 0 ? '⭐'.repeat(a.rating) : 'Sin calificar';
+      document.getElementById('verRating').textContent = ratingTexto;
+
+      // Mapa - Mismo sistema que atracciones
+      const verMapsDiv = document.getElementById('verMaps');
+      if (a.direccion || a.nombre) {
+        // Generar query de búsqueda combinando nombre y dirección
+        const queryMap = encodeURIComponent(`${a.nombre} ${a.direccion || ''}`);
+
+        verMapsDiv.innerHTML = `
+      <iframe 
+        src="https://maps.google.com/maps?q=${queryMap}&t=&z=15&ie=UTF8&iwloc=&output=embed" 
+        width="100%" 
+        height="300" 
+        style="border:0; border-radius: 8px;" 
+        allowfullscreen="" 
+        loading="lazy"
+        referrerpolicy="no-referrer-when-downgrade">
+      </iframe>
+      ${a.maps ? `
+        <p style="margin-top: 0.5rem; text-align: center;">
+          <a href="${a.maps}" target="_blank" rel="noopener noreferrer" style="color: var(--verde-brasil); text-decoration: none; font-weight: 600;">
+            🗺️ Abrir en Google Maps
+          </a>
+        </p>
+      ` : ''}
+    `;
+      } else {
+        verMapsDiv.innerHTML = '<p style="color: var(--gris-oscuro); text-align: center;">Sin ubicación en mapa</p>';
+      }
+
+      // Notas
+      const verNotasDiv = document.getElementById('verNotas');
+      if (a.notas && a.notas.trim() !== '') {
+        verNotasDiv.innerHTML = `<strong>📝 Notas:</strong><br>${a.notas.replace(/\n/g, '<br>')}`;
+      } else {
+        verNotasDiv.innerHTML = '<p style="color: var(--gris-oscuro);">Sin notas adicionales</p>';
+      }
+
+      // Imágenes (si las agregaste en el HTML)
+      const verImagenesDiv = document.getElementById('verImagenes');
+      if (verImagenesDiv) {
+        verImagenesDiv.innerHTML = ''; // Por ahora vacío
       }
     }
 
@@ -5340,6 +5567,348 @@
       });
     }
   </script>
+  <!-- =====================================================
+     AGREGAR ESTE SCRIPT ANTES DE </body>
+     (Busca la línea que dice </body> al final del archivo)
+     ===================================================== -->
+
+  <script>
+    // =====================================================
+    // FUNCIONES DE DIAGNÓSTICO
+    // =====================================================
+
+    async function diagnosticarDatos() {
+      const resultado = document.getElementById('resultadoDiagnostico');
+      resultado.style.display = 'block';
+      resultado.innerHTML = '<p>🔍 Analizando datos...</p>';
+
+      let reporte = '';
+
+      // 1. DATOS LOCALES
+      reporte += '=== 📱 DATOS LOCALES (localStorage) ===\n\n';
+
+      const gastosLocal = JSON.parse(localStorage.getItem('gastosViaje') || '[]');
+      reporte += `Gastos: ${gastosLocal.length} registros\n`;
+
+      const appLocal = JSON.parse(localStorage.getItem('brasilTravelApp') || '{}');
+      reporte += `Compras: ${appLocal.compras?.length || 0} registros\n`;
+      reporte += `Atracciones: ${appLocal.atracciones?.length || 0} registros\n`;
+      reporte += `Documentos: ${appLocal.documentos?.length || 0} registros\n`;
+      reporte += `Alojamiento: ${appLocal.alojamiento ? '✅ Configurado (' + appLocal.alojamiento.nombre + ')' : '❌ Sin datos'}\n`;
+      reporte += `Vuelos Ida: ${appLocal.vuelos?.ida ? '✅ ' + appLocal.vuelos.ida.numeroVuelo : '❌ Sin datos'}\n`;
+      reporte += `Vuelos Regreso: ${appLocal.vuelos?.regreso ? '✅ ' + appLocal.vuelos.regreso.numeroVuelo : '❌ Sin datos'}\n`;
+      reporte += `Itinerario: ${appLocal.itinerario?.length || 0} días\n`;
+
+      if (appLocal.atracciones && appLocal.atracciones.length > 0) {
+        reporte += '\n📍 Atracciones locales:\n';
+        appLocal.atracciones.forEach((a, i) => {
+          reporte += `  ${i + 1}. ${a.nombre} (${a.categoria})\n`;
+        });
+      }
+
+      reporte += '\n';
+
+      // 2. DATOS EN SUPABASE
+      reporte += '=== ☁️ DATOS EN SUPABASE ===\n\n';
+
+      if (!window.supabase) {
+        reporte += '❌ Supabase no está inicializado\n';
+      } else {
+        try {
+          const client = window.supabase.createClient(
+            'https://lpspcmwxallshngaggmw.supabase.co',
+            'sb_publishable_d96GjwG17EM1jBNXupW0rQ_EVzmEES0'
+          );
+
+          const userId = '00000000-0000-0000-0000-000000000001';
+
+          // Gastos
+          const { data: gastosDB, error: gastosError } = await client.from('gastos').select('*').eq('user_id', userId);
+          reporte += `Gastos: ${gastosDB?.length || 0} registros ${gastosError ? '❌ Error: ' + gastosError.message : ''}\n`;
+
+          // Compras
+          const { data: comprasDB, error: comprasError } = await client.from('compras').select('*').eq('user_id', userId);
+          reporte += `Compras: ${comprasDB?.length || 0} registros ${comprasError ? '❌ Error: ' + comprasError.message : ''}\n`;
+
+          // Atracciones
+          const { data: atraccionesDB, error: atraccionesError } = await client.from('atracciones').select('*').eq('user_id', userId);
+          reporte += `Atracciones: ${atraccionesDB?.length || 0} registros ${atraccionesError ? '❌ Error: ' + atraccionesError.message : ''}\n`;
+
+          if (atraccionesDB && atraccionesDB.length > 0) {
+            reporte += '\n📍 Atracciones en Supabase:\n';
+            atraccionesDB.forEach((a, i) => {
+              reporte += `  ${i + 1}. ${a.nombre} (${a.categoria})\n`;
+            });
+          }
+
+          // Documentos
+          const { data: documentosDB, error: documentosError } = await client.from('documentos').select('*').eq('user_id', userId);
+          reporte += `\nDocumentos: ${documentosDB?.length || 0} registros ${documentosError ? '❌ Error: ' + documentosError.message : ''}\n`;
+
+          // App Config
+          const { data: configDB, error: configError } = await client.from('app_config').select('*').eq('user_id', userId).single();
+
+          if (configError) {
+            reporte += `\nApp Config: ❌ Error: ${configError.message}\n`;
+          } else {
+            reporte += `\nApp Config:\n`;
+            reporte += `  Alojamiento: ${configDB?.alojamiento ? '✅ ' + configDB.alojamiento.nombre : '❌ Sin datos'}\n`;
+            reporte += `  Vuelos Ida: ${configDB?.vuelos?.ida ? '✅ ' + configDB.vuelos.ida.numeroVuelo : '❌ Sin datos'}\n`;
+            reporte += `  Vuelos Regreso: ${configDB?.vuelos?.regreso ? '✅ ' + configDB.vuelos.regreso.numeroVuelo : '❌ Sin datos'}\n`;
+            reporte += `  Itinerario: ${configDB?.itinerario?.length || 0} días\n`;
+            reporte += `  Tasa cambio: ${configDB?.tasa_cambio || 'sin datos'}\n`;
+          }
+
+        } catch (error) {
+          reporte += `❌ Error conectando a Supabase: ${error.message}\n`;
+        }
+      }
+
+      reporte += '\n=== 🔄 ESTADO DE SINCRONIZACIÓN ===\n\n';
+      reporte += `Online: ${navigator.onLine ? '✅ Conectado' : '❌ Offline'}\n`;
+      reporte += `Última sync: ${localStorage.getItem('lastSync') || 'Nunca'}\n`;
+
+      resultado.innerHTML = `<pre style="white-space: pre-wrap; margin: 0;">${reporte}</pre>`;
+    }
+
+    async function forzarSincronizacion() {
+      const resultado = document.getElementById('resultadoDiagnostico');
+      resultado.style.display = 'block';
+      resultado.innerHTML = '<p>🔄 Forzando sincronización completa...</p>';
+
+      if (!window.SupabaseSync) {
+        resultado.innerHTML = '<p style="color: red;">❌ SupabaseSync no disponible</p>';
+        return;
+      }
+
+      try {
+        // Forzar sincronización
+        await window.SupabaseSync.sync();
+
+        // Esperar 2 segundos y diagnosticar
+        setTimeout(async () => {
+          resultado.innerHTML = '<p>✅ Sincronización completa</p><p>🔍 Ejecutando diagnóstico...</p>';
+          await diagnosticarDatos();
+
+          // Recargar UI
+          if (typeof actualizarDashboard === 'function') actualizarDashboard();
+          if (typeof renderizarAtracciones === 'function') renderizarAtracciones();
+          if (typeof cargarAlojamiento === 'function') cargarAlojamiento();
+          if (typeof inicializarVuelos === 'function') inicializarVuelos();
+        }, 2000);
+
+      } catch (error) {
+        resultado.innerHTML += `<p style="color: red;">❌ Error: ${error.message}</p>`;
+      }
+    }
+
+    async function descargarDesdeSupabase() {
+      const resultado = document.getElementById('resultadoDiagnostico');
+      resultado.style.display = 'block';
+      resultado.innerHTML = '<p>📥 Descargando SOLO desde Supabase...</p>';
+
+      if (!window.supabase) {
+        resultado.innerHTML = '<p style="color: red;">❌ Supabase no disponible</p>';
+        return;
+      }
+
+      try {
+        const client = window.supabase.createClient(
+          'https://lpspcmwxallshngaggmw.supabase.co',
+          'sb_publishable_d96GjwG17EM1jBNXupW0rQ_EVzmEES0'
+        );
+
+        const userId = '00000000-0000-0000-0000-000000000001';
+
+        resultado.innerHTML += '<p>📥 Descargando gastos...</p>';
+        const { data: gastos } = await client.from('gastos').select('*').eq('user_id', userId);
+
+        resultado.innerHTML += '<p>📥 Descargando compras...</p>';
+        const { data: compras } = await client.from('compras').select('*').eq('user_id', userId);
+
+        resultado.innerHTML += '<p>📥 Descargando atracciones...</p>';
+        const { data: atracciones } = await client.from('atracciones').select('*').eq('user_id', userId);
+
+        resultado.innerHTML += '<p>📥 Descargando documentos...</p>';
+        const { data: documentos } = await client.from('documentos').select('*').eq('user_id', userId);
+
+        resultado.innerHTML += '<p>📥 Descargando alojamiento...</p>';
+        const { data: alojamiento, error: alojError } = await client.from('alojamiento').select('*').eq('user_id', userId).single();
+
+        if (alojError) {
+          resultado.innerHTML += `<p style="color: orange;">⚠️ Alojamiento error: ${alojError.message}</p>`;
+        } else if (alojamiento) {
+          resultado.innerHTML += `<p style="color: green;">✅ Alojamiento encontrado: ${alojamiento.nombre}</p>`;
+        } else {
+          resultado.innerHTML += `<p style="color: orange;">⚠️ No hay alojamiento en Supabase</p>`;
+        }
+
+        resultado.innerHTML += '<p>📥 Descargando vuelos...</p>';
+        const { data: vuelos } = await client.from('vuelos').select('*').eq('user_id', userId);
+        const vueloIda = vuelos?.find(v => v.tipo === 'ida');
+        const vueloRegreso = vuelos?.find(v => v.tipo === 'regreso');
+
+        resultado.innerHTML += '<p>📥 Descargando itinerario...</p>';
+        const { data: itinerario } = await client.from('itinerario').select('*').eq('user_id', userId).order('fecha');
+
+        resultado.innerHTML += '<p>📥 Descargando tasa cambio...</p>';
+        const { data: appConfig } = await client.from('app_config').select('tasa_cambio').eq('user_id', userId).single();
+
+        // 🔥 CONSTRUIR OBJETO COMPLETO
+        const datosApp = {
+          alojamiento: alojamiento ? {
+            nombre: alojamiento.nombre,
+            direccion: alojamiento.direccion || '',
+            maps: alojamiento.maps || '',
+            checkin: alojamiento.checkin,
+            checkout: alojamiento.checkout,
+            noches: alojamiento.noches || 0,
+            precioTotal: alojamiento.precio_total,
+            precioNoche: alojamiento.precio_noche,
+            division: alojamiento.division || '3',
+            rating: alojamiento.rating || 0,
+            notas: alojamiento.notas || ''
+          } : null,
+          compras: (compras || []).map(c => ({
+            id: c.id,
+            articulo: c.articulo,
+            cantidad: c.cantidad,
+            categoria: c.categoria,
+            notas: c.notas,
+            comprado: c.comprado,
+            precio: c.precio
+          })),
+          atracciones: (atracciones || []).map(a => ({
+            id: a.id,
+            nombre: a.nombre,
+            categoria: a.categoria,
+            direccion: a.direccion,
+            maps: a.coordenadas,
+            precioBRL: a.precio_brl,
+            rating: a.rating,
+            notas: a.notas,
+            visitado: a.visitado,
+            fechaVisita: a.fecha_visita,
+            imagenes: a.imagen_url ? [a.imagen_url] : []
+          })),
+          documentos: (documentos || []).map(d => ({
+            id: d.id,
+            categoria: d.categoria,
+            titulo: d.titulo,
+            descripcion: d.descripcion,
+            fechaEvento: d.fecha_evento,
+            recordatorio: d.recordatorio,
+            etiquetas: d.etiquetas,
+            notas: d.notas,
+            archivo: d.archivo_nombre ? {
+              nombre: d.archivo_nombre,
+              tipo: d.archivo_tipo,
+              data: d.archivo_data
+            } : null,
+            fechaCreacion: d.fecha_creacion
+          })),
+          vuelos: {
+            ida: vueloIda ? {
+              aerolinea: vueloIda.aerolinea,
+              numeroVuelo: vueloIda.numero_vuelo,
+              codigoReserva: vueloIda.codigo_reserva,
+              origen: vueloIda.origen,
+              destino: vueloIda.destino,
+              fechaSalida: vueloIda.fecha_salida,
+              fechaLlegada: vueloIda.fecha_llegada,
+              terminal: vueloIda.terminal,
+              puerta: vueloIda.puerta,
+              asientos: vueloIda.asientos,
+              equipaje: vueloIda.equipaje,
+              notas: vueloIda.notas,
+              archivo: vueloIda.archivo
+            } : null,
+            regreso: vueloRegreso ? {
+              aerolinea: vueloRegreso.aerolinea,
+              numeroVuelo: vueloRegreso.numero_vuelo,
+              codigoReserva: vueloRegreso.codigo_reserva,
+              origen: vueloRegreso.origen,
+              destino: vueloRegreso.destino,
+              fechaSalida: vueloRegreso.fecha_salida,
+              fechaLlegada: vueloRegreso.fecha_llegada,
+              terminal: vueloRegreso.terminal,
+              puerta: vueloRegreso.puerta,
+              asientos: vueloRegreso.asientos,
+              equipaje: vueloRegreso.equipaje,
+              notas: vueloRegreso.notas,
+              archivo: vueloRegreso.archivo
+            } : null
+          },
+          tasaCambio: appConfig?.tasa_cambio || 150,
+          itinerario: (itinerario || []).map(i => ({
+            fecha: i.fecha,
+            actividades: i.actividades
+          })),
+          configuracion: { tasaCambio: appConfig?.tasa_cambio || 150 }
+        };
+
+        // 🔥 GUARDAR EN LOCALSTORAGE
+        console.log('💾 Guardando en localStorage:', datosApp);
+        localStorage.setItem('brasilTravelApp', JSON.stringify(datosApp));
+
+        // Guardar gastos por separado
+        if (gastos && gastos.length > 0) {
+          const gastosLocal = gastos
+            .filter(g => !g.fijo)
+            .map(g => ({
+              id: g.id,
+              descripcion: g.descripcion,
+              monto_brl: parseFloat(g.monto_brl),
+              moneda: g.moneda,
+              monto_original: g.monto_original ? parseFloat(g.monto_original) : null,
+              fecha: g.fecha,
+              personas: g.personas,
+              pagadoPor: g.pagado_por,
+              pagos: g.pagos || {},
+              fijo: false
+            }));
+
+          const gastosUnicos = Array.from(new Map(gastosLocal.map(g => [g.id, g])).values());
+          localStorage.setItem('gastosViaje', JSON.stringify(gastosUnicos));
+          resultado.innerHTML += `<p>✅ ${gastosUnicos.length} gastos guardados</p>`;
+        }
+
+        // 🔥 VERIFICAR QUÉ SE GUARDÓ
+        const verificar = JSON.parse(localStorage.getItem('brasilTravelApp') || '{}');
+
+        resultado.innerHTML += `<p>✅ ${datosApp.compras.length} compras guardadas</p>`;
+        resultado.innerHTML += `<p>✅ ${datosApp.atracciones.length} atracciones guardadas</p>`;
+        resultado.innerHTML += `<p>✅ Alojamiento guardado: ${verificar.alojamiento?.nombre || '❌ NO SE GUARDÓ'}</p>`;
+        resultado.innerHTML += `<p>✅ Vuelos: Ida=${verificar.vuelos?.ida?.numeroVuelo || 'NO'}, Regreso=${verificar.vuelos?.regreso?.numeroVuelo || 'NO'}</p>`;
+        resultado.innerHTML += `<p>✅ Itinerario: ${datosApp.itinerario.length} días</p>`;
+
+        resultado.innerHTML += '<p style="color: green; font-weight: bold; margin-top: 1rem;">✅ DESCARGA COMPLETA</p>';
+        resultado.innerHTML += '<p>🔄 Recargando página en 2 segundos...</p>';
+
+        setTimeout(() => {
+          location.reload();
+        }, 2000);
+
+      } catch (error) {
+        resultado.innerHTML += `<p style="color: red;">❌ Error: ${error.message}</p>`;
+        console.error('Error completo:', error);
+      }
+    }
+
+    function limpiarYRecargar() {
+      if (!confirm('⚠️ Esto borrará TODOS los datos locales.\n\n¿Estás seguro?\n\n(Los datos en Supabase se mantendrán)')) {
+        return;
+      }
+
+      localStorage.removeItem('brasilTravelApp');
+      localStorage.removeItem('gastosViaje');
+      localStorage.removeItem('lastSync');
+
+      alert('✅ Datos locales eliminados.\n\nAhora presiona "Sincronizar" para descargar desde Supabase.');
+      location.reload();
+    }
+  </script>
+
 </body>
 
 </html>
