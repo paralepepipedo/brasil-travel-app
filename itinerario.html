@@ -21,6 +21,162 @@
     <!-- Capa de sincronización -->
     <script src="supabase-sync.js"></script>
 
+    <style>
+        /* --- MEJORAS CSS INYECTADAS (VERSIÓN CORREGIDA) --- */
+
+        /* 1. Mejorar visualización de texto en actividades */
+        .actividad-bloque {
+            display: flex !important;
+            flex-direction: column;
+            justify-content: flex-start;
+            padding: 2px 4px !important;
+            line-height: 1.15 !important;
+            overflow: hidden;
+        }
+
+        .actividad-bloque-titulo {
+            font-size: 0.8rem !important;
+            font-weight: 700;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-bottom: 1px;
+        }
+
+        .actividad-bloque-costo,
+        .actividad-bloque-hora {
+            font-size: 0.7rem !important;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            opacity: 0.9;
+        }
+
+        /* 2. Columna de horas lateral para escritorio */
+        .columna-horas-lateral {
+            display: none;
+            /* Oculto en móvil */
+            flex: 0 0 50px;
+            border-right: 1px solid #e0e0e0;
+            background-color: #f9f9f9;
+        }
+
+        .hora-fila-lateral {
+            height: 60px;
+            /* Debe coincidir con PIXELES_POR_HORA */
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            padding-top: 5px;
+            font-size: 0.75rem;
+            color: #666;
+            border-bottom: 1px solid #eee;
+            box-sizing: border-box;
+        }
+
+        /* --- AJUSTES ESPECÍFICOS PARA ESCRITORIO --- */
+        @media (min-width: 768px) {
+            .columna-horas-lateral {
+                display: block;
+            }
+
+            /* Ocultar horas dentro de las columnas de días en la vista semanal */
+            .vista-semanal .dia-columna .hora-label {
+                display: none !important;
+            }
+
+            /* Asegurar que el espacio ocupe todo el ancho cuando no hay label */
+            .vista-semanal .dia-columna .hora-espacio {
+                width: 100% !important;
+            }
+
+            /* Asegurar estructura flex para que funcione lo anterior */
+            .hora-fila {
+                display: flex;
+            }
+
+            /* Contenedor de vista semanal */
+            .vista-semanal {
+                display: flex;
+                overflow-x: auto;
+            }
+
+            .dia-columna {
+                flex: 1;
+                min-width: 100px;
+                /* Ancho mínimo para leer contenido */
+                border-right: 1px solid #eee;
+                /* Separador visual entre días */
+            }
+
+            /* 3. FORZAR ANCHO COMPLETO EN ACTIVIDADES (SOLUCIÓN DEFINITIVA) */
+            .vista-semanal .dia-timeline,
+            .vista-semanal .timeline-visual {
+                padding-left: 0 !important;
+                padding-right: 0 !important;
+                margin: 0 !important;
+                border: none !important;
+            }
+
+            .vista-semanal .actividades-overlay {
+                left: 0 !important;
+                right: 0 !important;
+                width: 100% !important;
+                margin: 0 !important;
+            }
+
+            .vista-semanal .actividad-bloque {
+                left: 0 !important;
+                right: 0 !important;
+                width: auto !important;
+                /* Auto + left/right 0 fuerza el estiramiento */
+                margin-left: 0 !important;
+                margin-right: 0 !important;
+                max-width: none !important;
+                box-sizing: border-box !important;
+                border-left: 3px solid rgba(0, 0, 0, 0.2) !important;
+                /* Borde visual para distinguir */
+            }
+
+            /* 4. Resumen en una sola fila en escritorio */
+            .resumen-grid {
+                display: grid !important;
+                grid-template-columns: repeat(4, 1fr) !important;
+            }
+
+            /* 5. Alinear controles de fecha en una sola línea */
+            .fecha-selector {
+                display: flex !important;
+                flex-direction: row !important;
+                align-items: center !important;
+                justify-content: space-between !important;
+                flex-wrap: nowrap !important;
+            }
+
+            .fecha-controls {
+                display: flex !important;
+                flex-direction: row !important;
+                align-items: center !important;
+                gap: 10px !important;
+                width: auto !important;
+            }
+
+            .toggle-vista {
+                margin-bottom: 0 !important;
+                margin-right: 15px !important;
+            }
+
+            #diaActualTexto {
+                margin-bottom: 0 !important;
+                white-space: nowrap !important;
+            }
+
+            .btn-nueva-actividad {
+                width: auto !important;
+                margin-top: 0 !important;
+            }
+        }
+    </style>
 </head>
 
 <body>
@@ -425,6 +581,20 @@
             fechaInicio.setDate(fechaInicio.getDate() + diff);
 
             let html = '<div class="vista-semanal">';
+
+            // --- COLUMNA DE HORAS LATERAL (Visible solo en Desktop) ---
+            html += `
+                <div class="columna-horas-lateral">
+                    <div class="dia-header" style="visibility: hidden;">&nbsp;</div>
+                    <div class="timeline-grid">
+            `;
+            const horasAMostrar = [6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23];
+            horasAMostrar.forEach(hora => {
+                const horaStr = hora.toString().padStart(2, '0') + ':00';
+                html += `<div class="hora-fila-lateral">${horaStr}</div>`;
+            });
+            html += `</div></div>`;
+            // ----------------------------------------------------------
 
             for (let i = 0; i < 7; i++) {
                 const fecha = new Date(fechaInicio);
