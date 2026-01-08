@@ -244,8 +244,8 @@
                     <div class="resumen-item-label">Tiempo ocupado</div>
                 </div>
                 <div class="resumen-item">
-                    <div class="resumen-item-valor" id="horasLibres">24h</div>
-                    <div class="resumen-item-label">Tiempo libre</div>
+                    <div class="resumen-item-valor" id="costoPorPersona">$ 0 CLP/PP</div>
+                    <div class="resumen-item-label">Costo por persona</div>
                 </div>
                 <div class="resumen-item">
                     <div class="resumen-item-valor" id="costoTotal">R$ 0</div>
@@ -384,6 +384,14 @@
         let vistaActual = 'dia';
 
         document.addEventListener('DOMContentLoaded', function () {
+            // Inicializar sincronización al cargar itinerario
+            if (window.SupabaseSync) {
+                SupabaseSync.init().then(() => {
+                    // Intentar sincronizar si hay conexión
+                    if (navigator.onLine) setTimeout(() => SupabaseSync.sync(), 1000);
+                });
+            }
+
             inicializarApp();
             inicializarConversor();
         });
@@ -492,24 +500,54 @@
         function guardarActividadesDia(fecha, actividades) {
             const data = obtenerDatos();
             const fechaStr = formatearFecha(fecha);
+
             const index = data.itinerario.findIndex(d => d.fecha === fechaStr);
 
             if (index >= 0) {
                 data.itinerario[index].actividades = actividades;
+                console.log(`✏️ Actualizando día existente: ${fechaStr}`);
             } else {
                 data.itinerario.push({ fecha: fechaStr, actividades: actividades });
+                console.log(`➕ Creando nuevo día: ${fechaStr}`);
             }
 
-            // Guardar normalmente en localStorage
             const guardado = guardarDatos(data);
 
-            // ✨ NUEVO: si se guardó bien y existe SupabaseSync, marcar cambios pendientes
             if (guardado && window.SupabaseSync) {
-                window.SupabaseSync.markPending();
+                // ✅ SUBIR DIRECTAMENTE sin hacer merge
+                console.log('🔄 Subiendo cambios directamente a Supabase...');
+                uploadDiaDirectamente(fechaStr, actividades);
             }
 
             return guardado;
         }
+
+        // ✅ Nueva función: subir 1 día sin merge
+        async function uploadDiaDirectamente(fecha, actividades) {
+            if (!window.supabase) return;
+
+            const supabaseClient = window.supabase.createClient(
+                'https://lpspcmwxallshngaggmw.supabase.co',
+                'sb_publishable_d96GjwG17EM1jBNXupW0rQ_EVzmEES0'
+            );
+
+            const itinerarioData = {
+                user_id: '00000000-0000-0000-0000-000000000001',
+                fecha: fecha,
+                actividades: actividades
+            };
+
+            const { error } = await supabaseClient
+                .from('itinerario')
+                .upsert(itinerarioData, { onConflict: 'user_id,fecha' });
+
+            if (error) {
+                console.error('❌ Error subiendo día:', error);
+            } else {
+                console.log(`✅ ${fecha} subido: ${actividades.length} actividades`);
+            }
+        }
+
 
 
         function cargarActividades() {
@@ -552,17 +590,15 @@
 
             const horasOcupadas = Math.floor(minutosOcupados / 60);
             const minutosRestantes = minutosOcupados % 60;
-            const totalMinutosSemana = 24 * 60 * 7;
-            const minutosLibres = totalMinutosSemana - minutosOcupados;
-            const horasLibres = Math.floor(minutosLibres / 60);
 
             const config = obtenerDatos().configuracion || { tasaCambio: 150 };
             const costoTotalCLP = Math.round(costoTotalBRL * config.tasaCambio);
+            const costoPorPersona = Math.round(costoTotalCLP / 3);
 
             document.getElementById('totalActividades').textContent = totalActividades;
             document.getElementById('horasOcupadas').textContent =
                 minutosRestantes > 0 ? `${horasOcupadas}h ${minutosRestantes}m` : `${horasOcupadas}h`;
-            document.getElementById('horasLibres').textContent = `${horasLibres}h`;
+            document.getElementById('costoPorPersona').textContent = `$ ${costoPorPersona.toLocaleString('es-CL')} CLP/PP`;
             document.getElementById('costoTotal').textContent = `R$ ${costoTotalBRL.toFixed(2)}`;
             document.getElementById('costoTotalCLP').textContent = `$ ${costoTotalCLP.toLocaleString('es-CL')} CLP`;
 
@@ -682,18 +718,15 @@
 
             const horasOcupadas = Math.floor(minutosOcupados / 60);
             const minutosRestantes = minutosOcupados % 60;
-            const minutosLibres = (24 * 60) - minutosOcupados;
-            const horasLibres = Math.floor(minutosLibres / 60);
-            const minutosLibresRestantes = minutosLibres % 60;
 
             const config = obtenerDatos().configuracion || { tasaCambio: 150 };
             const costoTotalCLP = Math.round(costoTotalBRL * config.tasaCambio);
+            const costoPorPersona = Math.round(costoTotalCLP / 3);
 
             document.getElementById('totalActividades').textContent = total;
             document.getElementById('horasOcupadas').textContent =
                 minutosRestantes > 0 ? `${horasOcupadas}h ${minutosRestantes}m` : `${horasOcupadas}h`;
-            document.getElementById('horasLibres').textContent =
-                minutosLibresRestantes > 0 ? `${horasLibres}h ${minutosLibresRestantes}m` : `${horasLibres}h`;
+            document.getElementById('costoPorPersona').textContent = `$ ${costoPorPersona.toLocaleString('es-CL')} CLP/PP`;
             document.getElementById('costoTotal').textContent = `R$ ${costoTotalBRL.toFixed(2)}`;
             document.getElementById('costoTotalCLP').textContent = `$ ${costoTotalCLP.toLocaleString('es-CL')} CLP`;
         }

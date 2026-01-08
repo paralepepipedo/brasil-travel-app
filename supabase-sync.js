@@ -1,8 +1,8 @@
 // =====================================================
 // SUPABASE-SYNC.JS - Sincronización offline-first CORREGIDA
+// FLUJO: Descarga → Merge → Sube
 // =====================================================
 
-// 🔧 CONFIGURACIÓN
 const SUPABASE_URL = 'https://lpspcmwxallshngaggmw.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_d96GjwG17EM1jBNXupW0rQ_EVzmEES0';
 
@@ -54,7 +54,7 @@ async function initSupabase() {
 }
 
 // =====================================================
-// SINCRONIZACIÓN COMPLETA (BIDIRECCIONAL)
+// SINCRONIZACIÓN COMPLETA (FLUJO CORREGIDO)
 // =====================================================
 async function syncAll() {
   if (!syncState.online || syncState.syncing || !supabaseClient) return;
@@ -63,8 +63,15 @@ async function syncAll() {
   updateSyncUI('Sincronizando...');
 
   try {
-    await uploadPendingChanges();
-    await downloadUpdates();
+    // ✅ CAMBIO CRÍTICO: Primero descargar, luego merge, luego subir
+    console.log('🔄 PASO 1: Descargando datos de Supabase...');
+    const datosRemoto = await downloadFromSupabase();
+
+    console.log('🔄 PASO 2: Haciendo merge con datos locales...');
+    const datosMergeados = mergeLocalAndRemote(datosRemoto);
+
+    console.log('🔄 PASO 3: Subiendo datos completos...');
+    await uploadMergedData(datosMergeados);
 
     syncState.lastSync = new Date();
     syncState.pendingChanges = 0;
@@ -82,33 +89,141 @@ async function syncAll() {
 }
 
 // =====================================================
-// SUBIR CAMBIOS LOCALES → SUPABASE
+// DESCARGAR DATOS DE SUPABASE
 // =====================================================
-async function uploadPendingChanges() {
-  if (!supabaseClient) return;
+async function downloadFromSupabase() {
+  console.log('📥 Descargando desde Supabase...');
 
-  const localData = getAllLocalData();
+  const [gastos, compras, atracciones, documentos, alojamiento, vuelos, itinerario, appConfig] = await Promise.all([
+    supabaseClient.from('gastos').select('*').eq('user_id', DEFAULT_USER_ID),
+    supabaseClient.from('compras').select('*').eq('user_id', DEFAULT_USER_ID),
+    supabaseClient.from('atracciones').select('*').eq('user_id', DEFAULT_USER_ID),
+    supabaseClient.from('documentos').select('*').eq('user_id', DEFAULT_USER_ID),
+    supabaseClient.from('alojamiento').select('*').eq('user_id', DEFAULT_USER_ID).single(),
+    supabaseClient.from('vuelos').select('*').eq('user_id', DEFAULT_USER_ID),
+    supabaseClient.from('itinerario').select('*').eq('user_id', DEFAULT_USER_ID).order('fecha'),
+    supabaseClient.from('app_config').select('tasa_cambio').eq('user_id', DEFAULT_USER_ID).single()
+  ]);
 
-  // ✅ GASTOS - Verificar duplicados antes de subir
-  if (localData.gastos.length > 0) {
-    // Primero, obtener IDs existentes en Supabase
-    const { data: gastosExistentes } = await supabaseClient
-      .from('gastos')
-      .select('id')
-      .eq('user_id', DEFAULT_USER_ID);
+  console.log(`📥 Gastos: ${gastos.data?.length || 0}`);
+  console.log(`📥 Itinerario: ${itinerario.data?.length || 0} días`);
 
-    const idsExistentes = new Set((gastosExistentes || []).map(g => String(g.id)));
+  return {
+    gastos: gastos.data || [],
+    compras: compras.data || [],
+    atracciones: atracciones.data || [],
+    documentos: documentos.data || [],
+    alojamiento: alojamiento.data || null,
+    vuelos: {
+      ida: vuelos.data?.find(v => v.tipo === 'ida') || null,
+      regreso: vuelos.data?.find(v => v.tipo === 'regreso') || null
+    },
+    itinerario: itinerario.data || [],
+    tasaCambio: appConfig.data?.tasa_cambio || 150
+  };
+}
 
-    const gastosValidos = localData.gastos
-      .filter(g => {
-        if (!g.id || !g.descripcion || g.monto_brl == null || isNaN(parseFloat(g.monto_brl)) || !g.fecha) {
-          return false;
-        }
-        // Filtrar gastos fijos (datos de ejemplo) para que no se suban
-        if (g.fijo) return false;
+// =====================================================
+// MERGE INTELIGENTE: LOCAL + REMOTO
+// =====================================================
+function mergeLocalAndRemote(remoto) {
+  const local = getAllLocalData();
 
-        return true;
-      })
+  console.log('🔄 Merging datos...');
+  console.log('  📱 Local - Itinerario:', local.itinerario.length, 'días');
+  console.log('  ☁️ Remoto - Itinerario:', remoto.itinerario.length, 'días');
+
+  // Merge de itinerario por fecha (más actividades gana)
+  const itinerarioMergeado = mergeItinerario(local.itinerario, remoto.itinerario);
+
+  console.log('  ✅ Mergeado - Itinerario:', itinerarioMergeado.length, 'días');
+
+  return {
+    gastos: mergeArrayById(local.gastos, remoto.gastos),
+    compras: mergeArrayById(local.compras, remoto.compras),
+    atracciones: mergeArrayById(local.atracciones, remoto.atracciones),
+    documentos: mergeArrayById(local.documentos, remoto.documentos),
+    alojamiento: remoto.alojamiento || local.alojamiento,
+    vuelos: {
+      ida: remoto.vuelos.ida || local.vuelos.ida,
+      regreso: remoto.vuelos.regreso || local.vuelos.regreso
+    },
+    itinerario: itinerarioMergeado,
+    tasaCambio: remoto.tasaCambio || local.tasaCambio || 150
+  };
+}
+
+// =====================================================
+// MERGE DE ITINERARIO (CLAVE PARA RESOLVER TU PROBLEMA)
+// =====================================================
+function mergeItinerario(localDias, remotoDias) {
+  const diasPorFecha = new Map();
+
+  // Agregar días remotos primero
+  remotoDias.forEach(diaRemoto => {
+    diasPorFecha.set(diaRemoto.fecha, {
+      fecha: diaRemoto.fecha,
+      actividades: diaRemoto.actividades || []
+    });
+  });
+
+  // Merge con días locales
+  localDias.forEach(diaLocal => {
+    const diaExistente = diasPorFecha.get(diaLocal.fecha);
+
+    if (!diaExistente) {
+      // Día solo existe local, agregarlo
+      diasPorFecha.set(diaLocal.fecha, {
+        fecha: diaLocal.fecha,
+        actividades: diaLocal.actividades || []
+      });
+    } else {
+      // Día existe en ambos: el que tenga MÁS actividades gana
+      const actividadesLocal = diaLocal.actividades || [];
+      const actividadesRemoto = diaExistente.actividades || [];
+
+      if (actividadesLocal.length > actividadesRemoto.length) {
+        console.log(`  🔄 ${diaLocal.fecha}: usando versión local (${actividadesLocal.length} > ${actividadesRemoto.length})`);
+        diasPorFecha.set(diaLocal.fecha, {
+          fecha: diaLocal.fecha,
+          actividades: actividadesLocal
+        });
+      } else if (actividadesLocal.length < actividadesRemoto.length) {
+        console.log(`  🔄 ${diaLocal.fecha}: usando versión remota (${actividadesRemoto.length} > ${actividadesLocal.length})`);
+        // Ya está en el Map
+      } else {
+        // Mismo número: merge por ID de actividad
+        const actividadesMergeadas = mergeActividadesPorId(actividadesLocal, actividadesRemoto);
+        diasPorFecha.set(diaLocal.fecha, {
+          fecha: diaLocal.fecha,
+          actividades: actividadesMergeadas
+        });
+      }
+    }
+  });
+
+  return Array.from(diasPorFecha.values()).sort((a, b) =>
+    new Date(a.fecha) - new Date(b.fecha)
+  );
+}
+
+function mergeActividadesPorId(actividadesLocal, actividadesRemoto) {
+  const actividadesPorId = new Map();
+
+  actividadesRemoto.forEach(act => actividadesPorId.set(act.id, act));
+  actividadesLocal.forEach(act => actividadesPorId.set(act.id, act));
+
+  return Array.from(actividadesPorId.values());
+}
+
+// =====================================================
+// SUBIR DATOS MERGEADOS
+// =====================================================
+async function uploadMergedData(datos) {
+  // Gastos
+  if (datos.gastos.length > 0) {
+    const gastosValidos = datos.gastos
+      .filter(g => !g.fijo && g.id && g.descripcion && g.monto_brl != null)
       .map(g => ({
         id: String(g.id),
         user_id: DEFAULT_USER_ID,
@@ -130,9 +245,9 @@ async function uploadPendingChanges() {
     }
   }
 
-  // ✅ COMPRAS
-  if (localData.compras.length > 0) {
-    const comprasValidas = localData.compras
+  // Compras
+  if (datos.compras.length > 0) {
+    const comprasValidas = datos.compras
       .filter(c => c.id && c.articulo)
       .map(c => ({
         id: String(c.id),
@@ -152,9 +267,9 @@ async function uploadPendingChanges() {
     }
   }
 
-  // ✅ ATRACCIONES
-  if (localData.atracciones.length > 0) {
-    const atraccionesValidas = localData.atracciones
+  // Atracciones
+  if (datos.atracciones.length > 0) {
+    const atraccionesValidas = datos.atracciones
       .filter(a => a.id && a.nombre)
       .map(a => ({
         id: String(a.id),
@@ -179,9 +294,9 @@ async function uploadPendingChanges() {
     }
   }
 
-  // ✅ DOCUMENTOS
-  if (localData.documentos && localData.documentos.length > 0) {
-    const documentosValidos = localData.documentos
+  // Documentos
+  if (datos.documentos && datos.documentos.length > 0) {
+    const documentosValidos = datos.documentos
       .filter(d => d.id && d.titulo && d.archivo)
       .map(d => ({
         id: String(d.id),
@@ -206,168 +321,116 @@ async function uploadPendingChanges() {
     }
   }
 
-  // ✅ ALOJAMIENTO - Tabla dedicada
-  if (localData.alojamiento) {
+  // Alojamiento
+  if (datos.alojamiento) {
     const alojamientoData = {
       user_id: DEFAULT_USER_ID,
-      nombre: localData.alojamiento.nombre,
-      direccion: localData.alojamiento.direccion || '',
-      maps: localData.alojamiento.maps || '',
-      checkin: localData.alojamiento.checkin,
-      checkout: localData.alojamiento.checkout,
-      noches: localData.alojamiento.noches || 0,
-      precio_total: localData.alojamiento.precioTotal || null,
-      precio_noche: localData.alojamiento.precioNoche || null,
-      division: localData.alojamiento.division || '3',
-      rating: localData.alojamiento.rating || 0,
-      notas: localData.alojamiento.notas || ''
+      nombre: datos.alojamiento.nombre,
+      direccion: datos.alojamiento.direccion || '',
+      maps: datos.alojamiento.maps || '',
+      checkin: datos.alojamiento.checkin,
+      checkout: datos.alojamiento.checkout,
+      noches: datos.alojamiento.noches || 0,
+      precio_total: datos.alojamiento.precioTotal || null,
+      precio_noche: datos.alojamiento.precioNoche || null,
+      division: datos.alojamiento.division || '3',
+      rating: datos.alojamiento.rating || 0,
+      notas: datos.alojamiento.notas || ''
     };
 
-    const { error } = await supabaseClient
-      .from('alojamiento')
-      .upsert(alojamientoData, { onConflict: 'user_id' });
-
-    if (error) console.error('❌ Error subiendo alojamiento:', error);
+    const { error } = await supabaseClient.from('alojamiento').upsert(alojamientoData, { onConflict: 'user_id' });
+    if (error) console.error('Error subiendo alojamiento:', error);
     else console.log('✅ Alojamiento sincronizado');
   }
 
-  // ✅ VUELOS - Tabla dedicada
-  if (localData.vuelos) {
-    // Vuelo de Ida
-    if (localData.vuelos.ida) {
-      const vueloIda = {
-        user_id: DEFAULT_USER_ID,
-        tipo: 'ida',
-        aerolinea: localData.vuelos.ida.aerolinea,
-        numero_vuelo: localData.vuelos.ida.numeroVuelo,
-        codigo_reserva: localData.vuelos.ida.codigoReserva || '',
-        origen: localData.vuelos.ida.origen,
-        destino: localData.vuelos.ida.destino,
-        fecha_salida: localData.vuelos.ida.fechaSalida,
-        fecha_llegada: localData.vuelos.ida.fechaLlegada,
-        terminal: localData.vuelos.ida.terminal || '',
-        puerta: localData.vuelos.ida.puerta || '',
-        asientos: localData.vuelos.ida.asientos || [],
-        equipaje: localData.vuelos.ida.equipaje || '',
-        notas: localData.vuelos.ida.notas || '',
-        archivo: localData.vuelos.ida.archivo || null
-      };
+  // Vuelos
+  if (datos.vuelos.ida) {
+    const vueloIda = {
+      user_id: DEFAULT_USER_ID,
+      tipo: 'ida',
+      aerolinea: datos.vuelos.ida.aerolinea,
+      numero_vuelo: datos.vuelos.ida.numeroVuelo,
+      codigo_reserva: datos.vuelos.ida.codigoReserva || '',
+      origen: datos.vuelos.ida.origen,
+      destino: datos.vuelos.ida.destino,
+      fecha_salida: datos.vuelos.ida.fechaSalida,
+      fecha_llegada: datos.vuelos.ida.fechaLlegada,
+      terminal: datos.vuelos.ida.terminal || '',
+      puerta: datos.vuelos.ida.puerta || '',
+      asientos: datos.vuelos.ida.asientos || [],
+      equipaje: datos.vuelos.ida.equipaje || '',
+      notas: datos.vuelos.ida.notas || '',
+      archivo: datos.vuelos.ida.archivo || null
+    };
 
-      const { error } = await supabaseClient
-        .from('vuelos')
-        .upsert(vueloIda, { onConflict: 'user_id,tipo' });
-
-      if (error) console.error('❌ Error subiendo vuelo ida:', error);
-      else console.log('✅ Vuelo ida sincronizado');
-    }
-
-    // Vuelo de Regreso
-    if (localData.vuelos.regreso) {
-      const vueloRegreso = {
-        user_id: DEFAULT_USER_ID,
-        tipo: 'regreso',
-        aerolinea: localData.vuelos.regreso.aerolinea,
-        numero_vuelo: localData.vuelos.regreso.numeroVuelo,
-        codigo_reserva: localData.vuelos.regreso.codigoReserva || '',
-        origen: localData.vuelos.regreso.origen,
-        destino: localData.vuelos.regreso.destino,
-        fecha_salida: localData.vuelos.regreso.fechaSalida,
-        fecha_llegada: localData.vuelos.regreso.fechaLlegada,
-        terminal: localData.vuelos.regreso.terminal || '',
-        puerta: localData.vuelos.regreso.puerta || '',
-        asientos: localData.vuelos.regreso.asientos || [],
-        equipaje: localData.vuelos.regreso.equipaje || '',
-        notas: localData.vuelos.regreso.notas || '',
-        archivo: localData.vuelos.regreso.archivo || null
-      };
-
-      const { error } = await supabaseClient
-        .from('vuelos')
-        .upsert(vueloRegreso, { onConflict: 'user_id,tipo' });
-
-      if (error) console.error('❌ Error subiendo vuelo regreso:', error);
-      else console.log('✅ Vuelo regreso sincronizado');
-    }
+    const { error } = await supabaseClient.from('vuelos').upsert(vueloIda, { onConflict: 'user_id,tipo' });
+    if (error) console.error('Error subiendo vuelo ida:', error);
+    else console.log('✅ Vuelo ida sincronizado');
   }
 
-  // ✅ ITINERARIO - Tabla dedicada
-  if (localData.itinerario && localData.itinerario.length > 0) {
-    for (const dia of localData.itinerario) {
+  if (datos.vuelos.regreso) {
+    const vueloRegreso = {
+      user_id: DEFAULT_USER_ID,
+      tipo: 'regreso',
+      aerolinea: datos.vuelos.regreso.aerolinea,
+      numero_vuelo: datos.vuelos.regreso.numeroVuelo,
+      codigo_reserva: datos.vuelos.regreso.codigoReserva || '',
+      origen: datos.vuelos.regreso.origen,
+      destino: datos.vuelos.regreso.destino,
+      fecha_salida: datos.vuelos.regreso.fechaSalida,
+      fecha_llegada: datos.vuelos.regreso.fechaLlegada,
+      terminal: datos.vuelos.regreso.terminal || '',
+      puerta: datos.vuelos.regreso.puerta || '',
+      asientos: datos.vuelos.regreso.asientos || [],
+      equipaje: datos.vuelos.regreso.equipaje || '',
+      notas: datos.vuelos.regreso.notas || '',
+      archivo: datos.vuelos.regreso.archivo || null
+    };
+
+    const { error } = await supabaseClient.from('vuelos').upsert(vueloRegreso, { onConflict: 'user_id,tipo' });
+    if (error) console.error('Error subiendo vuelo regreso:', error);
+    else console.log('✅ Vuelo regreso sincronizado');
+  }
+
+  // Itinerario
+  if (datos.itinerario && datos.itinerario.length > 0) {
+    console.log(`📤 Subiendo ${datos.itinerario.length} días de itinerario...`);
+
+    for (const dia of datos.itinerario) {
       const itinerarioData = {
         user_id: DEFAULT_USER_ID,
         fecha: dia.fecha,
         actividades: dia.actividades
       };
 
-      const { error } = await supabaseClient
-        .from('itinerario')
-        .upsert(itinerarioData, { onConflict: 'user_id,fecha' });
-
-      if (error) console.error(`❌ Error subiendo itinerario ${dia.fecha}:`, error);
+      const { error } = await supabaseClient.from('itinerario').upsert(itinerarioData, { onConflict: 'user_id,fecha' });
+      if (error) console.error(`Error subiendo ${dia.fecha}:`, error);
+      else console.log(`✅ ${dia.fecha}: ${dia.actividades.length} actividades`);
     }
-    console.log(`✅ ${localData.itinerario.length} días de itinerario sincronizados`);
   }
 
-  // ✅ TASA DE CAMBIO en app_config (solo esto va aquí ahora)
+  // Tasa de cambio
   const appConfigData = {
     user_id: DEFAULT_USER_ID,
-    tasa_cambio: localData.tasaCambio || 150
+    tasa_cambio: datos.tasaCambio || 150
   };
 
-  const { error: configError } = await supabaseClient
-    .from('app_config')
-    .upsert(appConfigData, { onConflict: 'user_id' });
-
-  if (configError) console.error('❌ Error subiendo tasa cambio:', configError);
+  const { error: configError } = await supabaseClient.from('app_config').upsert(appConfigData, { onConflict: 'user_id' });
+  if (configError) console.error('Error subiendo tasa cambio:', configError);
   else console.log('✅ Tasa cambio sincronizada');
+
+  // Guardar datos mergeados en localStorage
+  saveToLocalStorage(datos);
 }
 
 // =====================================================
-// DESCARGAR ACTUALIZACIONES SUPABASE → LOCAL
+// GUARDAR EN LOCALSTORAGE
 // =====================================================
-async function downloadUpdates() {
-  if (!supabaseClient) return;
-
-  console.log('📥 Descargando actualizaciones desde Supabase...');
-
-  // Gastos
-  const { data: gastos } = await supabaseClient.from('gastos').select('*').eq('user_id', DEFAULT_USER_ID);
-  console.log(`📥 Gastos descargados: ${gastos?.length || 0}`);
-
-  // Compras
-  const { data: compras } = await supabaseClient.from('compras').select('*').eq('user_id', DEFAULT_USER_ID);
-  console.log(`📥 Compras descargadas: ${compras?.length || 0}`);
-
-  // Atracciones
-  const { data: atracciones } = await supabaseClient.from('atracciones').select('*').eq('user_id', DEFAULT_USER_ID);
-  console.log(`📥 Atracciones descargadas: ${atracciones?.length || 0}`);
-
-  // Documentos
-  const { data: documentos } = await supabaseClient.from('documentos').select('*').eq('user_id', DEFAULT_USER_ID);
-  console.log(`📥 Documentos descargados: ${documentos?.length || 0}`);
-
-  // Alojamiento
-  const { data: alojamiento } = await supabaseClient.from('alojamiento').select('*').eq('user_id', DEFAULT_USER_ID).single();
-  console.log(`📥 Alojamiento descargado:`, alojamiento?.nombre || 'sin datos');
-
-  // Vuelos
-  const { data: vuelos } = await supabaseClient.from('vuelos').select('*').eq('user_id', DEFAULT_USER_ID);
-  const vueloIda = vuelos?.find(v => v.tipo === 'ida') || null;
-  const vueloRegreso = vuelos?.find(v => v.tipo === 'regreso') || null;
-  console.log(`📥 Vuelos descargados: Ida=${vueloIda?.numero_vuelo || 'sin datos'}, Regreso=${vueloRegreso?.numero_vuelo || 'sin datos'}`);
-
-  // Itinerario
-  const { data: itinerario } = await supabaseClient.from('itinerario').select('*').eq('user_id', DEFAULT_USER_ID).order('fecha');
-  console.log(`📥 Itinerario descargado: ${itinerario?.length || 0} días`);
-
-  // Tasa de cambio
-  const { data: appConfig } = await supabaseClient.from('app_config').select('tasa_cambio').eq('user_id', DEFAULT_USER_ID).single();
-  console.log(`📥 Tasa cambio: ${appConfig?.tasa_cambio || 150}`);
-
-  // Guardar gastos en localStorage (filtrar duplicados)
-  if (gastos && gastos.length > 0) {
-    const gastosLocal = gastos
-      .filter(g => !g.fijo) // No guardar datos de ejemplo
+function saveToLocalStorage(datos) {
+  // Gastos por separado
+  if (datos.gastos.length > 0) {
+    const gastosLocal = datos.gastos
+      .filter(g => !g.fijo)
       .map(g => ({
         id: g.id,
         descripcion: g.descripcion,
@@ -376,110 +439,25 @@ async function downloadUpdates() {
         monto_original: g.monto_original ? parseFloat(g.monto_original) : null,
         fecha: g.fecha,
         personas: g.personas,
-        pagadoPor: g.pagado_por,
+        pagadoPor: g.pagadoPor,
         pagos: g.pagos || {},
         fijo: false
       }));
 
-    // Eliminar duplicados por ID
-    const gastosUnicos = Array.from(
-      new Map(gastosLocal.map(g => [g.id, g])).values()
-    );
-
+    const gastosUnicos = Array.from(new Map(gastosLocal.map(g => [g.id, g])).values());
     localStorage.setItem('gastosViaje', JSON.stringify(gastosUnicos));
   }
 
-  // Guardar todo en brasilTravelApp
+  // App completa
   const datosApp = {
-    alojamiento: alojamiento ? {
-      nombre: alojamiento.nombre,
-      direccion: alojamiento.direccion,
-      maps: alojamiento.maps,
-      checkin: alojamiento.checkin,
-      checkout: alojamiento.checkout,
-      noches: alojamiento.noches,
-      precioTotal: alojamiento.precio_total,
-      precioNoche: alojamiento.precio_noche,
-      division: alojamiento.division,
-      rating: alojamiento.rating,
-      notas: alojamiento.notas
-    } : null,
-    compras: (compras || []).map(c => ({
-      id: c.id,
-      articulo: c.articulo,
-      cantidad: c.cantidad,
-      categoria: c.categoria,
-      notas: c.notas,
-      comprado: c.comprado,
-      precio: c.precio
-    })),
-    atracciones: (atracciones || []).map(a => ({
-      id: a.id,
-      nombre: a.nombre,
-      categoria: a.categoria,
-      direccion: a.direccion,
-      maps: a.coordenadas,
-      precioBRL: a.precio_brl,
-      rating: a.rating,
-      notas: a.notas,
-      visitado: a.visitado,
-      fechaVisita: a.fecha_visita,
-      imagenes: a.imagen_url ? [a.imagen_url] : []
-    })),
-    documentos: (documentos || []).map(d => ({
-      id: d.id,
-      categoria: d.categoria,
-      titulo: d.titulo,
-      descripcion: d.descripcion,
-      fechaEvento: d.fecha_evento,
-      recordatorio: d.recordatorio,
-      etiquetas: d.etiquetas,
-      notas: d.notas,
-      archivo: {
-        nombre: d.archivo_nombre,
-        tipo: d.archivo_tipo,
-        data: d.archivo_data
-      },
-      fechaCreacion: d.fecha_creacion
-    })),
-    vuelos: {
-      ida: vueloIda ? {
-        aerolinea: vueloIda.aerolinea,
-        numeroVuelo: vueloIda.numero_vuelo,
-        codigoReserva: vueloIda.codigo_reserva,
-        origen: vueloIda.origen,
-        destino: vueloIda.destino,
-        fechaSalida: vueloIda.fecha_salida,
-        fechaLlegada: vueloIda.fecha_llegada,
-        terminal: vueloIda.terminal,
-        puerta: vueloIda.puerta,
-        asientos: vueloIda.asientos,
-        equipaje: vueloIda.equipaje,
-        notas: vueloIda.notas,
-        archivo: vueloIda.archivo
-      } : null,
-      regreso: vueloRegreso ? {
-        aerolinea: vueloRegreso.aerolinea,
-        numeroVuelo: vueloRegreso.numero_vuelo,
-        codigoReserva: vueloRegreso.codigo_reserva,
-        origen: vueloRegreso.origen,
-        destino: vueloRegreso.destino,
-        fechaSalida: vueloRegreso.fecha_salida,
-        fechaLlegada: vueloRegreso.fecha_llegada,
-        terminal: vueloRegreso.terminal,
-        puerta: vueloRegreso.puerta,
-        asientos: vueloRegreso.asientos,
-        equipaje: vueloRegreso.equipaje,
-        notas: vueloRegreso.notas,
-        archivo: vueloRegreso.archivo
-      } : null
-    },
-    tasaCambio: appConfig?.tasa_cambio || 150,
-    itinerario: (itinerario || []).map(i => ({
-      fecha: i.fecha,
-      actividades: i.actividades
-    })),
-    configuracion: { tasaCambio: appConfig?.tasa_cambio || 150 }
+    alojamiento: datos.alojamiento,
+    compras: datos.compras,
+    atracciones: datos.atracciones,
+    documentos: datos.documentos,
+    vuelos: datos.vuelos,
+    tasaCambio: datos.tasaCambio,
+    itinerario: datos.itinerario,
+    configuracion: { tasaCambio: datos.tasaCambio }
   };
 
   localStorage.setItem('brasilTravelApp', JSON.stringify(datosApp));
@@ -492,12 +470,6 @@ async function downloadUpdates() {
   if (typeof cargarAlojamiento === 'function') cargarAlojamiento();
   if (typeof inicializarVuelos === 'function') inicializarVuelos();
   if (typeof cargarActividades === 'function') cargarActividades();
-
-  // ✅ NUEVO: Recargar gastos desde localStorage
-  if (typeof cargarDatosIniciales === 'function') {
-    console.log('🔄 Recargando gastos después de sincronizar...');
-    cargarDatosIniciales();
-  }
 }
 
 // =====================================================
@@ -510,19 +482,8 @@ function getAllLocalData() {
   let gastos = [];
   let app = {};
 
-  try {
-    gastos = JSON.parse(gastosRaw);
-  } catch (e) {
-    console.error('Error parseando gastos:', e);
-    gastos = [];
-  }
-
-  try {
-    app = JSON.parse(appRaw);
-  } catch (e) {
-    console.error('Error parseando app:', e);
-    app = {};
-  }
+  try { gastos = JSON.parse(gastosRaw); } catch (e) { gastos = []; }
+  try { app = JSON.parse(appRaw); } catch (e) { app = {}; }
 
   return {
     gastos: gastos || [],
@@ -536,6 +497,15 @@ function getAllLocalData() {
   };
 }
 
+function mergeArrayById(localArray, remoteArray) {
+  const itemsById = new Map();
+
+  remoteArray.forEach(item => itemsById.set(item.id, item));
+  localArray.forEach(item => itemsById.set(item.id, item));
+
+  return Array.from(itemsById.values());
+}
+
 function updateSyncUI(message) {
   const indicator = document.getElementById('syncIndicator');
   if (indicator) {
@@ -546,7 +516,6 @@ function updateSyncUI(message) {
 
 function markPendingChanges() {
   syncState.pendingChanges++;
-
   if (syncState.online && !syncState.syncing) {
     setTimeout(syncAll, 1000);
   }
@@ -560,4 +529,4 @@ window.SupabaseSync = {
   state: syncState
 };
 
-console.log('✅ supabase-sync.js cargado (versión corregida con tablas dedicadas)');
+console.log('✅ supabase-sync.js cargado (versión MEJORADA con merge inteligente)');

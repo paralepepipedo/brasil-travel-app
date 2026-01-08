@@ -1651,6 +1651,9 @@
 
       document.getElementById('mobileMenu').classList.remove('active');
 
+      // Actualizar URL para permitir navegación directa y refresco
+      window.location.hash = seccion;
+
       if (seccion === 'dashboard') {
         actualizarDashboard();
       }
@@ -3936,6 +3939,12 @@
       renderizarAtracciones();
       inicializarVuelos();
       inicializarDocumentos();
+
+      // Navegar a la sección indicada en la URL (si existe)
+      const hash = window.location.hash.replace('#', '');
+      if (hash && document.getElementById('section-' + hash)) {
+        navegarA(hash);
+      }
     });
   </script>
   <script>
