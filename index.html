@@ -1501,36 +1501,12 @@
         // ✨ INICIALIZAR SUPABASE
         if (window.SupabaseSync) {
           const supabaseOK = await SupabaseSync.init();
-
-          if (supabaseOK) {
-            console.log('✅ Supabase inicializado');
-
-            // Actualizar UI de estado de sincronización
-            const updateStatusUI = () => {
-              const online = navigator.onLine;
-              const onlineEl = document.getElementById('syncOnline');
-              const offlineEl = document.getElementById('syncOffline');
-              const lastSyncEl = document.getElementById('lastSyncTime');
-
-              if (onlineEl) onlineEl.style.display = online ? 'inline' : 'none';
-              if (offlineEl) offlineEl.style.display = online ? 'none' : 'inline';
-
-              const lastSync = localStorage.getItem('lastSync');
-              if (lastSync && lastSyncEl) {
-                const date = new Date(lastSync);
-                lastSyncEl.textContent = date.toLocaleString('es-CL');
-              }
-            };
-
-            updateStatusUI();
-            setInterval(updateStatusUI, 5000);
-
-            // Sincronizar al arrancar (solo si hay red)
-            if (navigator.onLine) {
-              setTimeout(() => SupabaseSync.sync(), 2000);
-            }
-          } else {
-            console.warn('⚠️ Supabase no disponible - modo offline permanente');
+          if (supabaseOK && navigator.onLine) {
+            console.log('🔄 Sincronizando al cargar index.html...');
+            await SupabaseSync.sync();
+            console.log('✅ Sincronización inicial completada');
+          } else if (!navigator.onLine) {
+            console.log('📴 Sin internet - usando datos locales');
           }
         }
 
@@ -3456,6 +3432,11 @@
       };
 
       documentos.forEach(doc => {
+        // Validar que el documento tenga estructura completa
+        if (!doc.archivo || !doc.archivo.tipo || !doc.archivo.data) {
+          console.warn('Documento incompleto, saltando:', doc.titulo);
+          return;
+        }
         const card = document.createElement('div');
         card.className = 'documento-card';
         card.onclick = () => mostrarDocumento(doc.id);
@@ -3692,6 +3673,10 @@
       }
 
       guardarDatos(datos);
+      // Subir documento a Supabase
+      if (window.SupabaseSync) {
+        await window.SupabaseSync.uploadSingle('documento', documento);
+      }
       cerrarModal('modalNuevoDocumento');
       renderizarDocumentos();
       actualizarDashboard();
