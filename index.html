@@ -46,7 +46,7 @@
       <button class="nav-tab active" data-section="dashboard">📊 Resumen</button>
       <button class="nav-tab" data-section="gastos">💰 Gastos</button>
       <button class="nav-tab" data-section="alojamiento">🏠 Alojamiento</button>
-      <button class="nav-tab" data-section="compras">🛒 Compras</button>
+      <button class="nav-tab" onclick="window.location.href='compras.html'">🛒 Compras</button>
       <button class="nav-tab" data-section="atracciones">📍 Atracciones</button>
       <button class="nav-tab" onclick="window.location.href='itinerario.html'">📅 Itinerario</button>
       <button class="nav-tab" data-section="vuelos">✈️ Vuelos</button>
@@ -428,6 +428,206 @@
     </div>
   </div>
 
+  <style>
+    /* Estilos Compactos para Compras */
+    .compra-item-compact {
+      display: grid;
+      grid-template-columns: auto 1fr auto auto;
+      /* Checkbox, Info, Precio, Botones */
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.5rem 0.75rem;
+      background: white;
+      border-bottom: 1px solid #eee;
+      transition: background 0.2s;
+    }
+
+    .compra-item-compact:hover {
+      background: #f9f9f9;
+    }
+
+    .compra-item-compact.comprado {
+      background: #f0fdf4;
+      opacity: 0.8;
+    }
+
+    .compra-item-compact .compra-chk {
+      transform: scale(1.2);
+      cursor: pointer;
+    }
+
+    .compra-item-compact .compra-main {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      line-height: 1.2;
+    }
+
+    .compra-nombre-compact {
+      font-weight: 500;
+      color: #333;
+    }
+
+    .compra-meta-compact {
+      font-size: 0.8rem;
+      color: #666;
+    }
+
+    .compra-precio-compact {
+      font-weight: 600;
+      color: var(--verde-brasil);
+      text-align: right;
+      font-size: 0.95rem;
+    }
+
+    .compra-actions-compact {
+      display: flex;
+      gap: 0.25rem;
+    }
+
+    .btn-mini {
+      padding: 2px 6px;
+      font-size: 0.8rem;
+      border-radius: 4px;
+      cursor: pointer;
+      border: none;
+    }
+
+    .resumen-total-flotante {
+      position: sticky;
+      bottom: 20px;
+      margin: 1rem auto;
+      background: #1b5e20;
+      /* Verde oscuro alto contraste */
+      color: white;
+      padding: 1rem;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      z-index: 100;
+      max-width: 600px;
+    }
+
+    .res-block {
+      text-align: center;
+    }
+
+    .res-label {
+      font-size: 0.75rem;
+      opacity: 0.9;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .res-val {
+      font-size: 1.2rem;
+      font-weight: bold;
+    }
+
+    /* ========== MEJORAS PARA SECCIÓN COMPRAS ========== */
+    @media (max-width: 768px) {
+      .filtros-compras {
+        flex-direction: column !important;
+        align-items: stretch !important;
+      }
+
+      .filtros-compras select {
+        width: 100% !important;
+        min-width: 100% !important;
+      }
+
+      .filtros-compras label {
+        font-size: 0.9rem;
+      }
+    }
+
+    /* Modal de categorías */
+    #modalCategorias .modal-content {
+      max-width: 600px;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    #nuevaCategoriaInput {
+      font-size: 1rem !important;
+      color: #333 !important;
+      background: white !important;
+      border: 2px solid #ddd !important;
+      transition: border-color 0.3s;
+    }
+
+    #nuevaCategoriaInput:focus {
+      outline: none;
+      border-color: #1b5e20 !important;
+      box-shadow: 0 0 0 3px rgba(27, 94, 32, 0.1);
+    }
+
+    #listaCategoriasAdmin {
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    .btn-danger {
+      background: #d32f2f !important;
+      color: white !important;
+      border: none !important;
+      transition: all 0.2s;
+    }
+
+    .btn-danger:hover {
+      background: #b71c1c !important;
+      transform: scale(1.05);
+    }
+
+    .btn-mini {
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-mini:hover {
+      transform: scale(1.1);
+      opacity: 0.9;
+    }
+
+    /* Mejorar visibilidad de títulos */
+    .compra-nombre-compact {
+      color: #1b5e20 !important;
+      font-weight: 600 !important;
+    }
+
+    .resumen-total-flotante {
+      background: #1b5e20 !important;
+      color: white !important;
+    }
+
+    .res-val {
+      font-size: 1.3rem !important;
+      font-weight: 700 !important;
+    }
+
+    /* Checkboxes más visibles */
+    .compra-chk {
+      width: 20px;
+      height: 20px;
+      cursor: pointer;
+      accent-color: #1b5e20;
+    }
+
+    .compra-item-compact {
+      transition: background 0.2s, transform 0.1s;
+    }
+
+    .compra-item-compact:hover {
+      background: #f0f7f0 !important;
+    }
+
+    .compra-item-compact.comprado {
+      background: #e8f5e9 !important;
+    }
+  </style>
+
   <!-- SECCIÓN: COMPRAS -->
   <div class="app-section" id="section-compras">
     <div class="section-container" style="max-width: 800px; margin: 0 auto;">
@@ -446,38 +646,55 @@
           </div>
 
           <div class="form-group">
-            <label for="compraCategoria">Categoría</label>
-            <select id="compraCategoria">
-              <option>Bebidas</option>
-              <option>Comida/Snacks</option>
-              <option>Playa</option>
-              <option>Higiene</option>
-              <option>Medicamentos</option>
-              <option>Otros</option>
-            </select>
+            <label for="compraPrecio">Precio Est. (BRL)</label>
+            <input type="number" id="compraPrecio" min="0" step="0.01" placeholder="0.00">
           </div>
+
         </div>
 
         <div class="form-group">
-          <label for="compraNotas">Notas (opcional)</label>
-          <input type="text" id="compraNotas" placeholder="Observaciones...">
+          <label for="compraCategoria">Categoría</label>
+          <div style="display: flex; gap: 0.5rem;">
+            <select id="compraCategoria" style="flex: 1;">
+              <!-- Se llena dinámicamente -->
+            </select>
+            <button type="button" class="btn-secondary" onclick="abrirModalCategorias()" style="padding: 0 0.5rem;"
+              title="Gestionar Categorías">⚙️</button>
+          </div>
         </div>
-
-        <button type="submit" class="btn-primary">+ Agregar a la Lista</button>
-      </form>
-
-      <div class="filtros-compras">
-        <button class="btn-secondary" onclick="filtrarCompras('todos')">Todos</button>
-        <button class="btn-secondary" onclick="filtrarCompras('pendientes')">Pendientes</button>
-        <button class="btn-secondary" onclick="filtrarCompras('comprados')">Comprados</button>
-      </div>
-
-      <div style="text-align: center; margin-bottom: 1rem; color: var(--gris-oscuro);">
-        <span id="contadorCompras">0 pendientes, 0 comprados</span>
-      </div>
-
-      <div id="listaCompras"></div>
     </div>
+
+    <div class="form-group">
+      <label for="compraNotas">Notas (opcional)</label>
+      <input type="text" id="compraNotas" placeholder="Observaciones...">
+    </div>
+
+    <button type="submit" class="btn-primary">+ Agregar a la Lista</button>
+    </form>
+
+    <div class="filtros-compras"
+      style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; margin-bottom: 1.5rem;">
+      <label for="filtroEstado" style="font-weight: 600; color: #01579b;">Estado:</label>
+      <select id="filtroEstado" onchange="aplicarFiltrosCompras()"
+        style="padding: 0.5rem; border-radius: 8px; border: 1px solid #ddd; flex: 1; min-width: 120px;">
+        <option value="todos">Ver Todos</option>
+        <option value="pendientes">Pendientes</option>
+        <option value="comprados">Comprados</option>
+      </select>
+
+      <label for="filtroCategoria" style="font-weight: 600; color: #01579b;">Categoría:</label>
+      <select id="filtroCategoria" onchange="aplicarFiltrosCompras()"
+        style="padding: 0.5rem; border-radius: 8px; border: 1px solid #ddd; flex: 1; min-width: 120px;">
+        <!-- Se llena dinámicamente -->
+      </select>
+    </div>
+
+    <div style="text-align: center; margin-bottom: 1rem; color: var(--gris-oscuro);">
+      <span id="contadorCompras">0 pendientes, 0 comprados</span>
+    </div>
+
+    <div id="listaCompras"></div>
+  </div>
   </div>
 
   <!-- SECCIÓN: ATRACCIONES -->
@@ -2037,46 +2254,271 @@
     });
 
     // ========================================
-    // COMPRAS
+    // GESTIÓN DE CATEGORÍAS
     // ========================================
-    function renderizarCompras(filtro = 'todos') {
+    const CATEGORIAS_DEFAULT = ['Bebidas', 'Comida/Snacks', 'Playa', 'Higiene', 'Medicamentos', 'Otros'];
+
+    function cargarCategorias() {
+      const datos = cargarDatos();
+      return datos.categorias || CATEGORIAS_DEFAULT;
+    }
+
+    function guardarCategorias(nuevasCategorias) {
+      const datos = cargarDatos();
+      datos.categorias = nuevasCategorias;
+      guardarDatos(datos);
+      renderizarOpcionesCategorias();
+      renderizarFiltrosCategorias();
+    }
+
+    function renderizarOpcionesCategorias() {
+      const cats = cargarCategorias();
+      const select = document.getElementById('compraCategoria');
+      if (!select) return;
+
+      const valorActual = select.value;
+      select.innerHTML = '';
+      cats.forEach(c => {
+        const op = document.createElement('option');
+        op.value = c;
+        op.textContent = c;
+        select.appendChild(op);
+      });
+
+      if (cats.includes(valorActual)) select.value = valorActual;
+    }
+
+    function renderizarFiltrosCategorias() {
+      // Renderizar botones de filtro de categorias si se desea
+      const container = document.querySelector('.filtros-compras');
+      if (!container) return;
+
+      // Limpiar filtros anteriores si existen (manteniendo los básicos)
+      // Por simplicidad, rehacemos todo el bloque de filtros
+
+      let cats = cargarCategorias();
+
+      // Botones base
+      let html = `
+            <button class="btn-secondary" onclick="filtrarCompras('todos')">Todos</button>
+            <button class="btn-secondary" onclick="filtrarCompras('pendientes')">Pendientes</button>
+            <button class="btn-secondary" onclick="filtrarCompras('comprados')">Comprados</button>
+            <div style="width: 100%; height: 1px; background: #eee; margin: 0.5rem 0;"></div>
+            <small style="color: #888; display: block; margin-bottom: 0.5rem;">Categorías:</small>
+        `;
+
+      cats.forEach(c => {
+        html += `<button class="btn-secondary btn-mini" onclick="filtrarCompras('cat:${c}')">${c}</button> `;
+      });
+
+      container.innerHTML = html;
+      // Ajustamos estilo para que se vean bien
+      container.style.display = 'flex';
+      container.style.flexWrap = 'wrap';
+      container.style.gap = '0.5rem';
+    }
+
+    function abrirModalCategorias() {
+      renderizarListaCategoriasAdmin();
+      const modal = document.getElementById('modalCategorias');
+      if (modal) modal.classList.add('active');
+    }
+
+    function renderizarListaCategoriasAdmin() {
+      const cats = cargarCategorias();
+      const lista = document.getElementById('listaCategoriasAdmin');
+      if (!lista) {
+        console.error('Elemento listaCategoriasAdmin no encontrado');
+        return;
+      }
+      lista.innerHTML = '';
+
+      cats.forEach(c => {
+        const div = document.createElement('div');
+        div.style.cssText = 'display: flex; justify-content: space-between; align-items: center; background: #f5f5f5; padding: 0.5rem; border-radius: 4px;';
+        div.innerHTML = `
+            <span>${c}</span>
+            ${!CATEGORIAS_DEFAULT.includes(c) ? `<button class="btn-mini btn-danger" onclick="borrarCategoria('${c}')">🗑️</button>` : ''}
+          `;
+        lista.appendChild(div);
+      });
+    }
+
+    function agregarCategoria() {
+      const input = document.getElementById('nuevaCategoriaInput');
+      const val = input.value.trim();
+      if (!val) return;
+
+      const cats = cargarCategorias();
+      if (cats.includes(val)) {
+        alert('Ya existe esa categoría');
+        return;
+      }
+
+      cats.push(val);
+      cats.sort();
+      guardarCategorias(cats);
+      input.value = '';
+      renderizarListaCategoriasAdmin();
+      renderizarOpcionesCategorias();
+    }
+
+    function borrarCategoria(cat) {
+      if (!confirm('¿Borrar categoría ' + cat + '?')) return;
+      let cats = cargarCategorias();
+      cats = cats.filter(c => c !== cat);
+      guardarCategorias(cats);
+      renderizarListaCategoriasAdmin();
+      renderizarOpcionesCategorias();
+    }
+
+    // ========================================
+    // COMPRAS (Logica Corregida)
+    // ========================================
+    let idCompraEdicion = null;
+    let filtroActualCompras = 'todos'; // Variable global para recordar filtro
+
+    // Inicializar al cargar
+    window.addEventListener('load', () => {
+      renderizarOpcionesCategorias();
+      renderizarFiltrosCategorias();
+      renderizarCompras();
+    });
+
+    function renderizarCompras(filtro = null) {
+      if (filtro) filtroActualCompras = filtro;
+      else filtro = filtroActualCompras;
+
       const datos = cargarDatos();
       const lista = document.getElementById('listaCompras');
       lista.innerHTML = '';
 
-      let compras = datos.compras;
-      if (filtro === 'pendientes') compras = compras.filter(c => !c.comprado);
-      if (filtro === 'comprados') compras = compras.filter(c => c.comprado);
+      let compras = datos.compras || [];
 
-      if (compras.length === 0) {
-        lista.innerHTML = '<p style="text-align: center; color: var(--gris-oscuro); padding: 2rem;">No hay compras</p>';
-        return;
+      // Filtrado Lógico mejorado
+      if (filtro === 'pendientes') {
+        compras = compras.filter(c => !c.comprado);
+      } else if (filtro === 'comprados') {
+        compras = compras.filter(c => c.comprado);
+      } else if (filtro && filtro.startsWith('cat:')) {
+        const cat = filtro.split(':')[1];
+        compras = compras.filter(c => c.categoria === cat);
+      } else if (filtro && filtro.includes(':cat:')) {
+        // Filtro combinado: estado + categoría
+        const partes = filtro.split(':cat:');
+        const estado = partes[0];
+        const cat = partes[1];
+        if (estado === 'pendientes') {
+          compras = compras.filter(c => !c.comprado && c.categoria === cat);
+        } else if (estado === 'comprados') {
+          compras = compras.filter(c => c.comprado && c.categoria === cat);
+        }
       }
 
-      compras.forEach((compra, index) => {
-        const div = document.createElement('div');
-        div.className = 'compra-item' + (compra.comprado ? ' comprado' : '');
-        div.innerHTML = `
-          <input type="checkbox" ${compra.comprado ? 'checked' : ''} onchange="toggleCompra(${compra.id})">
-          <div class="compra-info">
-            <div class="compra-nombre">${compra.articulo} ${compra.cantidad > 1 ? '(x' + compra.cantidad + ')' : ''}</div>
-            <div class="compra-detalles">${compra.categoria}${compra.notas ? ' • ' + compra.notas : ''}</div>
-            ${compra.precio ? '<div class="compra-detalles" style="color: var(--verde-brasil);">Pagado: R$ ' + compra.precio.toFixed(2) + '</div>' : ''}
-          </div>
-          <div class="compra-actions">
-            <button class="btn-small btn-danger" onclick="eliminarCompra(${compra.id})">🗑️</button>
-          </div>
-        `;
-        lista.appendChild(div);
+      const tasa = datos.tasaCambio || 150;
+      let totalListaBRL = 0;
+      let totalSeleccionadoBRL = 0;
+
+      // Calcular totales
+      compras.forEach(c => {
+        const p = parseFloat(c.precio) || 0;
+        totalListaBRL += p;
       });
 
-      const pendientes = datos.compras.filter(c => !c.comprado).length;
-      const comprados = datos.compras.filter(c => c.comprado).length;
-      document.getElementById('contadorCompras').textContent = `${pendientes} pendientes, ${comprados} comprados`;
+      // Calcular total seleccionado de TODOS los comprados (ignorando filtro actual)
+      const todosComprados = (datos.compras || []).filter(c => c.comprado);
+      todosComprados.forEach(c => {
+        const p = parseFloat(c.precio) || 0;
+        totalSeleccionadoBRL += p;
+      });
+
+      if (compras.length === 0) {
+        lista.innerHTML = '<p style="text-align: center; color: var(--gris-oscuro); padding: 2rem;">No hay compras con este filtro</p>';
+      } else {
+        compras.forEach((compra) => {
+          const precio = parseFloat(compra.precio) || 0;
+          const clpPrecio = Math.round(precio * tasa).toLocaleString('es-CL');
+
+          const div = document.createElement('div');
+          div.className = 'compra-item-compact' + (compra.comprado ? ' comprado' : '');
+
+          // Usamos onchange con string para evitar problemas de ID numericos grandes, pero ID es timestamp (numero seguro en JS < 2^53)
+          // Aun asi, pasamos toggleCompra(this, id)
+          div.innerHTML = `
+              <input type="checkbox" class="compra-chk" ${compra.comprado ? 'checked' : ''} onchange="toggleCompra(${compra.id})">
+              
+              <div class="compra-main">
+                <div class="compra-nombre-compact">
+                   ${compra.articulo} 
+                   ${compra.cantidad > 1 ? `<span style="font-weight:bold; color:var(--verde-brasil);">(x${compra.cantidad})</span>` : ''}
+                </div>
+                <div class="compra-meta-compact">${compra.categoria} ${compra.notas ? ' • ' + compra.notas : ''}</div>
+              </div>
+
+              <div class="compra-precio-compact">
+                 ${precio > 0 ? `R$ ${precio.toFixed(2)}<br><span style="font-size:0.75em; color:#888;">$${clpPrecio}</span>` : '<span style="color:#ccc;">--</span>'}
+              </div>
+
+              <div class="compra-actions-compact">
+                <button class="btn-mini btn-secondary" onclick="editarCompra(${compra.id})">✏️</button>
+                <button class="btn-mini btn-danger" onclick="eliminarCompra(${compra.id})">🗑️</button>
+              </div>
+            `;
+          lista.appendChild(div);
+        });
+      }
+
+      // Barra Flotante
+      const totalListaCLP = Math.round(totalListaBRL * tasa);
+      const totalSelCLP = Math.round(totalSeleccionadoBRL * tasa);
+
+      const barra = `
+        <div class="resumen-total-flotante">
+           <div class="res-block">
+             <div class="res-label">Lista (${compras.length})</div>
+             <div class="res-val">R$ ${totalListaBRL.toFixed(2)}</div>
+             <div style="font-size: 0.8em;">$${totalListaCLP.toLocaleString('es-CL')}</div>
+           </div>
+           
+           <div style="height: 40px; width: 1px; background: rgba(255,255,255,0.3);"></div>
+
+           <div class="res-block" style="color: #a5d6a7;">
+             <div class="res-label">Seleccionado ✅</div>
+             <div class="res-val">R$ ${totalSeleccionadoBRL.toFixed(2)}</div>
+             <div style="font-size: 0.8em;">$${totalSelCLP.toLocaleString('es-CL')}</div>
+           </div>
+        </div>
+      `;
+
+      // Insertar barra solo si hay items
+      const contador = document.getElementById('contadorCompras');
+      if (contador) contador.innerHTML = compras.length > 0 ? barra : '';
     }
 
     function filtrarCompras(filtro) {
       renderizarCompras(filtro);
+    }
+
+    function editarCompra(id) {
+      const datos = cargarDatos();
+      const compra = datos.compras.find(c => c.id === id);
+      if (!compra) return;
+
+      idCompraEdicion = id;
+
+      document.getElementById('compraArticulo').value = compra.articulo;
+      document.getElementById('compraCantidad').value = compra.cantidad || 1;
+      document.getElementById('compraCategoria').value = compra.categoria || 'Otros';
+      document.getElementById('compraNotas').value = compra.notas || '';
+      document.getElementById('compraPrecio').value = compra.precio || '';
+
+      // Cambiar texto botón/título visualmente
+      const btn = document.querySelector('#formCompra button[type="submit"]');
+      btn.textContent = '💾 Guardar Cambios';
+      btn.classList.remove('btn-primary');
+      btn.classList.add('btn-secondary');
+
+      document.getElementById('formCompra').scrollIntoView({ behavior: 'smooth' });
     }
 
     function toggleCompra(id) {
@@ -2084,14 +2526,13 @@
       const compra = datos.compras.find(c => c.id === id);
       compra.comprado = !compra.comprado;
 
-      if (compra.comprado && !compra.precio) {
-        const precio = prompt('¿Cuánto costó? (opcional, en BRL)');
-        if (precio && !isNaN(precio)) {
-          compra.precio = parseFloat(precio);
-        }
+      guardarDatos(datos);
+
+      // ✅ SYNC DIRECTO
+      if (window.SupabaseSync) {
+        window.SupabaseSync.uploadSingle('compra', compra);
       }
 
-      guardarDatos(datos);
       renderizarCompras();
       actualizarDashboard();
     }
@@ -2100,6 +2541,8 @@
       if (!confirm('¿Eliminar esta compra?')) return;
 
       const datos = cargarDatos();
+      // Encontrar compra antes de borrar para (opcional) borrar en remoto si tuviéramos deleteSingle
+      // Por ahora solo borramos local
       datos.compras = datos.compras.filter(c => c.id !== id);
       guardarDatos(datos);
       renderizarCompras();
@@ -2109,19 +2552,44 @@
     document.getElementById('formCompra')?.addEventListener('submit', (e) => {
       e.preventDefault();
 
+      const precioInput = parseFloat(document.getElementById('compraPrecio').value);
+
       const compra = {
-        id: Date.now(),
+        id: idCompraEdicion || Date.now(),
         articulo: document.getElementById('compraArticulo').value.trim(),
-        cantidad: parseInt(document.getElementById('compraCantidad').value),
+        cantidad: parseInt(document.getElementById('compraCantidad').value) || 1,
         categoria: document.getElementById('compraCategoria').value,
         notas: document.getElementById('compraNotas').value.trim(),
-        comprado: false,
-        precio: null
+        comprado: false, // Se mantiene false al crear. Al editar se podría respetar el anterior, veamos:
+        precio: isNaN(precioInput) ? null : precioInput
       };
 
       const datos = cargarDatos();
-      datos.compras.push(compra);
+
+      if (idCompraEdicion) {
+        const index = datos.compras.findIndex(c => c.id === idCompraEdicion);
+        if (index !== -1) {
+          // Mantener estado comprado original al editar
+          compra.comprado = datos.compras[index].comprado;
+          datos.compras[index] = compra;
+        }
+        idCompraEdicion = null;
+
+        // Restaurar botón
+        const btn = document.querySelector('#formCompra button[type="submit"]');
+        btn.textContent = '+ Agregar a la Lista';
+        btn.classList.add('btn-primary');
+        btn.classList.remove('btn-secondary');
+      } else {
+        datos.compras.push(compra);
+      }
+
       guardarDatos(datos);
+
+      // ✅ SYNC DIRECTO
+      if (window.SupabaseSync) {
+        window.SupabaseSync.uploadSingle('compra', compra);
+      }
 
       e.target.reset();
       document.getElementById('compraCantidad').value = 1;
@@ -2160,6 +2628,31 @@
       }
     });
 
+    // 📸 PEGAR IMAGEN (Ctrl+V)
+    document.getElementById('atracImagenes')?.addEventListener('paste', async (e) => {
+      const items = (e.clipboardData || e.originalEvent.clipboardData).items;
+
+      for (let index in items) {
+        const item = items[index];
+        if (item.kind === 'file' && item.type.includes('image/')) {
+          e.preventDefault();
+          const blob = item.getAsFile();
+
+          const reader = new FileReader();
+          reader.onload = (event) => {
+            const base64 = event.target.result;
+            const textarea = document.getElementById('atracImagenes');
+            // Agregar nueva línea si ya hay texto
+            const prefix = textarea.value.trim() ? '\n' : '';
+            textarea.value += prefix + base64;
+            alert('📸 Imagen pegada correctamente (Base64)');
+          };
+          reader.readAsDataURL(blob);
+          return; // Solo procesar la primera imagen
+        }
+      }
+    });
+
     // ← LÍNEA 460-496: Formulario nueva atracción
     document.getElementById('formNuevaAtraccion')?.addEventListener('submit', (e) => {
       e.preventDefault();
@@ -2193,6 +2686,12 @@
       }
 
       guardarDatos(datos);
+
+      // ✅ SYNC DIRECTO
+      if (window.SupabaseSync) {
+        window.SupabaseSync.uploadSingle('atraccion', atraccion);
+      }
+
       cerrarModal('modalNuevaAtraccion');
       renderizarAtracciones();
       actualizarDashboard();
@@ -3225,6 +3724,11 @@
       datos.vuelos.ida = vuelo;
       guardarDatos(datos);
 
+      // ✅ SYNC DIRECTO
+      if (window.SupabaseSync) {
+        window.SupabaseSync.uploadSingle('vuelo', { tipo: 'ida', datos: vuelo });
+      }
+
       cargarVistaVuelos();
       actualizarDashboard();
       alert('✅ Vuelo de ida guardado correctamente');
@@ -3279,6 +3783,11 @@
       const datos = cargarDatos();
       datos.vuelos.regreso = vuelo;
       guardarDatos(datos);
+
+      // ✅ SYNC DIRECTO
+      if (window.SupabaseSync) {
+        window.SupabaseSync.uploadSingle('vuelo', { tipo: 'regreso', datos: vuelo });
+      }
 
       cargarVistaVuelos();
       actualizarDashboard();
@@ -3947,150 +4456,109 @@
     }
   </script>
   <!-- =====================================================
-     AGREGAR ESTE SCRIPT ANTES DE </body>
-     (Busca la línea que dice </body> al final del archivo)
-     ===================================================== -->
+     AGREGAR ESTE SCRIPT ANTES DE 
+<!-- MODAL GESTIÓN DE CATEGORÍAS -->
+  <div class="modal" id="modalCategorias">
+    <div class="modal-content" style="max-width: 600px;">
+      <button class="modal-close" onclick="cerrarModal('modalCategorias')">&times;</button>
+      <h2 style="color: #1b5e20; margin-bottom: 1.5rem;">Gestionar Categorías</h2>
 
-  <script>
-    // =====================================================
-    // FUNCIONES DE DIAGNÓSTICO
-    // =====================================================
+      <div style="margin-bottom: 1.5rem;">
+        <div style="display: flex; gap: 0.5rem;">
+          <input type="text" id="nuevaCategoriaInput" placeholder="Nueva categoría..."
+            onkeypress="if(event.key === 'Enter') { agregarCategoria(); event.preventDefault(); }"
+            style="flex: 1; padding: 0.75rem; border: 2px solid #ddd; border-radius: 8px; font-size: 1rem; color: #333; background: white;">
+          <button class="btn-primary" onclick="agregarCategoria()" style="padding: 0.75rem 1.5rem;">
+            ➕ Agregar
+          </button>
+        </div>
+      </div>
 
-    async function diagnosticarDatos() {
-      const resultado = document.getElementById('resultadoDiagnostico');
-      resultado.style.display = 'block';
-      resultado.innerHTML = '<p>🔍 Analizando datos...</p>';
+      <h3 style="color: #01579b; margin-bottom: 1rem; font-size: 1.1rem;">Categorías existentes:</h3>
+      <div id="listaCategoriasAdmin" style="display: grid; gap: 0.5rem; max-height: 400px; overflow-y: auto;">
+        <!-- Se llena dinámicamente -->
+      </div>
 
-      let reporte = '';
+      <div style="margin-top: 1.5rem; text-align: center;">
+        <button class="btn-secondary" onclick="cerrarModal('modalCategorias')">Cerrar</button>
+      </div>
+    </div>
+  </div>
 
-      // 1. DATOS LOCALES
-      reporte += '=== 📱 DATOS LOCALES (localStorage) ===\n\n';
+</body>
 
-      const gastosLocal = JSON.parse(localStorage.getItem('gastosViaje') || '[]');
-      reporte += `Gastos: ${gastosLocal.length} registros\n`;
+<!-- MODAL GESTIÓN DE CATEGORÍAS -->
+<div class="modal" id="modalCategorias">
+  <div class="modal-content" style="max-width: 600px;">
+    <button class="modal-close" onclick="cerrarModal('modalCategorias')">&times;</button>
+    <h2 style="color: #1b5e20; margin-bottom: 1.5rem;">Gestionar Categorías</h2>
 
-      const appLocal = JSON.parse(localStorage.getItem('brasilTravelApp') || '{}');
-      reporte += `Compras: ${appLocal.compras?.length || 0} registros\n`;
-      reporte += `Atracciones: ${appLocal.atracciones?.length || 0} registros\n`;
-      reporte += `Documentos: ${appLocal.documentos?.length || 0} registros\n`;
-      reporte += `Alojamiento: ${appLocal.alojamiento ? '✅ Configurado (' + appLocal.alojamiento.nombre + ')' : '❌ Sin datos'}\n`;
-      reporte += `Vuelos Ida: ${appLocal.vuelos?.ida ? '✅ ' + appLocal.vuelos.ida.numeroVuelo : '❌ Sin datos'}\n`;
-      reporte += `Vuelos Regreso: ${appLocal.vuelos?.regreso ? '✅ ' + appLocal.vuelos.regreso.numeroVuelo : '❌ Sin datos'}\n`;
-      reporte += `Itinerario: ${appLocal.itinerario?.length || 0} días\n`;
+    <div style="margin-bottom: 1.5rem;">
+      <div style="display: flex; gap: 0.5rem;">
+        <input type="text" id="nuevaCategoriaInput" placeholder="Nueva categoría..."
+          onkeypress="if(event.key === 'Enter') { agregarCategoria(); event.preventDefault(); }"
+          style="flex: 1; padding: 0.75rem; border: 2px solid #ddd; border-radius: 8px; font-size: 1rem; color: #333; background: white;">
+        <button class="btn-primary" onclick="agregarCategoria()" style="padding: 0.75rem 1.5rem;">
+          ➕ Agregar
+        </button>
+      </div>
+    </div>
 
-      if (appLocal.atracciones && appLocal.atracciones.length > 0) {
-        reporte += '\n📍 Atracciones locales:\n';
-        appLocal.atracciones.forEach((a, i) => {
-          reporte += `  ${i + 1}. ${a.nombre} (${a.categoria})\n`;
-        });
-      }
+    <h3 style="color: #01579b; margin-bottom: 1rem; font-size: 1.1rem;">Categorías existentes:</h3>
+    <div id="listaCategoriasAdmin" style="display: grid; gap: 0.5rem; max-height: 400px; overflow-y: auto;">
+      <!-- Se llena dinámicamente -->
+    </div>
 
-      reporte += '\n';
+    <div style="margin-top: 1.5rem; text-align: center;">
+      <button class="btn-secondary" onclick="cerrarModal('modalCategorias')">Cerrar</button>
+    </div>
+  </div>
+</div>
 
-      // 2. DATOS EN SUPABASE
-      reporte += '=== ☁️ DATOS EN SUPABASE ===\n\n';
+</body>
 
-      if (!window.supabase) {
-        reporte += '❌ Supabase no está inicializado\n';
-      } else {
-        try {
-          const client = window.supabase.createClient(
-            'https://lpspcmwxallshngaggmw.supabase.co',
-            'sb_publishable_d96GjwG17EM1jBNXupW0rQ_EVzmEES0'
-          );
+<script>
+  // =====================================================
+  // FUNCIONES DE DIAGNÓSTICO
+  // =====================================================
 
-          const userId = '00000000-0000-0000-0000-000000000001';
+  async function diagnosticarDatos() {
+    const resultado = document.getElementById('resultadoDiagnostico');
+    resultado.style.display = 'block';
+    resultado.innerHTML = '<p>🔍 Analizando datos...</p>';
 
-          // Gastos
-          const { data: gastosDB, error: gastosError } = await client.from('gastos').select('*').eq('user_id', userId);
-          reporte += `Gastos: ${gastosDB?.length || 0} registros ${gastosError ? '❌ Error: ' + gastosError.message : ''}\n`;
+    let reporte = '';
 
-          // Compras
-          const { data: comprasDB, error: comprasError } = await client.from('compras').select('*').eq('user_id', userId);
-          reporte += `Compras: ${comprasDB?.length || 0} registros ${comprasError ? '❌ Error: ' + comprasError.message : ''}\n`;
+    // 1. DATOS LOCALES
+    reporte += '=== 📱 DATOS LOCALES (localStorage) ===\n\n';
 
-          // Atracciones
-          const { data: atraccionesDB, error: atraccionesError } = await client.from('atracciones').select('*').eq('user_id', userId);
-          reporte += `Atracciones: ${atraccionesDB?.length || 0} registros ${atraccionesError ? '❌ Error: ' + atraccionesError.message : ''}\n`;
+    const gastosLocal = JSON.parse(localStorage.getItem('gastosViaje') || '[]');
+    reporte += `Gastos: ${gastosLocal.length} registros\n`;
 
-          if (atraccionesDB && atraccionesDB.length > 0) {
-            reporte += '\n📍 Atracciones en Supabase:\n';
-            atraccionesDB.forEach((a, i) => {
-              reporte += `  ${i + 1}. ${a.nombre} (${a.categoria})\n`;
-            });
-          }
+    const appLocal = JSON.parse(localStorage.getItem('brasilTravelApp') || '{}');
+    reporte += `Compras: ${appLocal.compras?.length || 0} registros\n`;
+    reporte += `Atracciones: ${appLocal.atracciones?.length || 0} registros\n`;
+    reporte += `Documentos: ${appLocal.documentos?.length || 0} registros\n`;
+    reporte += `Alojamiento: ${appLocal.alojamiento ? '✅ Configurado (' + appLocal.alojamiento.nombre + ')' : '❌ Sin datos'}\n`;
+    reporte += `Vuelos Ida: ${appLocal.vuelos?.ida ? '✅ ' + appLocal.vuelos.ida.numeroVuelo : '❌ Sin datos'}\n`;
+    reporte += `Vuelos Regreso: ${appLocal.vuelos?.regreso ? '✅ ' + appLocal.vuelos.regreso.numeroVuelo : '❌ Sin datos'}\n`;
+    reporte += `Itinerario: ${appLocal.itinerario?.length || 0} días\n`;
 
-          // Documentos
-          const { data: documentosDB, error: documentosError } = await client.from('documentos').select('*').eq('user_id', userId);
-          reporte += `\nDocumentos: ${documentosDB?.length || 0} registros ${documentosError ? '❌ Error: ' + documentosError.message : ''}\n`;
-
-          // App Config
-          const { data: configDB, error: configError } = await client.from('app_config').select('*').eq('user_id', userId).single();
-
-          if (configError) {
-            reporte += `\nApp Config: ❌ Error: ${configError.message}\n`;
-          } else {
-            reporte += `\nApp Config:\n`;
-            reporte += `  Alojamiento: ${configDB?.alojamiento ? '✅ ' + configDB.alojamiento.nombre : '❌ Sin datos'}\n`;
-            reporte += `  Vuelos Ida: ${configDB?.vuelos?.ida ? '✅ ' + configDB.vuelos.ida.numeroVuelo : '❌ Sin datos'}\n`;
-            reporte += `  Vuelos Regreso: ${configDB?.vuelos?.regreso ? '✅ ' + configDB.vuelos.regreso.numeroVuelo : '❌ Sin datos'}\n`;
-            reporte += `  Itinerario: ${configDB?.itinerario?.length || 0} días\n`;
-            reporte += `  Tasa cambio: ${configDB?.tasa_cambio || 'sin datos'}\n`;
-          }
-
-        } catch (error) {
-          reporte += `❌ Error conectando a Supabase: ${error.message}\n`;
-        }
-      }
-
-      reporte += '\n=== 🔄 ESTADO DE SINCRONIZACIÓN ===\n\n';
-      reporte += `Online: ${navigator.onLine ? '✅ Conectado' : '❌ Offline'}\n`;
-      reporte += `Última sync: ${localStorage.getItem('lastSync') || 'Nunca'}\n`;
-
-      resultado.innerHTML = `<pre style="white-space: pre-wrap; margin: 0;">${reporte}</pre>`;
+    if (appLocal.atracciones && appLocal.atracciones.length > 0) {
+      reporte += '\n📍 Atracciones locales:\n';
+      appLocal.atracciones.forEach((a, i) => {
+        reporte += `  ${i + 1}. ${a.nombre} (${a.categoria})\n`;
+      });
     }
 
-    async function forzarSincronizacion() {
-      const resultado = document.getElementById('resultadoDiagnostico');
-      resultado.style.display = 'block';
-      resultado.innerHTML = '<p>🔄 Forzando sincronización completa...</p>';
+    reporte += '\n';
 
-      if (!window.SupabaseSync) {
-        resultado.innerHTML = '<p style="color: red;">❌ SupabaseSync no disponible</p>';
-        return;
-      }
+    // 2. DATOS EN SUPABASE
+    reporte += '=== ☁️ DATOS EN SUPABASE ===\n\n';
 
-      try {
-        // Forzar sincronización
-        await window.SupabaseSync.sync();
-
-        // Esperar 2 segundos y diagnosticar
-        setTimeout(async () => {
-          resultado.innerHTML = '<p>✅ Sincronización completa</p><p>🔍 Ejecutando diagnóstico...</p>';
-          await diagnosticarDatos();
-
-          // Recargar UI
-          if (typeof actualizarDashboard === 'function') actualizarDashboard();
-          if (typeof renderizarAtracciones === 'function') renderizarAtracciones();
-          if (typeof cargarAlojamiento === 'function') cargarAlojamiento();
-          if (typeof inicializarVuelos === 'function') inicializarVuelos();
-        }, 2000);
-
-      } catch (error) {
-        resultado.innerHTML += `<p style="color: red;">❌ Error: ${error.message}</p>`;
-      }
-    }
-
-    async function descargarDesdeSupabase() {
-      const resultado = document.getElementById('resultadoDiagnostico');
-      resultado.style.display = 'block';
-      resultado.innerHTML = '<p>📥 Descargando SOLO desde Supabase...</p>';
-
-      if (!window.supabase) {
-        resultado.innerHTML = '<p style="color: red;">❌ Supabase no disponible</p>';
-        return;
-      }
-
+    if (!window.supabase) {
+      reporte += '❌ Supabase no está inicializado\n';
+    } else {
       try {
         const client = window.supabase.createClient(
           'https://lpspcmwxallshngaggmw.supabase.co',
@@ -4099,194 +4567,448 @@
 
         const userId = '00000000-0000-0000-0000-000000000001';
 
-        resultado.innerHTML += '<p>📥 Descargando gastos...</p>';
-        const { data: gastos } = await client.from('gastos').select('*').eq('user_id', userId);
+        // Gastos
+        const { data: gastosDB, error: gastosError } = await client.from('gastos').select('*').eq('user_id', userId);
+        reporte += `Gastos: ${gastosDB?.length || 0} registros ${gastosError ? '❌ Error: ' + gastosError.message : ''}\n`;
 
-        resultado.innerHTML += '<p>📥 Descargando compras...</p>';
-        const { data: compras } = await client.from('compras').select('*').eq('user_id', userId);
+        // Compras
+        const { data: comprasDB, error: comprasError } = await client.from('compras').select('*').eq('user_id', userId);
+        reporte += `Compras: ${comprasDB?.length || 0} registros ${comprasError ? '❌ Error: ' + comprasError.message : ''}\n`;
 
-        resultado.innerHTML += '<p>📥 Descargando atracciones...</p>';
-        const { data: atracciones } = await client.from('atracciones').select('*').eq('user_id', userId);
+        // Atracciones
+        const { data: atraccionesDB, error: atraccionesError } = await client.from('atracciones').select('*').eq('user_id', userId);
+        reporte += `Atracciones: ${atraccionesDB?.length || 0} registros ${atraccionesError ? '❌ Error: ' + atraccionesError.message : ''}\n`;
 
-        resultado.innerHTML += '<p>📥 Descargando documentos...</p>';
-        const { data: documentos } = await client.from('documentos').select('*').eq('user_id', userId);
+        if (atraccionesDB && atraccionesDB.length > 0) {
+          reporte += '\n📍 Atracciones en Supabase:\n';
+          atraccionesDB.forEach((a, i) => {
+            reporte += `  ${i + 1}. ${a.nombre} (${a.categoria})\n`;
+          });
+        }
 
-        resultado.innerHTML += '<p>📥 Descargando alojamiento...</p>';
-        const { data: alojamiento, error: alojError } = await client.from('alojamiento').select('*').eq('user_id', userId).single();
+        // Documentos
+        const { data: documentosDB, error: documentosError } = await client.from('documentos').select('*').eq('user_id', userId);
+        reporte += `\nDocumentos: ${documentosDB?.length || 0} registros ${documentosError ? '❌ Error: ' + documentosError.message : ''}\n`;
 
-        if (alojError) {
-          resultado.innerHTML += `<p style="color: orange;">⚠️ Alojamiento error: ${alojError.message}</p>`;
-        } else if (alojamiento) {
-          resultado.innerHTML += `<p style="color: green;">✅ Alojamiento encontrado: ${alojamiento.nombre}</p>`;
+        // App Config
+        const { data: configDB, error: configError } = await client.from('app_config').select('*').eq('user_id', userId).single();
+
+        if (configError) {
+          reporte += `\nApp Config: ❌ Error: ${configError.message}\n`;
         } else {
-          resultado.innerHTML += `<p style="color: orange;">⚠️ No hay alojamiento en Supabase</p>`;
+          reporte += `\nApp Config:\n`;
+          reporte += `  Alojamiento: ${configDB?.alojamiento ? '✅ ' + configDB.alojamiento.nombre : '❌ Sin datos'}\n`;
+          reporte += `  Vuelos Ida: ${configDB?.vuelos?.ida ? '✅ ' + configDB.vuelos.ida.numeroVuelo : '❌ Sin datos'}\n`;
+          reporte += `  Vuelos Regreso: ${configDB?.vuelos?.regreso ? '✅ ' + configDB.vuelos.regreso.numeroVuelo : '❌ Sin datos'}\n`;
+          reporte += `  Itinerario: ${configDB?.itinerario?.length || 0} días\n`;
+          reporte += `  Tasa cambio: ${configDB?.tasa_cambio || 'sin datos'}\n`;
         }
-
-        resultado.innerHTML += '<p>📥 Descargando vuelos...</p>';
-        const { data: vuelos } = await client.from('vuelos').select('*').eq('user_id', userId);
-        const vueloIda = vuelos?.find(v => v.tipo === 'ida');
-        const vueloRegreso = vuelos?.find(v => v.tipo === 'regreso');
-
-        resultado.innerHTML += '<p>📥 Descargando itinerario...</p>';
-        const { data: itinerario } = await client.from('itinerario').select('*').eq('user_id', userId).order('fecha');
-
-        resultado.innerHTML += '<p>📥 Descargando tasa cambio...</p>';
-        const { data: appConfig } = await client.from('app_config').select('tasa_cambio').eq('user_id', userId).single();
-
-        // 🔥 CONSTRUIR OBJETO COMPLETO
-        const datosApp = {
-          alojamiento: alojamiento ? {
-            nombre: alojamiento.nombre,
-            direccion: alojamiento.direccion || '',
-            maps: alojamiento.maps || '',
-            checkin: alojamiento.checkin,
-            checkout: alojamiento.checkout,
-            noches: alojamiento.noches || 0,
-            precioTotal: alojamiento.precio_total,
-            precioNoche: alojamiento.precio_noche,
-            division: alojamiento.division || '3',
-            rating: alojamiento.rating || 0,
-            notas: alojamiento.notas || ''
-          } : null,
-          compras: (compras || []).map(c => ({
-            id: c.id,
-            articulo: c.articulo,
-            cantidad: c.cantidad,
-            categoria: c.categoria,
-            notas: c.notas,
-            comprado: c.comprado,
-            precio: c.precio
-          })),
-          atracciones: (atracciones || []).map(a => ({
-            id: a.id,
-            nombre: a.nombre,
-            categoria: a.categoria,
-            direccion: a.direccion,
-            maps: a.coordenadas,
-            precioBRL: a.precio_brl,
-            rating: a.rating,
-            notas: a.notas,
-            visitado: a.visitado,
-            fechaVisita: a.fecha_visita,
-            imagenes: a.imagen_url ? [a.imagen_url] : []
-          })),
-          documentos: (documentos || []).map(d => ({
-            id: d.id,
-            categoria: d.categoria,
-            titulo: d.titulo,
-            descripcion: d.descripcion,
-            fechaEvento: d.fecha_evento,
-            recordatorio: d.recordatorio,
-            etiquetas: d.etiquetas,
-            notas: d.notas,
-            archivo: d.archivo_nombre ? {
-              nombre: d.archivo_nombre,
-              tipo: d.archivo_tipo,
-              data: d.archivo_data
-            } : null,
-            fechaCreacion: d.fecha_creacion
-          })),
-          vuelos: {
-            ida: vueloIda ? {
-              aerolinea: vueloIda.aerolinea,
-              numeroVuelo: vueloIda.numero_vuelo,
-              codigoReserva: vueloIda.codigo_reserva,
-              origen: vueloIda.origen,
-              destino: vueloIda.destino,
-              fechaSalida: vueloIda.fecha_salida,
-              fechaLlegada: vueloIda.fecha_llegada,
-              terminal: vueloIda.terminal,
-              puerta: vueloIda.puerta,
-              asientos: vueloIda.asientos,
-              equipaje: vueloIda.equipaje,
-              notas: vueloIda.notas,
-              archivo: vueloIda.archivo
-            } : null,
-            regreso: vueloRegreso ? {
-              aerolinea: vueloRegreso.aerolinea,
-              numeroVuelo: vueloRegreso.numero_vuelo,
-              codigoReserva: vueloRegreso.codigo_reserva,
-              origen: vueloRegreso.origen,
-              destino: vueloRegreso.destino,
-              fechaSalida: vueloRegreso.fecha_salida,
-              fechaLlegada: vueloRegreso.fecha_llegada,
-              terminal: vueloRegreso.terminal,
-              puerta: vueloRegreso.puerta,
-              asientos: vueloRegreso.asientos,
-              equipaje: vueloRegreso.equipaje,
-              notas: vueloRegreso.notas,
-              archivo: vueloRegreso.archivo
-            } : null
-          },
-          tasaCambio: appConfig?.tasa_cambio || 150,
-          itinerario: (itinerario || []).map(i => ({
-            fecha: i.fecha,
-            actividades: i.actividades
-          })),
-          configuracion: { tasaCambio: appConfig?.tasa_cambio || 150 }
-        };
-
-        // 🔥 GUARDAR EN LOCALSTORAGE
-        console.log('💾 Guardando en localStorage:', datosApp);
-        localStorage.setItem('brasilTravelApp', JSON.stringify(datosApp));
-
-        // Guardar gastos por separado
-        if (gastos && gastos.length > 0) {
-          const gastosLocal = gastos
-            .filter(g => !g.fijo)
-            .map(g => ({
-              id: g.id,
-              descripcion: g.descripcion,
-              monto_brl: parseFloat(g.monto_brl),
-              moneda: g.moneda,
-              monto_original: g.monto_original ? parseFloat(g.monto_original) : null,
-              fecha: g.fecha,
-              personas: g.personas,
-              pagadoPor: g.pagado_por,
-              pagos: g.pagos || {},
-              fijo: false
-            }));
-
-          const gastosUnicos = Array.from(new Map(gastosLocal.map(g => [g.id, g])).values());
-          localStorage.setItem('gastosViaje', JSON.stringify(gastosUnicos));
-          resultado.innerHTML += `<p>✅ ${gastosUnicos.length} gastos guardados</p>`;
-        }
-
-        // 🔥 VERIFICAR QUÉ SE GUARDÓ
-        const verificar = JSON.parse(localStorage.getItem('brasilTravelApp') || '{}');
-
-        resultado.innerHTML += `<p>✅ ${datosApp.compras.length} compras guardadas</p>`;
-        resultado.innerHTML += `<p>✅ ${datosApp.atracciones.length} atracciones guardadas</p>`;
-        resultado.innerHTML += `<p>✅ Alojamiento guardado: ${verificar.alojamiento?.nombre || '❌ NO SE GUARDÓ'}</p>`;
-        resultado.innerHTML += `<p>✅ Vuelos: Ida=${verificar.vuelos?.ida?.numeroVuelo || 'NO'}, Regreso=${verificar.vuelos?.regreso?.numeroVuelo || 'NO'}</p>`;
-        resultado.innerHTML += `<p>✅ Itinerario: ${datosApp.itinerario.length} días</p>`;
-
-        resultado.innerHTML += '<p style="color: green; font-weight: bold; margin-top: 1rem;">✅ DESCARGA COMPLETA</p>';
-        resultado.innerHTML += '<p>🔄 Recargando página en 2 segundos...</p>';
-
-        setTimeout(() => {
-          location.reload();
-        }, 2000);
 
       } catch (error) {
-        resultado.innerHTML += `<p style="color: red;">❌ Error: ${error.message}</p>`;
-        console.error('Error completo:', error);
+        reporte += `❌ Error conectando a Supabase: ${error.message}\n`;
       }
     }
 
-    function limpiarYRecargar() {
-      if (!confirm('⚠️ Esto borrará TODOS los datos locales.\n\n¿Estás seguro?\n\n(Los datos en Supabase se mantendrán)')) {
-        return;
+    reporte += '\n=== 🔄 ESTADO DE SINCRONIZACIÓN ===\n\n';
+    reporte += `Online: ${navigator.onLine ? '✅ Conectado' : '❌ Offline'}\n`;
+    reporte += `Última sync: ${localStorage.getItem('lastSync') || 'Nunca'}\n`;
+
+    resultado.innerHTML = `<pre style="white-space: pre-wrap; margin: 0;">${reporte}</pre>`;
+  }
+
+  async function forzarSincronizacion() {
+    const resultado = document.getElementById('resultadoDiagnostico');
+    resultado.style.display = 'block';
+    resultado.innerHTML = '<p>🔄 Forzando sincronización completa...</p>';
+
+    if (!window.SupabaseSync) {
+      resultado.innerHTML = '<p style="color: red;">❌ SupabaseSync no disponible</p>';
+      return;
+    }
+
+    try {
+      // Forzar sincronización
+      await window.SupabaseSync.sync();
+
+      // Esperar 2 segundos y diagnosticar
+      setTimeout(async () => {
+        resultado.innerHTML = '<p>✅ Sincronización completa</p><p>🔍 Ejecutando diagnóstico...</p>';
+        await diagnosticarDatos();
+
+        // Recargar UI
+        if (typeof actualizarDashboard === 'function') actualizarDashboard();
+        if (typeof renderizarAtracciones === 'function') renderizarAtracciones();
+        if (typeof cargarAlojamiento === 'function') cargarAlojamiento();
+        if (typeof inicializarVuelos === 'function') inicializarVuelos();
+      }, 2000);
+
+    } catch (error) {
+      resultado.innerHTML += `<p style="color: red;">❌ Error: ${error.message}</p>`;
+    }
+  }
+
+  async function descargarDesdeSupabase() {
+    const resultado = document.getElementById('resultadoDiagnostico');
+    resultado.style.display = 'block';
+    resultado.innerHTML = '<p>📥 Descargando SOLO desde Supabase...</p>';
+
+    if (!window.supabase) {
+      resultado.innerHTML = '<p style="color: red;">❌ Supabase no disponible</p>';
+      return;
+    }
+
+    try {
+      const client = window.supabase.createClient(
+        'https://lpspcmwxallshngaggmw.supabase.co',
+        'sb_publishable_d96GjwG17EM1jBNXupW0rQ_EVzmEES0'
+      );
+
+      const userId = '00000000-0000-0000-0000-000000000001';
+
+      resultado.innerHTML += '<p>📥 Descargando gastos...</p>';
+      const { data: gastos } = await client.from('gastos').select('*').eq('user_id', userId);
+
+      resultado.innerHTML += '<p>📥 Descargando compras...</p>';
+      const { data: compras } = await client.from('compras').select('*').eq('user_id', userId);
+
+      resultado.innerHTML += '<p>📥 Descargando atracciones...</p>';
+      const { data: atracciones } = await client.from('atracciones').select('*').eq('user_id', userId);
+
+      resultado.innerHTML += '<p>📥 Descargando documentos...</p>';
+      const { data: documentos } = await client.from('documentos').select('*').eq('user_id', userId);
+
+      resultado.innerHTML += '<p>📥 Descargando alojamiento...</p>';
+      const { data: alojamiento, error: alojError } = await client.from('alojamiento').select('*').eq('user_id', userId).single();
+
+      if (alojError) {
+        resultado.innerHTML += `<p style="color: orange;">⚠️ Alojamiento error: ${alojError.message}</p>`;
+      } else if (alojamiento) {
+        resultado.innerHTML += `<p style="color: green;">✅ Alojamiento encontrado: ${alojamiento.nombre}</p>`;
+      } else {
+        resultado.innerHTML += `<p style="color: orange;">⚠️ No hay alojamiento en Supabase</p>`;
       }
 
-      localStorage.removeItem('brasilTravelApp');
-      localStorage.removeItem('gastosViaje');
-      localStorage.removeItem('lastSync');
+      resultado.innerHTML += '<p>📥 Descargando vuelos...</p>';
+      const { data: vuelos } = await client.from('vuelos').select('*').eq('user_id', userId);
+      const vueloIda = vuelos?.find(v => v.tipo === 'ida');
+      const vueloRegreso = vuelos?.find(v => v.tipo === 'regreso');
 
-      alert('✅ Datos locales eliminados.\n\nAhora presiona "Sincronizar" para descargar desde Supabase.');
-      location.reload();
+      resultado.innerHTML += '<p>📥 Descargando itinerario...</p>';
+      const { data: itinerario } = await client.from('itinerario').select('*').eq('user_id', userId).order('fecha');
+
+      resultado.innerHTML += '<p>📥 Descargando tasa cambio...</p>';
+      const { data: appConfig } = await client.from('app_config').select('tasa_cambio').eq('user_id', userId).single();
+
+      // 🔥 CONSTRUIR OBJETO COMPLETO
+      const datosApp = {
+        alojamiento: alojamiento ? {
+          nombre: alojamiento.nombre,
+          direccion: alojamiento.direccion || '',
+          maps: alojamiento.maps || '',
+          checkin: alojamiento.checkin,
+          checkout: alojamiento.checkout,
+          noches: alojamiento.noches || 0,
+          precioTotal: alojamiento.precio_total,
+          precioNoche: alojamiento.precio_noche,
+          division: alojamiento.division || '3',
+          rating: alojamiento.rating || 0,
+          notas: alojamiento.notas || ''
+        } : null,
+        compras: (compras || []).map(c => ({
+          id: c.id,
+          articulo: c.articulo,
+          cantidad: c.cantidad,
+          categoria: c.categoria,
+          notas: c.notas,
+          comprado: c.comprado,
+          precio: c.precio
+        })),
+        atracciones: (atracciones || []).map(a => ({
+          id: a.id,
+          nombre: a.nombre,
+          categoria: a.categoria,
+          direccion: a.direccion,
+          maps: a.coordenadas,
+          precioBRL: a.precio_brl,
+          rating: a.rating,
+          notas: a.notas,
+          visitado: a.visitado,
+          fechaVisita: a.fecha_visita,
+          imagenes: a.imagen_url ? [a.imagen_url] : []
+        })),
+        documentos: (documentos || []).map(d => ({
+          id: d.id,
+          categoria: d.categoria,
+          titulo: d.titulo,
+          descripcion: d.descripcion,
+          fechaEvento: d.fecha_evento,
+          recordatorio: d.recordatorio,
+          etiquetas: d.etiquetas,
+          notas: d.notas,
+          archivo: d.archivo_nombre ? {
+            nombre: d.archivo_nombre,
+            tipo: d.archivo_tipo,
+            data: d.archivo_data
+          } : null,
+          fechaCreacion: d.fecha_creacion
+        })),
+        vuelos: {
+          ida: vueloIda ? {
+            aerolinea: vueloIda.aerolinea,
+            numeroVuelo: vueloIda.numero_vuelo,
+            codigoReserva: vueloIda.codigo_reserva,
+            origen: vueloIda.origen,
+            destino: vueloIda.destino,
+            fechaSalida: vueloIda.fecha_salida,
+            fechaLlegada: vueloIda.fecha_llegada,
+            terminal: vueloIda.terminal,
+            puerta: vueloIda.puerta,
+            asientos: vueloIda.asientos,
+            equipaje: vueloIda.equipaje,
+            notas: vueloIda.notas,
+            archivo: vueloIda.archivo
+          } : null,
+          regreso: vueloRegreso ? {
+            aerolinea: vueloRegreso.aerolinea,
+            numeroVuelo: vueloRegreso.numero_vuelo,
+            codigoReserva: vueloRegreso.codigo_reserva,
+            origen: vueloRegreso.origen,
+            destino: vueloRegreso.destino,
+            fechaSalida: vueloRegreso.fecha_salida,
+            fechaLlegada: vueloRegreso.fecha_llegada,
+            terminal: vueloRegreso.terminal,
+            puerta: vueloRegreso.puerta,
+            asientos: vueloRegreso.asientos,
+            equipaje: vueloRegreso.equipaje,
+            notas: vueloRegreso.notas,
+            archivo: vueloRegreso.archivo
+          } : null
+        },
+        tasaCambio: appConfig?.tasa_cambio || 150,
+        itinerario: (itinerario || []).map(i => ({
+          fecha: i.fecha,
+          actividades: i.actividades
+        })),
+        configuracion: { tasaCambio: appConfig?.tasa_cambio || 150 }
+      };
+
+      // 🔥 GUARDAR EN LOCALSTORAGE
+      console.log('💾 Guardando en localStorage:', datosApp);
+      localStorage.setItem('brasilTravelApp', JSON.stringify(datosApp));
+
+      // Guardar gastos por separado
+      if (gastos && gastos.length > 0) {
+        const gastosLocal = gastos
+          .filter(g => !g.fijo)
+          .map(g => ({
+            id: g.id,
+            descripcion: g.descripcion,
+            monto_brl: parseFloat(g.monto_brl),
+            moneda: g.moneda,
+            monto_original: g.monto_original ? parseFloat(g.monto_original) : null,
+            fecha: g.fecha,
+            personas: g.personas,
+            pagadoPor: g.pagado_por,
+            pagos: g.pagos || {},
+            fijo: false
+          }));
+
+        const gastosUnicos = Array.from(new Map(gastosLocal.map(g => [g.id, g])).values());
+        localStorage.setItem('gastosViaje', JSON.stringify(gastosUnicos));
+        resultado.innerHTML += `<p>✅ ${gastosUnicos.length} gastos guardados</p>`;
+      }
+
+      // 🔥 VERIFICAR QUÉ SE GUARDÓ
+      const verificar = JSON.parse(localStorage.getItem('brasilTravelApp') || '{}');
+
+      resultado.innerHTML += `<p>✅ ${datosApp.compras.length} compras guardadas</p>`;
+      resultado.innerHTML += `<p>✅ ${datosApp.atracciones.length} atracciones guardadas</p>`;
+      resultado.innerHTML += `<p>✅ Alojamiento guardado: ${verificar.alojamiento?.nombre || '❌ NO SE GUARDÓ'}</p>`;
+      resultado.innerHTML += `<p>✅ Vuelos: Ida=${verificar.vuelos?.ida?.numeroVuelo || 'NO'}, Regreso=${verificar.vuelos?.regreso?.numeroVuelo || 'NO'}</p>`;
+      resultado.innerHTML += `<p>✅ Itinerario: ${datosApp.itinerario.length} días</p>`;
+
+      resultado.innerHTML += '<p style="color: green; font-weight: bold; margin-top: 1rem;">✅ DESCARGA COMPLETA</p>';
+      resultado.innerHTML += '<p>🔄 Recargando página en 2 segundos...</p>';
+
+      setTimeout(() => {
+        location.reload();
+      }, 2000);
+
+    } catch (error) {
+      resultado.innerHTML += `<p style="color: red;">❌ Error: ${error.message}</p>`;
+      console.error('Error completo:', error);
     }
-  </script>
+  }
+
+  function limpiarYRecargar() {
+    if (!confirm('⚠️ Esto borrará TODOS los datos locales.\n\n¿Estás seguro?\n\n(Los datos en Supabase se mantendrán)')) {
+      return;
+    }
+
+    localStorage.removeItem('brasilTravelApp');
+    localStorage.removeItem('gastosViaje');
+    localStorage.removeItem('lastSync');
+
+    alert('✅ Datos locales eliminados.\n\nAhora presiona "Sincronizar" para descargar desde Supabase.');
+    location.reload();
+  }
+
+
+  // ========== FUNCIONES PARA FILTROS DE COMPRAS ==========
+  function aplicarFiltrosCompras() {
+    const estado = document.getElementById('filtroEstado').value;
+    const categoria = document.getElementById('filtroCategoria').value;
+
+    let filtro = estado;
+    if (categoria !== 'todas' && estado === 'todos') {
+      filtro = 'cat:' + categoria;
+    } else if (categoria !== 'todas' && estado !== 'todos') {
+      filtro = estado + ':cat:' + categoria;
+    }
+
+    renderizarCompras(filtro);
+  }
+
+  function renderizarFiltrosCategorias() {
+    const cats = cargarCategorias();
+    const select = document.getElementById('filtroCategoria');
+    if (!select) return;
+
+    const valorActual = select.value;
+    select.innerHTML = '<option value="todas">Todas las categorías</option>';
+    cats.forEach(c => {
+      const op = document.createElement('option');
+      op.value = c;
+      op.textContent = c;
+      select.appendChild(op);
+    });
+
+    if (cats.includes(valorActual)) {
+      select.value = valorActual;
+    }
+  }
+
+  // ========== GESTIÓN DE CATEGORÍAS ==========
+  function abrirModalCategorias() {
+    renderizarListaCategoriasAdmin();
+    const modal = document.getElementById('modalCategorias');
+    if (modal) {
+      modal.classList.add('active');
+      setTimeout(() => {
+        const input = document.getElementById('nuevaCategoriaInput');
+        if (input) input.focus();
+      }, 300);
+    }
+  }
+
+  function renderizarListaCategoriasAdmin() {
+    const cats = cargarCategorias();
+    const lista = document.getElementById('listaCategoriasAdmin');
+    if (!lista) {
+      console.error('Elemento listaCategoriasAdmin no encontrado');
+      return;
+    }
+
+    lista.innerHTML = '';
+    cats.forEach(c => {
+      const div = document.createElement('div');
+      div.style.cssText = 'display: flex; justify-content: space-between; align-items: center; background: #f5f5f5; padding: 0.75rem 1rem; border-radius: 8px; margin-bottom: 0.5rem;';
+
+      const span = document.createElement('span');
+      span.textContent = c;
+      span.style.cssText = 'font-weight: 500; color: #333; font-size: 1rem;';
+      div.appendChild(span);
+
+      if (!CATEGORIASDEFAULT.includes(c)) {
+        const btn = document.createElement('button');
+        btn.className = 'btn-mini btn-danger';
+        btn.textContent = '🗑️ Eliminar';
+        btn.style.cssText = 'background: #d32f2f; color: white; border: none; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; font-size: 0.9rem; font-weight: 600;';
+        btn.onclick = () => borrarCategoria(c);
+        div.appendChild(btn);
+      } else {
+        const badge = document.createElement('span');
+        badge.textContent = 'Por defecto';
+        badge.style.cssText = 'font-size: 0.75rem; color: #666; background: #e0e0e0; padding: 0.3rem 0.6rem; border-radius: 4px;';
+        div.appendChild(badge);
+      }
+
+      lista.appendChild(div);
+    });
+  }
+
+  function agregarCategoria() {
+    const input = document.getElementById('nuevaCategoriaInput');
+    if (!input) {
+      console.error('Input no encontrado');
+      return;
+    }
+
+    const val = input.value.trim();
+    if (!val) {
+      alert('Por favor ingresa un nombre para la categoría');
+      return;
+    }
+
+    const cats = cargarCategorias();
+    if (cats.includes(val)) {
+      alert('Ya existe esa categoría');
+      input.value = '';
+      input.focus();
+      return;
+    }
+
+    cats.push(val);
+    cats.sort();
+    guardarCategorias(cats);
+    input.value = '';
+    input.focus();
+    renderizarListaCategoriasAdmin();
+    renderizarOpcionesCategorias();
+
+    console.log('Categoría agregada:', val);
+  }
+
+  function borrarCategoria(cat) {
+    if (!confirm('¿Borrar categoría "' + cat + '"?')) return;
+
+    let cats = cargarCategorias();
+    cats = cats.filter(c => c !== cat);
+    guardarCategorias(cats);
+    renderizarListaCategoriasAdmin();
+    renderizarOpcionesCategorias();
+  }
+
+</script>
+
+
+<!-- MODAL GESTIÓN DE CATEGORÍAS -->
+<div class="modal" id="modalCategorias">
+  <div class="modal-content" style="max-width: 600px;">
+    <button class="modal-close" onclick="cerrarModal('modalCategorias')">&times;</button>
+    <h2 style="color: #1b5e20; margin-bottom: 1.5rem;">Gestionar Categorías</h2>
+
+    <div style="margin-bottom: 1.5rem;">
+      <div style="display: flex; gap: 0.5rem;">
+        <input type="text" id="nuevaCategoriaInput" placeholder="Nueva categoría..."
+          onkeypress="if(event.key === 'Enter') { agregarCategoria(); event.preventDefault(); }"
+          style="flex: 1; padding: 0.75rem; border: 2px solid #ddd; border-radius: 8px; font-size: 1rem; color: #333; background: white;">
+        <button class="btn-primary" onclick="agregarCategoria()" style="padding: 0.75rem 1.5rem;">
+          ➕ Agregar
+        </button>
+      </div>
+    </div>
+
+    <h3 style="color: #01579b; margin-bottom: 1rem; font-size: 1.1rem;">Categorías existentes:</h3>
+    <div id="listaCategoriasAdmin" style="display: grid; gap: 0.5rem; max-height: 400px; overflow-y: auto;">
+      <!-- Se llena dinámicamente -->
+    </div>
+
+    <div style="margin-top: 1.5rem; text-align: center;">
+      <button class="btn-secondary" onclick="cerrarModal('modalCategorias')">Cerrar</button>
+    </div>
+  </div>
+</div>
 
 </body>
 
