@@ -941,19 +941,21 @@
     async function eliminarCompra(id) {
       if (!confirm('¿Eliminar?')) return;
 
+      // ✅ Primero eliminar de Supabase
+      if (window.SupabaseSync && isOnline) {
+        try {
+          await SupabaseSync.deleteSingle('compra', id);
+        } catch (e) {
+          console.error('Error al eliminar de Supabase:', e);
+        }
+      }
+
+      // Luego eliminar del localStorage
       compras = compras.filter(c => c.id !== id);
 
       const data = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
       data.compras = compras;
       localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-
-      if (window.SupabaseSync && isOnline) {
-        try {
-          await SupabaseSync.sync();
-        } catch (e) {
-          console.error('Error al sincronizar:', e);
-        }
-      }
 
       renderizarCompras();
     }

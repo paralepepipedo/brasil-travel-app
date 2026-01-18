@@ -2892,9 +2892,19 @@
     }
 
     // ← LÍNEA 699-710: Eliminar atracción
-    function eliminarAtraccion() {
+    async function eliminarAtraccion() {
       if (!confirm('¿Eliminar esta atracción?')) return;
 
+      // ✅ Primero eliminar de Supabase
+      if (window.SupabaseSync && navigator.onLine) {
+        try {
+          await SupabaseSync.deleteSingle('atraccion', atraccionActual.id);
+        } catch (e) {
+          console.error('Error al eliminar de Supabase:', e);
+        }
+      }
+
+      // Luego eliminar del localStorage
       const datos = cargarDatos();
       datos.atracciones = datos.atracciones.filter(a => a.id !== atraccionActual.id);
       guardarDatos(datos);

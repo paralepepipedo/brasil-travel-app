@@ -117,6 +117,73 @@ async function uploadSingleItem(tipo, datos) {
     console.log(`✅ Documento "${datos.titulo}" subido`);
   }
   // Agregar más tipos según necesites
+  if (tipo === 'compra') {
+    await supabaseClient
+      .from('compras')
+      .upsert({
+        id: String(datos.id),
+        user_id: DEFAULT_USER_ID,
+        articulo: datos.articulo,
+        cantidad: datos.cantidad || 1,
+        categoria: datos.categoria || 'Otros',
+        notas: datos.notas || '',
+        comprado: datos.comprado || false,
+        precio: datos.precio ? parseFloat(datos.precio) : null
+      }, { onConflict: 'id' });
+
+    console.log(`✅ Compra "${datos.articulo}" subida`);
+  }
+
+  if (tipo === 'atraccion') {
+    await supabaseClient
+      .from('atracciones')
+      .upsert({
+        id: String(datos.id),
+        user_id: DEFAULT_USER_ID,
+        nombre: datos.nombre,
+        categoria: datos.categoria || 'otro',
+        direccion: datos.direccion || '',
+        coordenadas: datos.maps || '',
+        precio_brl: datos.precioBRL ? parseFloat(datos.precioBRL) : null,
+        horario: '',
+        rating: datos.rating || 0,
+        notas: datos.notas || '',
+        visitado: datos.visitado || false,
+        fecha_visita: datos.fechaVisita || null,
+        imagen_url: (datos.imagenes && datos.imagenes[0]) || ''
+      }, { onConflict: 'id' });
+
+    console.log(`✅ Atracción "${datos.nombre}" subida`);
+  }
+
+  if (tipo === 'vuelo') {
+    // datos = { tipo: 'ida' | 'regreso', datos: { ...objetoVuelo } }
+    // Asumimos que datos.datos tiene la estructura correcta de vuelo
+
+    const vueloData = {
+      user_id: DEFAULT_USER_ID,
+      tipo: datos.tipo, // 'ida' o 'regreso'
+      aerolinea: datos.datos.aerolinea,
+      numero_vuelo: datos.datos.numeroVuelo,
+      codigo_reserva: datos.datos.codigoReserva || '',
+      origen: datos.datos.origen,
+      destino: datos.datos.destino,
+      fecha_salida: datos.datos.fechaSalida,
+      fecha_llegada: datos.datos.fechaLlegada,
+      terminal: datos.datos.terminal || '',
+      puerta: datos.datos.puerta || '',
+      asientos: datos.datos.asientos || [],
+      equipaje: datos.datos.equipaje || '',
+      notas: datos.datos.notas || '',
+      archivo: datos.datos.archivo || null
+    };
+
+    await supabaseClient
+      .from('vuelos')
+      .upsert(vueloData, { onConflict: 'user_id,tipo' });
+
+    console.log(`✅ Vuelo de ${datos.tipo} subido correctamente a tabla 'vuelos'`);
+  }
 }
 
 // =====================================================
@@ -510,11 +577,50 @@ function markPendingChanges() {
   }
 }
 
+async function deleteSingleItem(tipo, id) {
+  if (!navigator.onLine) {
+    console.log('⚠️ Offline - eliminación pendiente');
+    return true;
+  }
+
+  const tablas = {
+    'compra': 'compras',
+    'atraccion': 'atracciones',
+    'documento': 'documentos'
+  };
+
+  const tabla = tablas[tipo];
+  if (!tabla) {
+    console.error('❌ Tipo desconocido:', tipo);
+    return false;
+  }
+
+  try {
+    const { error } = await supabaseClient
+      .from(tabla)
+      .delete()
+      .eq('user_id', DEFAULT_USER_ID)
+      .eq('id', id);
+
+    if (error) {
+      console.error(`❌ Error al eliminar de Supabase:`, error);
+      return false;
+    }
+
+    console.log(`✅ ${tipo} ${id} eliminado de Supabase`);
+    return true;
+  } catch (error) {
+    console.error(`❌ Error al eliminar ${tipo}:`, error);
+    return false;
+  }
+}
+
 // Exportar funciones
 window.SupabaseSync = {
   init: initSupabase,
   sync: syncAll,
   uploadSingle: uploadSingleItem,
+  deleteSingle: deleteSingleItem,  // ✅ AGREGAR ESTA LÍNEA
   markPending: markPendingChanges,
   state: syncState
 };
