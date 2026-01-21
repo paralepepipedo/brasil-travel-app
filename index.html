@@ -1425,9 +1425,15 @@
 
       function guardarYRenderizar() {
         try {
-          // Guardar SOLO los gastos del usuario (sin los fijos)
           const gastosUsuario = gastos.filter(g => !g.fijo);
           localStorage.setItem(STORAGE_KEY, JSON.stringify(gastosUsuario));
+
+          // ✅ AGREGAR SYNC
+          if (window.SupabaseSync && navigator.onLine) {
+            gastosUsuario.forEach(gasto => {
+              window.SupabaseSync.uploadSingle('gasto', gasto);
+            });
+          }
         } catch (e) {
           console.error('No se pudo guardar en localStorage', e);
         }
@@ -1515,16 +1521,20 @@
           e.preventDefault();
           const index = parseInt(btnEliminar.dataset.index, 10);
 
-          // ⬅️ AGREGAR ESTO
           if (gastos[index].fijo) {
             alert('❌ No puedes eliminar gastos de ejemplo. Solo puedes eliminar tus propios gastos.');
             return;
           }
 
           if (confirm(`¿Estás seguro de que quieres eliminar el gasto "${gastos[index].descripcion}"?`)) {
+            const gastoEliminado = gastos[index]; // ✅ Guardar referencia
             gastos.splice(index, 1);
 
-            // Si estábamos editando este gasto, cancelamos la edición
+            // ✅ AGREGAR SYNC DE ELIMINACIÓN
+            if (window.SupabaseSync && navigator.onLine) {
+              window.SupabaseSync.deleteSingle('gasto', gastoEliminado.id);
+            }
+
             if (idEdicion === index) idEdicion = null;
             guardarYRenderizar();
           }
@@ -1538,6 +1548,12 @@
           const persona = btnPago.dataset.persona;
           if (gastos[index] && gastos[index].pagos && persona in gastos[index].pagos) {
             gastos[index].pagos[persona] = !gastos[index].pagos[persona];
+
+            // ✅ AGREGAR SYNC
+            if (window.SupabaseSync && navigator.onLine) {
+              window.SupabaseSync.uploadSingle('gasto', gastos[index]);
+            }
+
             guardarYRenderizar();
           }
           return;
@@ -2852,6 +2868,12 @@
       atraccion.rating = parseInt(rating) || 0;
 
       guardarDatos(datos);
+
+      // ✅ AGREGAR SYNC
+      if (window.SupabaseSync) {
+        window.SupabaseSync.uploadSingle('atraccion', atraccion);
+      }
+
       cerrarModal('modalDetalleAtraccion');
       renderizarAtracciones();
       actualizarDashboard();
@@ -2869,6 +2891,12 @@
       atraccion.rating = 0;
 
       guardarDatos(datos);
+
+      // ✅ AGREGAR SYNC
+      if (window.SupabaseSync) {
+        window.SupabaseSync.uploadSingle('atraccion', atraccion);
+      }
+
       cerrarModal('modalDetalleAtraccion');
       renderizarAtracciones();
       actualizarDashboard();

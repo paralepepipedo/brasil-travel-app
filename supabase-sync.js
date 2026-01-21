@@ -95,6 +95,25 @@ async function uploadSingleItem(tipo, datos) {
 
     console.log(`✅ ${datos.fecha} subido`);
   }
+  if (tipo === 'gasto') {
+    await supabaseClient
+      .from('gastos')
+      .upsert({
+        id: String(datos.id),
+        user_id: DEFAULT_USER_ID,
+        descripcion: datos.descripcion,
+        monto_brl: parseFloat(datos.monto_brl),
+        moneda: datos.moneda || 'BRL',
+        monto_original: datos.monto_original ? parseFloat(datos.monto_original) : null,
+        fecha: datos.fecha,
+        personas: datos.personas || 3,
+        pagado_por: datos.pagadoPor || 'Patricia',
+        pagos: datos.pagos || {},
+        fijo: false
+      }, { onConflict: 'id' });
+
+    console.log(`✅ Gasto "${datos.descripcion}" subido`);
+  }
   if (tipo === 'documento') {
     await supabaseClient
       .from('documentos')
@@ -586,7 +605,8 @@ async function deleteSingleItem(tipo, id) {
   const tablas = {
     'compra': 'compras',
     'atraccion': 'atracciones',
-    'documento': 'documentos'
+    'documento': 'documentos',
+    'gasto': 'gastos'  // ✅ AGREGAR ESTA LÍNEA
   };
 
   const tabla = tablas[tipo];
