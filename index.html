@@ -50,7 +50,7 @@
       <button class="nav-tab" data-section="atracciones">📍 Atracciones</button>
       <button class="nav-tab" onclick="window.location.href='itinerario.html'">📅 Itinerario</button>
       <button class="nav-tab" data-section="vuelos">✈️ Vuelos</button>
-      <button class="nav-tab" data-section="documentos">📄 Documentos</button>
+      <button class="nav-tab" onclick="window.location.href='documentos.html'">📄 Documentos</button>
       <button class="nav-tab" data-section="configuracion">⚙️ Configuración</button>
     </nav>
 
@@ -65,7 +65,7 @@
     <button class="mobile-nav" data-section="atracciones">📍 Atracciones</button>
     <button class="mobile-nav" onclick="window.location.href='itinerario.html'">📅 Itinerario</button>
     <button class="mobile-nav" data-section="vuelos">✈️ Vuelos</button>
-    <button class="mobile-nav" data-section="documentos">📄 Documentos</button>
+    <button class="mobile-nav" onclick="window.location.href='documentos.html'">📄 Documentos</button>
     <button class="mobile-nav" data-section="configuracion">⚙️ Configuración</button>
 
   </div>
@@ -1426,14 +1426,21 @@
       function guardarYRenderizar() {
         try {
           const gastosUsuario = gastos.filter(g => !g.fijo);
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(gastosUsuario));
 
-          // ✅ AGREGAR SYNC
+          // Usa el almacenamiento centralizado
+          const appData = cargarDatos();
+          appData.gastos = gastosUsuario;
+          guardarDatos(appData);
+
+          // Sync ya es manejado por guardarDatos (markPending), 
+          // pero mantenemos uploadSingle para feedback inmediato si se desea,
+          // aunque guardarDatos+SyncLoop es mejor.
+          // Dejaremos que guardarDatos maneje el flag y el loop de sync se encargue,
+          // o forzamos un upload si estamos online.
           if (window.SupabaseSync && navigator.onLine) {
-            gastosUsuario.forEach(gasto => {
-              window.SupabaseSync.uploadSingle('gasto', gasto);
-            });
+            gastosUsuario.forEach(g => window.SupabaseSync.uploadSingle('gasto', g));
           }
+
         } catch (e) {
           console.error('No se pudo guardar en localStorage', e);
         }
@@ -1452,7 +1459,7 @@
         }
 
         const nuevoGasto = {
-          id: Date.now() + Math.floor(Math.random() * 1000), // ⬅️ AGREGAR ESTA LÍNEA
+          id: uuidv4(), // ⬅️ AGREGAR ESTA LÍNEA
           descripcion: form.descripcion.value.trim(),
           monto_brl: montoEnBRL,
           moneda: monedaSelect.value,
@@ -1653,34 +1660,54 @@
         descargarArchivo(jsonContent, 'gastos_viaje.json', 'application/json;charset=utf-8;');
       }
 
+      // Utilidad para generar UUIDs
+      function uuidv4() {
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+          var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+          return v.toString(16);
+        });
+      }
+
       // --- Carga inicial de datos y primer renderizado ---
       async function cargarDatosIniciales() {
         try {
-          // 1. Cargar datos fijos desde GitHub
+          // 1. (ELIMINADO) Cargar datos fijos desde JSON - Se eliminó para evitar conflictos de sync
           let datosFijos = [];
-          try {
-            const response = await fetch('datos-fijos.json');
-            if (response.ok) {
-              const json = await response.json();
-              datosFijos = json.gastos || [];
+
+          // 2. Cargar datos del usuario desde brasilTravelApp
+          let datosUsuario = [];
+
+          // MIGRACIÓN LEGACY (gastosViaje -> brasilTravelApp)
+          const legacyGastos = localStorage.getItem('gastosViaje');
+          if (legacyGastos) {
+            try {
+              console.log('🔄 Migrando gastos legacy...');
+              const parsedLegacy = JSON.parse(legacyGastos);
+              const appData = cargarDatos();
+              // Fusionar sin duplicados
+              const currentIds = new Set((appData.gastos || []).map(g => g.id));
+              const newGastos = (appData.gastos || []);
+
+              parsedLegacy.forEach(g => {
+                // Asignar ID si falta (para legacy muy viejo)
+                if (!g.id) g.id = uuidv4();
+                if (!currentIds.has(g.id)) {
+                  newGastos.push(g);
+                  currentIds.add(g.id);
+                }
+              });
+
+              appData.gastos = newGastos;
+              guardarDatos(appData);
+              localStorage.removeItem('gastosViaje'); // Limpiar legacy
+              console.log('✅ Migración completada via cargarDatosIniciales');
+            } catch (e) {
+              console.error('Error migrando legacy:', e);
             }
-          } catch (e) {
-            console.log('No se pudieron cargar datos fijos:', e);
           }
 
-          // 2. Cargar datos del usuario desde localStorage
-          let datosUsuario = [];
-          const datosGuardados = localStorage.getItem(STORAGE_KEY);
-          if (datosGuardados) {
-            try {
-              datosUsuario = JSON.parse(datosGuardados);
-              // Filtrar datos fijos que no deberían estar aquí
-              datosUsuario = datosUsuario.filter(g => !g.fijo);
-            } catch (e) {
-              console.error('Error parseando gastos:', e);
-              datosUsuario = [];
-            }
-          }
+          const appData = cargarDatos();
+          datosUsuario = appData.gastos || [];
 
           // 3. ✅ ELIMINAR DUPLICADOS usando Map (clave = ID)
           const gastosMap = new Map();
@@ -1704,7 +1731,7 @@
               gasto.pagos = { Patricia: false, Daniela: false, Gonzalo: false };
             }
             if (!gasto.id) {
-              gasto.id = Date.now() + Math.floor(Math.random() * 1000);
+              gasto.id = uuidv4();
             }
           });
 
@@ -2679,7 +2706,7 @@
         .filter(url => url.length > 0);
 
       const atraccion = {
-        id: atraccionActual?.id || Date.now(),
+        id: atraccionActual?.id || uuidv4(),
         nombre: document.getElementById('atracNombre').value.trim(),
         categoria: document.getElementById('atracCategoria').value,
         direccion: document.getElementById('atracDireccion').value.trim(),
@@ -4184,7 +4211,7 @@
       const recordatorioDias = parseInt(document.querySelector('input[name="docRecordatorio"]:checked').value);
 
       const documento = {
-        id: documentoActual?.id || Date.now(),
+        id: documentoActual?.id || uuidv4(),
         categoria: document.getElementById('docCategoria').value,
         titulo: document.getElementById('docTitulo').value.trim(),
         descripcion: document.getElementById('docDescripcion').value.trim(),
